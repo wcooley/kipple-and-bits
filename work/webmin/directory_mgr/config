@@ -15,3 +15,5 @@ shell=/bin/sh
 createhome=0
 createhomeremote=0
 hide_system_groups=1
+
+html_table_options=border=0 cellspacing=2 cellpadding=2 width=100%
