@@ -28,11 +28,12 @@ require "directory-lib.pl" ;
 %access=&get_module_acl;
 
 
-&header($text{'index_t'}, "" );
+&header($text{'add_group_t'}, "" );
 # uses the index_title entry from ./lang/en or appropriate
 
 ## Insert Output code here
-print "<hr>\n<h2>This feature is not here yet.</h2>\n<hr>" ;
+
+print &html_group_form("create") ;
 
 &footer($config{'app_path'}, $text{'index'});
 do "footer.pl" ;
