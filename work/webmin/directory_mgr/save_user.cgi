@@ -34,16 +34,14 @@ if ($in{'do'} eq "create") {
 		$user_info{'gidnumber'} = $ret->[0] ;
 	}
 
+    # Check user_info
 	unless ( &new_user_ok ($user_info) ) {
 		&error ($text{'err_user_incomplete'});
 	}
-	$in{'uidnumber'} = ($in{'uidnumber'}) 
-		? $in{'uidnumber'} 
-		: &max_uidnumber;
 
 	$dn = &create_user ($user_info) ;
 
-	&set_passwd ($dn, $userpassword, $in{'hash'});
+	&set_passwd ($dn, $user_info{'userpassword'}, $in{'hash'});
 
     # Create home directory
 
@@ -51,15 +49,16 @@ if ($in{'do'} eq "create") {
 
         if ($config{'createhomeremote'}) {
             @remote_homes_hosts =  split(/\0/, $in{'servers_for_home_dir'}) ;
-            # Finish me here
-        
+            foreach $home_host (@remote_home_hosts) {
+                &create_home_dir ($user_info{'uid'}, $home_host) ;
+            }
         } else {
 	        mkdir $user_info{'homedirectory'}, 0700;
 	        if ($in{'copy'}) {
 		        system "cp -rf /etc/skel/* $user_info{'homedirectory'}";
 		        system "cp -rf /etc/skel/.[^.]+ $user_info{'homedirectory'}";
 	        }
-	        system "chown -R $uidnumber.$gidnumber $user_info{'homedirectory'}";
+	        system "chown -R $user_info{'uidnumber'}.$user_info{'gidnumber'} $user_info{'homedirectory'}";
         }
     }
 
