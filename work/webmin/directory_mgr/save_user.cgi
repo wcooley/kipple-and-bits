@@ -22,30 +22,32 @@ if ($in{'do'} eq "create") {
 
 	# Create group before user, so if we're using
 	# user-private-groups we can get a free gidNumber.
+    $user_info->{'groupID'} = $group_info->{'groupID'} ;
+
+    &group_add_username($group_info, $user_info->{'userName'}) ;
+
+    # Create the group
 	$ret = &create_group($group_info) ;
 
+    # Report any errors
 	if ( $ret->[0] == -1 ) {
 		&error($ret->[1]) ;
-	} else {
-		$user_info->{'gidNumber'} = $ret->[0] ;
 	}
 
     # Check user_info
-    $err = &new_user_ok ($user_info) ;
-	unless ( $err ) {
+	unless ( &new_user_ok ($user_info) ) {
 		&error ($text{'err_user_incomplete'});
 	}
 
+    # Create the user
 	$ret = &create_user ($user_info) ;
 
+    # Report any errors
     if ( $ret->[0] == -1 ) {
         &error($ret->[1]) ;
-    } else {
-        $user_info->{'uidNumber'} = $ret->[0] ;
-        $dn = $ret->[1] ;
     }
 
-	&set_passwd ($dn, $user_info->{'userpassword'}, $in{'hash'});
+	&set_passwd ($dn, $user_info->{'password'}, $in{'hash'});
 
     # Create home directory
 
@@ -62,11 +64,13 @@ if ($in{'do'} eq "create") {
 		        system "cp -rf /etc/skel/* $user_info{'homeDirectory'}";
 		        system "cp -rf /etc/skel/.[^.]+ $user_info{'homeDirectory'}";
 	        }
-	        system "chown -R $user_info{'uidNumber'}.$user_info{'gidNumber'} $user_info{'homeDirectory'}";
+	        system "chown -R $user_info{'uidNumber'}.$user_info{'gidNumber'} "
+                . "$user_info{'homeDirectory'}";
         }
     }
 
 	&header ($text{'created_user'}, "");
+
 } elsif ($in{'do'} eq "modify") {
 	$user = &user_from_form(\%in) ;
 	unless (&changed_user_ok($user)) {
