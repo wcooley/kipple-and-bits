@@ -201,9 +201,9 @@ sub user_from_form
     $user{'description'} = &remove_whitespace($in->{'description'});
 
     if ( $in->{'email'} ) {
-        $user{'email'} = $user{'userName'} . '\@' .  $config{'defaultdomain'} ;
-    } else {
         $user{'email'} = &remove_whitespace($in->{'email'});
+    } else {
+        $user{'email'} = $user{'userName'} . '@' .  $config{'maildomain'} ;
     }
 
 	return \%user ;
