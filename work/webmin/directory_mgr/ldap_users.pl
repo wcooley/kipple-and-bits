@@ -15,7 +15,7 @@ sub list_users
     my (@users);
 
     $filter = "(objectclass=posixAccount)";
-    $entry = $conn->search ($config{base}, "subtree", $filter, 0,
+    $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
         ("uid", "uidnumber", "gidnumber", "cn", "title", "organizationname",
 	"department", "physicalofficedelyveryname"));
 
@@ -23,15 +23,15 @@ sub list_users
     while ($entry) {
         my (%user);
 
-        $user{dn} = $entry->getDN (),
-        $user{uid} = $entry->{uid}[0],
-        $user{uidnumber} = $entry->{uidnumber}[0];
-        $user{gidnumber} = $entry->{gidnumber}[0];
-        $user{cn} = $entry->{cn}[0];
-        $user{title} = $entry->{title}[0];
-        $user{organizationname} = $entry->{organizationname}[0];
-        $user{department} = $entry->{department}[0];
-        $user{physicaldeliveryofficename} = $entry->{physicaldeliveryofficename}[0];
+        $user{'dn'} = $entry->getDN (),
+        $user{'uid'} = $entry->{'uid'}[0],
+        $user{'uidnumber'} = $entry->{'uidnumber'}[0];
+        $user{'gidnumber'} = $entry->{'gidnumber'}[0];
+        $user{'cn'} = $entry->{'cn'}[0];
+        $user{'title'} = $entry->{'title'}[0];
+        $user{'organizationname'} = $entry->{'organizationname'}[0];
+        $user{'department'} = $entry->{'department'}[0];
+        $user{'physicaldeliveryofficename'} = $entry->{'physicaldeliveryofficename'}[0];
         $users[$i++] = \%user;
 
         $entry = $conn->nextEntry ();
@@ -58,12 +58,12 @@ sub max_uidnumber
 
     # ldap should have a way to find this...
     $filter = "(objectclass=posixAccount)";
-    $entry = $conn->search ($config{base}, "subtree", $filter, 0,
+    $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
         ("uidnumber"));
 
     $maxuid = 0;
     while ($entry) {
-        $u = $entry->{uidnumber}[0];
+        $u = $entry->{'uidnumber'}[0];
 	# skip user "nobody"...
 	if ($u != 65534) {
             $maxuid = ($u > $maxuid) ? $u : $maxuid;
@@ -82,7 +82,7 @@ sub is_uid_free
     my ($filter);
 
     $filter = "(&(objectclass=posixAccount)(uid=$uid)";
-    $entry = $conn->search ($config{base}, "subtree", $filter, 0,
+    $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
         ("objectclass", "uid"));
 
     return $entry;
@@ -96,7 +96,7 @@ sub is_uidnumber_free
     my ($filter);
 
     $filter = "(&(objectclass=posixAccount)(uidnumber=$uidnumber)";
-    $entry = $conn->search ($config{base}, "subtree", $filter, 0,
+    $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
         ("objectclass", "uidnumber"));
 
     return $entry;
@@ -110,7 +110,7 @@ sub is_mail_free
     my ($filter);
 
     $filter = "(&(objectclass=posixAccount)(mail=$mail)";
-    $entry = $conn->search ($config{base}, "subtree", $filter, 0,
+    $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
         ("mail"));
 
     return $entry;
@@ -198,7 +198,7 @@ sub set_passwd
         #$ctx->add ($passwd);
         #$passwd = "{MD5}" . encode_base64 ($ctx->digest, "");
     }
-    $entry->{userpassword} = [$passwd];
+    $entry->{'userpassword'} = [$passwd];
     $conn->update ($entry);
     if ($err = $conn->getErrorCode ()) {
         &error ("update ($dn): $err:" . $conn->getErrorString ());
