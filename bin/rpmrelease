@@ -39,6 +39,8 @@ pprintf "Building from %s now...\n" ${specfile}
 
 (time rpmbuild -ba ${specfile} 2>&1) |tee ${tmpfile}
 
+echo -en '\a'
+
 if [ $? -ne 0 ]; then
     pprintf "Build exited with error status.\n\tPlease check %s.\n" ${tmpfile}
     exit 1
@@ -50,8 +52,18 @@ rpms=$(awk '/^Wrote:.*(noarch|i?86|athlon)/ {print $2}' ${tmpfile})
 pprintf "Signing packages...\n"
 echo ${srpm} ${rpms} |xargs rpm --addsign
 
+if [[ $? -gt 0 ]]; then
+    printf "Package signing failed! Perhaps you mis-typed the passphrase? Let's try again.\n"
+    echo ${srpm} ${rpms} |xargs rpm --addsign
+fi
+
 mv -v ${rpms} ${rpmreldir}
 mv -v ${srpm} ${srpmreldir}
 
+for rpm in ${rpms}; do
+    echo " RPM: " ${rpmreldir}/$(basename $rpm)
+done
+
+echo "SRPM: " ${srpmreldir}/$(basename $srpm)
 # clean up
 #rm -vf ${tmpfile}
