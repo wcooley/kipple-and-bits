@@ -149,36 +149,69 @@ sub is_uid_free
     return $entry;
 }
 
-=head2 is_uidNumber_free
+=head2 search_users_attr
 
 SYNOPSIS
 
-C<is_uidNumber_free ( I<$uidNumber> )>
+C<search_users_attr ( I<$attr_string>, I<@attr_array> )>
 
 DESCRIPTION
 
-Check if supplied uidNumber is available.
+Searches user objects for matching attribute.  Uses I<@attr_array>
+to limit attributes returned.
 
 RETURN VALUE
 
-Returns true if the uidNumber is free; false if it isn't.
+Returns reference to an array of hashes with the attributes requested
+in I<@attr_array>.  The hash values are themselves arrays, since
+LDAP can have multi-valued attributes.  On error, returns an array
+with -1 as the first element, the LDAP error code as the second,
+and the LDAP error string as the third.
+
+NOTES
+
+Other directory implementations should take note of the fact that
+the attributes are themselves an array.
+
+BUGS
+
+None known.
 
 =cut
 
-sub is_uidNumber_free
+sub search_users_attr
 {
-    my ($uidNumber) = @_;
 
-    my ($filter, $entry);
+    my ($attrfilter, @desired_attrs) = @_ ;
+    
+    my $filter = "(&(objectClass=*)($attrfilter))" ;
+    my (@users, $i) ;
 
-    $filter = "(&(objectclass=posixAccount)(uidNumber=$uidNumber))";
-    $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
-        ("objectclass", "uidNumber"));
-    if ($entry) {
-        return 0 ;
-    } else {
-        return 1 ;
+    $entry = $conn->search ($config{'base'}, "subtree",
+        $filter , 0, @desired_attrs) ;
+
+    if ($err = $conn->getErrorCode()) {
+        return [ -1, $err, $conn->getErrorString() ] ;
     }
+
+    $i = 0 ;
+    while ($entry) {
+        my (%user) ;
+
+        for $attr (@desired_attrs) {
+            if ($attr =~ /^dn$/i) {
+                $user{$attr} = [$entry->getDN()] ;
+            } else {
+                $user{$attr} = $entry->{$attr} ;
+            }
+        }
+
+        $users[$i++] = \%user ;
+        $entry = $conn->nextEntry() ;
+
+    }
+
+    return \@users ;
 
 }
 
