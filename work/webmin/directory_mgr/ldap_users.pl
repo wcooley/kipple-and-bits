@@ -9,7 +9,6 @@ use strict ;
 no strict "vars" ;
 
 use diagnostics ;
-$diagnostics::PRETTY =1 ;
 
 =head1 NAME
 
@@ -413,11 +412,11 @@ sub delete_user ($)
 
 SYNOPSIS
 
-C<set_passwd ( I<$dn>, I<$password>, I<$password_type>)>
+C<set_passwd ( I<\%user>, I<$type> )>
 
 DESCRIPTION
 
-Updates users' password.
+Updates user's password.
 
 BUGS
 
@@ -426,32 +425,62 @@ calls &error() directly.
 
 =cut
 
-sub set_passwd ($$$)
+sub set_passwd ($$)
 {
-    my ($dn, $passwd, $type) = @_;
+    my ($user, $type) = @_ ;
 
-    my ($entry, $salt, $ctx);
+    my $salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z') [rand 64, rand 64];
 
-    $entry = $conn->browse ($dn);
-    if ($err = $conn->getErrorCode ()) {
-        &error ("set_passwd ($dn): $err:" . $conn->getErrorString ());
-    }
     if ($type eq "crypt") {
-        $salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')
-            [rand 64, rand 64];
-        $passwd = "{CRYPT}" . crypt ($passwd, $salt);
-    } elsif ($type eq "md5") {
+        $user->{'password'} = "{CRYPT}" . crypt ($user->{'password'}, $salt);
+    } elsif ($type =~ "md5") {
+        eval {
+            require Digest::MD5 ;
+        } ;
+        if ($@) {
+            return [ -1, "unable to load Digest::MD5 or MIME::Base64: $@" ] ;
+        }
         $ctx = Digest::MD5->new;
-           $ctx->add ($passwd);
-        $passwd = "{MD5}" . encode_base64 ($ctx->digest, "");
-    } elsif ($type eq "sha") {
-        
+        $ctx->add($user{'password'});
+
+        if ($type eq "md5") {
+            $user{'password'} = "{MD5}" . 
+               encode_base64 ($ctx->digest(), "");
+        } elsif ($type eq "smd5") {
+            $ctx->add($salt) ;
+            $user->{'password'} = "{SMD5}" . 
+                encode_base64 ($ctx->digest() . $salt, "");
+        } else {
+            return [ -1, "unrecognized password hash type &quot;$type&quot;" ] ;
+        }
+
+    } elsif ($type =~ "sha") {
+        eval {
+            require Digest::SHA1 ;
+        } ;
+        if ($@) {
+            return [ -1, "unable to load Digest::SHA1 or MIME::Base64: $@" ] ;
+        }
+
+        $ctx = Digest::SHA1->new ;
+        $ctx->add($user{'password'}) ;
+
+        if ($type eq "sha") {
+            $user->{'password'} = "{SHA}" .  
+                encode_base64($ctx->digest(), "") ;
+        } elsif ($type eq "ssha") {
+            $ctx->add($salt) ;
+            $user->{'password'} = "{SSHA}" . 
+                encode_base64 ($ctx->digest(). $salt, "");
+        } else {
+            return [ -1, "unrecognized password hash type &quot;$type&quot;" ] ;
+        }
+
+    } else {
+        return [ -1, "unrecognized password hash type &quot;$type&quot;" ] ;
     }
-    $entry->{'userpassword'} = [$passwd];
-    $conn->update ($entry);
-    if ($err = $conn->getErrorCode ()) {
-        &error ("update ($dn): $err:" . $conn->getErrorString ());
-    }
+
+    return [ 1, $user ] ;
 }
 
 =head1 NOTES
