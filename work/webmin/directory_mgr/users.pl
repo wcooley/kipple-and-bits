@@ -36,36 +36,38 @@ sub user_from_form
     my ($in) = @_;
 
     # posixAccount
-    $uid = $in{'uid'};
-    $uidnumber = $in{'uidnumber'};
-    $gidnumber = $in{'gidnumber'};
-    $gecos = $in{'gecos'};
-    $homedirectory = $in{'homedirectory'};
-    $loginshell = $in{'loginshell'};
+    $user{'uid'} = $in->{'uid'};
+    $user{'uidnumber'} = $in->{'uidnumber'};
+    #$user{'gidnumber'} = $in->{'gidnumber'};
+    $user{'gecos'} = $in->{'gecos'};
+    $user{'homedirectory'} = $in->{'homedirectory'};
+    $user{'loginshell'} = $in->{'loginshell'};
 
     # address book data
-    $cn = $in{'cn'};
-    $sn = $in{'sn'};
-    $givenname = $in{'givenname'};
-    $title = $in{'title'};
-    $organizationname = $in{'organizationname'};
-    $department = $in{'department'};
-    $physicaldeliveryofficename = $in{'physicaldeliveryofficename'};
-    $mail = $in{'mail'};
-    $telephonenumber = $in{'telephonenumber'};
-    $mobile = $in{'mobile'};
-    $pager = $in{'pager'};
-    $officefax = $in{'officefax'};
-    $comment = $in{'comment'};
-    $userpassword = $in{'userpassword'};
+    $user{'cn'} = $in->{'cn'};
+    $user{'sn'} = $in->{'sn'};
+    $user{'givenname'} = $in->{'givenname'};
+    $user{'title'} = $in->{'title'};
+    $user{'organizationname'} = $in->{'organizationname'};
+    $user{'department'} = $in->{'department'};
+    $user{'physicaldeliveryofficename'} = $in->{'physicaldeliveryofficename'};
+    $user{'mail'} = $in->{'mail'};
+    $user{'telephonenumber'} = $in->{'telephonenumber'};
+    $user{'mobile'} = $in->{'mobile'};
+    $user{'pager'} = $in->{'pager'};
+    $user{'officefax'} = $in->{'officefax'};
+    $user{'comment'} = $in->{'comment'};
+    $user{'userpassword'} = $in->{'userpassword'};
 
     # generate empty fields
-    $gecos = "$givenname $sn" unless $gecos;
-    $cn = "$givenname $sn" unless $cn;
-    $mail = "$uid@" . $config{'maildomain'} unless $mail;
-    $homedirectory = $config{'homes'} . "/$uid" unless $homedirectory;
-    $userpassword = $uid unless $userpassword;
+    $user{'gecos'} = "$givenname $sn" unless $gecos;
+    $user{'cn'} = "$givenname $sn" unless $cn;
+    $user{'mail'} = "$uid@" . $config{'maildomain'} unless $mail;
+    $user{'homedirectory'} = $config{'homes'} . "/$uid" unless $homedirectory;
+    $user{'userpassword'} = $uid unless $userpassword;
     #$userpassword = &generate_passwd ($userpassword);
+
+	return \%user ;
 }
 
 
