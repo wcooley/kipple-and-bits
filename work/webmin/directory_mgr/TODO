@@ -18,7 +18,8 @@ What works currently:
           temporarily by making userName, groupID, and userID not
           changable in edit form).
         o User search.
-        o LDAP MD5 & SHA passwords.
+        o LDAP MD5, SMD5, SSHA & SHA passwords.
+        o Password change form.
 
 
 *******************************
@@ -40,7 +41,6 @@ OPERATIONAL
 ===========
 
     @ User management:
-        o Password change form. (In progress)
         o Remove user from existing groups.
         o Delete group when removing user.
         o Samba attributes for users.
