@@ -53,7 +53,7 @@ sub html_passwd_rows ()
 
     $rows = "\t<tr>\n\t\t<td>$text{'new_passwd'}</td>\n" ;
 
-    $rows .= "\t\t<td><input type=\"text\" name=\"userPassword\"></td>" ;
+    $rows .= "\t\t<td><input type=\"text\" name=\"password\"></td>" ;
 
     $rows .= "\t<tr>\n\t\t<td>$text{'passwdtype'}</td>\n" ;
     $rows .= "\t\t<td>\n" ;
