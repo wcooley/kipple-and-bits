@@ -106,14 +106,6 @@ sub user_from_form
     $user{'comment'} = $in->{'comment'};
     $user{'userpassword'} = $in->{'userpassword'};
 
-    # generate empty fields
-    $user{'gecos'} = "$givenname $sn" unless $gecos;
-    $user{'cn'} = "$givenname $sn" unless $cn;
-    $user{'mail'} = "$uid@" . $config{'maildomain'} unless $mail;
-    $user{'homedirectory'} = $config{'homes'} . "/$uid" unless $homedirectory;
-    $user{'userpassword'} = $uid unless $userpassword;
-    #$userpassword = &generate_passwd ($userpassword);
-
 	return \%user ;
 }
 
