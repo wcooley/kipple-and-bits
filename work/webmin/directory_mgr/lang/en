@@ -137,7 +137,7 @@ del_user=Delete User
 
 msg_1=No users found ?!?
 msg_2=Setting password for user
-changing_passwd=Changing password for $1
+changing_passwd=Changing password for <i>$1</i>
 msg_3=Are you sure you want to delete user <B>'$1'</B> ($2)?
 delete_user_confirm=Are you sure you want to delete user <b>'$1'</b> ($2)?
 
