@@ -1,10 +1,18 @@
 #!/usr/bin/perl
-
 #
-# LDAP Users Admin
+# Directory_Mgr
 # html.pl $Revision$ $Date$ $Author$
-# by Fernando Lozano <fernando@lozano.eti.br> under the GNU GPL (www.gnu.org)
 #
+
+=head1 NAME
+
+I<html.pl>
+
+=head1 DESCRIPTION
+
+I<html.pl> contains subroutines for emitting commonly-used HTML.
+
+=cut
 
 use strict ;
 no strict "vars" ;
@@ -12,24 +20,76 @@ no strict "vars" ;
 use diagnostics ;
 
 
-sub html_shell_options
+=head2 html_shell_options
+
+SYNOPSIS
+
+C<html_shell_options ( [I<$default_shell>] )>
+
+DESCRIPTION
+
+C<html_shell_options> emits HTML select inputs with a configured
+list of shells.  The optional I<$default_shell> selects the
+shell to be selected by default.
+
+RETURN VALUE
+
+True
+
+BUGS
+
+Probably should return a string of HTML instead of printing it
+directly.
+
+NOTES
+
+None.
+
+=cut
+
+sub html_shell_options (:$)
 {
-    my ($user_shell) = @_;
+    my ($default_shell) = @_;
     
     my ($shell, $selected);
 
     open SHELLS, "</etc/shells";
     while (<SHELLS>) {
         tr/\n\r\t //d;
-        $selected = ($user_shell eq $_) ? "selected" : "";
+        $selected = ($default_shell eq $_) ? "selected" : "";
         print "<option value=\"$_\" $selected>$_\n";
-        #print "<option>[$user_shell][$_]"
     }
+
+    return 1;
 }
 
 
+=head2 html_group_options
 
-sub html_group_options
+SYNOPSIS
+
+C<html_group_options ( [I<$default_groupID>] )>
+
+DESCRIPTION
+
+Emits an HTML select list of groups.
+
+RETURN VALUE
+
+True
+
+BUGS
+
+Probably should return a string instead of printing directly.
+Should be able to configure a multi-value select.
+
+NOTES
+
+None.
+
+=cut
+
+sub html_group_options (:$)
 {
     my ($gidNumber) = @_;
     
@@ -45,13 +105,15 @@ sub html_group_options
         print "<option value=\"$group->{'gidNumber'}\" $selected>" 
 			. "$group->{'cn'} ($group->{'gidNumber'})</option>\n";
     }
+
+    return 1;
 }
 
 =head2 html_row_user
 
 SYNOPSIS
 
-html_row_user ( I<$user> )
+html_row_user ( I<\%user> )
 
 DESCRIPTION
 
@@ -64,7 +126,8 @@ Returns a formatted HTML row of user information.
 
 =cut
 
-sub html_row_user {
+sub html_row_user ($)
+{
 	my ($user) = @_ ;
 	my ($groupName) = &find_gid ($user->{'groupID'}) ;
 
@@ -101,20 +164,6 @@ sub html_row_user {
 
 }
 
-=head2 html_row_alias
-
-SYNOPSIS
-
-html_row_alias ( I<> )
-
-=cut
-
-sub html_row_alias
-{
-
-
-}
-
 =head2 html_user_form
 
 SYNOPSIS
@@ -144,7 +193,8 @@ Presents current user data to be updated.
 
 =cut
 
-sub html_user_form {
+sub html_user_form ($$)
+{
 
     my ($form_type, $user) = @_ ;
 
@@ -493,28 +543,6 @@ EOF
     }
 
 }
-
-=head1 NOTES
-
-None at the moment.
-
-=head1 CREDITS
-
-This module begun by Fernando Lozano <fernando@lozano.etc.br>
-in his I<ldap-users> module.  Incorporated into I<directory_mgr>
-by Wil Cooley <wcooley@nakedape.cc>.  All bug reports should go to
-Wil Cooley.
-
-=head1 LICENSE
-
-This file is copyright Fernando Lozano <frenando@lozano.etc.br>
-and Wil Cooley <wcooley@nakedape.cc>, under the GNU General Public
-License <http://www.gnu.org/licenses/gpl.txt> or the file B<LICENSE>
-included with this program.
-
-=cut
-
-### END PASTE
 
 =head1 NOTES
 
