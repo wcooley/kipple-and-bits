@@ -27,4 +27,4 @@ textdoc:
 
 htmldoc:
 	@echo "Generating html pod docs..."
-	-@for i in *.pl *.cgi; do echo $$i; pod2html --infile=$$i > doc/html/$$i.html; done
+	-@for i in *.pl *.cgi; do echo $$i; pod2html --infile=$$i --title=$$i > doc/html/$$i.html; done
