@@ -17,7 +17,7 @@ STYLE
 OPERATIONAL
 ===========
 
-    o Home directory creation.
+    o Home directory creation. IN-PROGRESS
 
     o Set allowed hosts attribute for users.
 
