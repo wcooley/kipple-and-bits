@@ -24,7 +24,9 @@ if [ ! -f ${specfile} ]; then
     exit 1
 fi
 
-rpmbase=$(rpm -q --queryformat '%{NAME}' --specfile ${specfile})
+# If you query a spec file that makes multiple packages, you get several
+# values back.  Do a little array fiddling to get the first one
+rpmbase=($(rpm -q --queryformat '%{NAME}\n' --specfile ${specfile}))[0]
 tmpfile=$(mktemp /tmp/${prog}-${rpmbase}.XXXXXX) || exit 1
 
 rpmreldir=$HOME/rpm/release/rpm/${rpmbase}
