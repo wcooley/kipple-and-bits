@@ -463,6 +463,8 @@ at a minimal cost.
 
 =head2 References
 
+=over 6
+
 =item Postfix web site -- http://www.postfix.org
 
 =item amavisd-new web site -- http://www.ijs.si/software/amavisd/
@@ -482,6 +484,8 @@ at a minimal cost.
 =item Sophos Anti-Virus web site -- http://www.sophos.com
 
 =item SpamAssassin web site -- http://www.spamassassin.org
+
+=back
 
 =cut
 
