@@ -38,7 +38,7 @@ sub html_group_options
 
     @all_groups = &list_groups;
     
-    @groups = sort {$a->{cn} cmp $b->{cn}} @all_groups;
+    @groups = sort {$a->{'cn'} cmp $b->{'cn'}} @all_groups;
 
     foreach $group (@groups) {
         $selected = ($group->{'gidNumber'} == $gidNumber) ? "selected" : "";
@@ -71,7 +71,7 @@ sub html_row_user {
 	my ($row) = "
 <tr>
 	<td>&nbsp;
-		<a href=\"add_user.cgi?sort_on=$sort_on&dn=$user->{'dn'}\">
+		<a href=\"edit_user.cgi?dn=$user->{'dn'}\">
 			$user->{'userName'}</a>
 	</td>
 	<td>
@@ -176,7 +176,9 @@ EOF
 
     if ($form_type eq "display") {
         print "    $user->{'userName'}\n" ;
-    } else {
+    } elsif ($form_type eq "modify") {
+        print "    $user->{'userName'}\n" ;
+    } elsif ($form_type eq "create") {
         print "    <input name=\"userName\" size=16 value=\"$user->{'userName'}\">\n" ;
     }
 
@@ -192,7 +194,9 @@ EOF
 EOF
     if ($form_type eq "display") {
         print "    $user->{'userID'}\n" ;
-    } else {
+    } elsif ($form_type eq "modify") {
+        print "    $user->{'userID'}\n" ;
+    } elsif ($form_type eq "create") {
         print "    <input name=\"userID\" size=5 value=\"$user->{'userID'}\">\n" ;
     }
 
