@@ -5,6 +5,43 @@
 # by Fernando Lozano <fernando@lozano.eti.br> under the GNU GPL (www.gnu.org)
 #
 
+=head1 NAME
+
+ldap_users.pl
+
+=head1 DESCRIPTION
+
+ldap_users.pl contains directory-specific subroutines for
+managing users.
+
+=head1 FUNCTIONS
+
+=cut
+
+=head2 list_users
+
+SYNOPSIS
+
+list_users ( I<$ou_filter>, I<$sort_by> )
+
+DESCRIPTION
+
+Searches for user accounts and extracts relevant
+attributes.
+
+RETURN VALUE
+
+Returns an array of users.
+
+BUGS
+
+Probably should return a reference to an array, since the array will
+be quite large on installations with many users.  Does not actually
+filter on OU.  Does no actually sort entries.  Should modify filter
+string instead of skipping entries when 'hide_system_users' is set.
+
+=cut
+
 sub list_users
 {
     # do not filter OU yet
@@ -48,6 +85,25 @@ sub list_users
     return @users;
 }
 
+=head2 get_user_attr
+
+SYNOPSIS
+
+get_user_attr ( I<$dn> )
+
+DESCRIPTION
+
+Retrieves a user object given a distinguished name.
+
+RETURN VALUE
+
+Returns a reference to an LDAP entry hash.
+
+BUGS
+
+None known.
+
+=cut
 
 sub get_user_attr
 {
@@ -59,6 +115,26 @@ sub get_user_attr
     return $entry;
 }
 
+=head2 id_uid_free
+
+SYNOPSIS
+
+is_uid_free ( I<$uid> )
+
+DESCRIPTION
+
+Searches the directory for the given username.
+
+RETURN VALUE
+
+Logic reversed: Returns false (undef) if the uid is not found, true
+(entry) if the uid is found.
+
+BUGS
+
+Return value logic backwards.
+
+=cut
 
 sub is_uid_free
 {
@@ -150,7 +226,27 @@ sub find_free_uid
     return $free_uid ;
 }
 
+=head2 is_mail_free
 
+SYNOPSIS
+
+is_mail_free ( I<$mail> )
+
+DESCRIPTION
+
+Searches the directory for the supplied e-mail address to
+verify that it is not yet in use.
+
+RETURN VALUE
+
+Logic reversed: Returns false (undef) if the entry is not
+found; true (reference to entry hash) if it is found.
+
+BUGS
+
+Return value logic backwards.
+
+=cut
 
 sub is_mail_free
 {
@@ -269,6 +365,30 @@ sub create_user
     }
 }
 
+=head1 update_user
+
+SYNOPSIS
+
+update_user ( I<$dn> )
+
+DESCRIPTION
+
+Updates a directory entry based on a user hash.  Selects the
+directory entry for the passed-in distinguised name and copies
+attributes from user hash into it, and commits back to
+directory.
+
+RETURN VALUE
+
+None.
+
+BUGS
+
+Doesn't work: Uses global user hash, which no longer exists.
+Doesn't return error codes; instead, calls &error()
+directly.  Does not allow for DN/uid changes.
+
+=cut
 
 sub update_user
 {
@@ -288,6 +408,26 @@ sub update_user
     }
 }
 
+=head2 delete_user
+
+SYNOPSIS
+
+delete_user ( I<$dn> )
+
+DESCRIPTION
+
+Deletes a given distinguished name from the directory.
+
+RETURN VALUE
+
+None.
+
+BUGS
+
+Doesn't return error status; instead, calls &error()
+directory.
+
+=cut
 
 sub delete_user
 {
@@ -299,6 +439,22 @@ sub delete_user
     }
 }
 
+=head2 set_passwd
+
+SYNOPSIS
+
+set_passwd ( I<$dn, $password, $password_type>
+
+DESCRIPTION
+
+Updates users' password.
+
+BUGS
+
+Not tested; might not work.  Doesn't return error status; instead,
+calls &error() directly.
+
+=cut
 
 sub set_passwd
 {
