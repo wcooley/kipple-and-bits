@@ -16,52 +16,38 @@ require "directory-lib.pl" ;
 $sort_on = $in{'sort_on'} ;
 
 if ($in{'do'} eq "create") {
-	&user_from_form() ;
+	$user_info = &user_from_form(\%in) ;
+	$group_info = &group_from_form(\%in) ;
 
-	if (! &new_user_ok) {
+	# Create group before user, so if we're using
+	# user-private-groups we can get a free gidNumber.
+	$ret = &create_group($group_info) ;
+
+	if ( $ret->[0] == -1 ) {
+		&error($ret->[1]) ;
+	} else {
+		$user_info{'gidnumber'} = $ret->[0] ;
+	}
+
+	if (! &new_user_ok ($user_info) ) {
 		&error ($text{'err_user_incomplete'});
 	}
-	&header ($text{'created_user'}, "");
 	$uidnumber = ($uidnumber) ? $uidnumber : &max_uidnumber;
-	$dn = &create_user ;
+	$dn = &create_user ($in{'uid'}) ;
+
 	&set_passwd ($dn, $userpassword, $in{'hash'});
-	if ($in{'create'}) {
-		# Create the group if configured to create a new
-		# group for a user
-		if ($config{'new_group'}) {
-			$group{'groupName'} = $in{'uid'} ;
-			if ($in{'gid_from'} != "automatic") {
-				$group{'gidNumber'} = $in{'input_gid'} ;
-			}
-			if ($in{'uidnumber'}) {
-				$group{'memberUid'} = $uidnumber ;
-			}
-			if ($in{'groupDescription'}) {
-				$group{'description'} = $in{'groupDescription'} ;
-			} else {
-				$group{'description'} = &text('group_desc', 
-					$group{'groupName'}) ;
-			}
-			if ($in{'systemUser'}) {
-				$group{'systemUser'} = 1 ;
-			}
 
-			$ret = &create_group(\%group) ;
 
-			if ( $ret->[0] == -1 ) {
-				&error($ret->[1]) ;
-			}
-		}
-
-		# Fix this here -- this should be done with my
-		# create_homedir module
-		mkdir $homedirectory, 0700;
-		if ($in{'copy'}) {
-			system "cp -rf /etc/skel/* $homedirectory";
-			system "cp -rf /etc/skel/.[^.]+ $homedirectory";
-		}
-		system "chown -R $uidnumber.$gidnumber $homedirectory";
+	# Fix this here -- this should be done with my
+	# create_homedir module
+	mkdir $homedirectory, 0700;
+	if ($in{'copy'}) {
+		system "cp -rf /etc/skel/* $homedirectory";
+		system "cp -rf /etc/skel/.[^.]+ $homedirectory";
 	}
+	system "chown -R $uidnumber.$gidnumber $homedirectory";
+
+	&header ($text{'created_user'}, "");
 } elsif ($in{'do'} eq "modify") {
 	&user_from_form() ;
 	if (! &changed_user_ok()) {
@@ -117,4 +103,24 @@ EOF
 } else {
 	&header ('"do" not set', "");
 }
+
+
+=head1 NOTES
+
+None at the moment.
+
+=head1 CREDITS
+
+This module begun by Fernando Lozano <fernando@lozano.etc.br>
+in his I<ldap-users> module.  Incorporated into I<directory_mgr>
+by Wil Cooley <wcooley@nakedape.cc>.  All bug reports should go to
+Wil Cooley.
+
+=head1 LICENSE
+
+This file is copyright Fernando Lozano <frenando@lozano.etc.br>
+and Wil Cooley <wcooley@nakedape.cc>, under the GNU General Public
+License <http://www.gnu.org/licenses/gpl.txt>.
+
+=cut
 
