@@ -1,0 +1,11 @@
+
+home_dir_auth=Create Based on Automatic Configuration:,1,0-No,1-Yes
+home_base=Automatic Home Directory Base:,3,Not set
+home_style=Automatic Home Directory Style:,4,0-home/username,1-home/u/username,2-home/u/us/username,3-home/u/s/username
+default_perms=Default Permissions:,0,4
+
+copy_skel_files=Copy skeleton files:,1,0-No,1-Yes
+skel_path=Paths of skeleton files:,9,40,3
+
+dir_group=Group of New Home Directory:,1,0-Primary,1-Specified
+

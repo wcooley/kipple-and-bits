@@ -1,0 +1,27 @@
+author=Written by<br><a href="mailto:wcooley\@nakedape.cc">Wil Cooley</a><br><a href="http://nakedape.cc/">Home://page</a>
+
+index_t=Create Home Directory
+
+err_foreign_check=Error: foreign_check failed for module $1
+err_foreign_require=Error: foreign_require failed for module $1, file $2
+err_no_users=Error: Foreign call of list_users() returned no users!
+
+err_remote_foreign_check=Error: remote_foreign_check failed for module $1, host $2
+err_remote_foreign_require=Error: remote_foreign_require failed for module $1, file $2, host $3
+err_remote_foreign_call=Error: remote_foreign_call failed for module $1, file $2, host $3, with message $4
+
+err_no_user=Error: The user $1 was not found
+
+succ_create_dir=The home directory for user <b>$1</b> on host <b>$2</b> was created successfully.
+err_generic=Something went wrong, but I'm not sure where
+err_create_dir=There was an error creating the home directory: $1
+
+err_mkdir=Couldn't create home directory : $1 $2
+err_chown=Couldn't chown home directory : $1
+err_chmod=Couldn't chmod home directory : $1
+
+acl_create_local=Allowed to create local directories?
+acl_create_remote=Allowed to create remote directories?
+
+err_remote_acl=Not allowed to create remote directories!
+err_local_acl=Not allowed to create local directories!
