@@ -1,0 +1,20 @@
+enable_user_mgmt=Enable Management of Users,1,0-No,1-Yes
+enable_group_mgmt=Enable Management of Groups,1,0-No,1-Yes
+enable_host_mgmt=Enable Management of Hosts,1,0-No,1-Yes
+enable_alias_mgmt=Enable Management of Aliases,1,0-No,1-Yes
+
+directory_type=Directory Type,4,0-LDAP
+
+server=Directory server's Host Name or IP Address,0,20
+port=Directory Server's Port Number,0,5
+base=Base DN for LDAP Tree,0,30
+user=Administrative User's Credentials (BindDN username etc),0,40
+passwd=Administrative Password (clear text),0,12
+
+gid=Default GID for New Users,3,UID
+maildomain=Default Mail Domain for New Users,0,20
+homes=Default Parent for New Users' Home Directories,0,25
+shell=Default Shell for New Users,0,20
+outlook=Edit MS Outlook Address Book Fields,1,1-Yes,2-No
+createhome=Create Home Directory for New Users,1,1-Yes,2-No
+

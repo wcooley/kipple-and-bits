@@ -1,0 +1,4 @@
+enable_user_mgmt=1
+enable_group_mgmt=1
+enable_host_mgmt=1
+enable_alias_mgmt=1
