@@ -21,6 +21,9 @@ What works currently:
         o LDAP MD5, SMD5, SSHA & SHA passwords.
         o Password change form.
 
+    @ Group managment:
+        o Group listing.
+
 
 *******************************
 * TODO List for Directory_Mgr *
@@ -37,12 +40,16 @@ STYLE
     directory-specific functions, and presentation.  Need to move
     some functions from users.pl to ldap_users.pl and vice versa.
 
+    o Better separation between HTML and functions.
+
 OPERATIONAL
 ===========
 
     @ User management:
         o Remove user from existing groups.
         o Delete group when removing user.
+        o Shadow attributes for users.
+        o FreeRADIUS attributes for users.
         o Samba attributes for users.
         o Home directory creation & deletion.
         o Automatic home directories like useradmin.
@@ -50,8 +57,11 @@ OPERATIONAL
         o Ability to change userName, groupID, userID.
 
     @ Group management.
-        o Almost everything; some things implemented for
-        users.
+        o Add group.
+        o Modify group.
+        o Search for group.
+        o Remove member from group.
+        o Delete group if empty.
 
     @ Host management.
         o Everything.
