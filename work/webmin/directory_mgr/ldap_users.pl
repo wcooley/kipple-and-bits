@@ -22,7 +22,7 @@ managing users.
 
 SYNOPSIS
 
-list_users ( I<$ou_filter>, I<$sort_by> )
+C<list_users ( I<$ou_filter>, I<$sort_by> )>
 
 DESCRIPTION
 
@@ -89,7 +89,7 @@ sub list_users
 
 SYNOPSIS
 
-get_user_attr ( I<$dn> )
+C<get_user_attr ( I<$dn> )>
 
 DESCRIPTION
 
@@ -119,7 +119,7 @@ sub get_user_attr
 
 SYNOPSIS
 
-is_uid_free ( I<$uid> )
+C<is_uid_free ( I<$uid> )>
 
 DESCRIPTION
 
@@ -153,7 +153,7 @@ sub is_uid_free
 
 SYNOPSIS
 
-is_uidNumber_free ( I<$uidNumber> )
+C<is_uidNumber_free ( I<$uidNumber> )>
 
 DESCRIPTION
 
@@ -230,7 +230,7 @@ sub find_free_uid
 
 SYNOPSIS
 
-is_mail_free ( I<$mail> )
+C<is_mail_free ( I<$mail> )>
 
 DESCRIPTION
 
@@ -265,7 +265,7 @@ sub is_mail_free
 
 SYNOPSIS
 
-create_user ( \%user )
+C<create_user ( \%user )>
 
 DESCRIPTION
 
@@ -365,11 +365,11 @@ sub create_user
     }
 }
 
-=head1 update_user
+=head2 update_user
 
 SYNOPSIS
 
-update_user ( I<$dn> )
+C<update_user ( I<$dn> )>
 
 DESCRIPTION
 
@@ -412,7 +412,7 @@ sub update_user
 
 SYNOPSIS
 
-delete_user ( I<$dn> )
+C<delete_user ( I<$dn> )>
 
 DESCRIPTION
 
@@ -443,7 +443,7 @@ sub delete_user
 
 SYNOPSIS
 
-set_passwd ( I<$dn, $password, $password_type>
+C<set_passwd ( I<$dn>, I<$password>, I<$password_type>)>
 
 DESCRIPTION
 
