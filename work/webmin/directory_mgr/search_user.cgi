@@ -60,21 +60,15 @@ if ($in{'do'} eq "search") {
     } else {
         &header($text{'search_user_t'}, "" );
         print "<hr noshade size=2>\n" ;
-        print "<b>" . scalar(@{$users}) . " users found</b>\n" ;
-        print "<table border width=100% $cb>\n";
-        print "<tr $tb>\n";
-        print "<td><b>" . $text{'userName'} . "</a></b>\n";
-        print "<td><b>" . $text{'userID'} . "</a></b>\n";
-        print "<td><b>" . $text{'groupID'} . "</a></b>\n";
-        print "<td><b>" . $text{'fullName'} . "</a></b>\n";
-        print "<td><b>" . $text{'telephoneNumber'} . "</b>\n";
+        print "<b>" . &text('search_found_n_users', scalar(@{$users})) . "</b>\n" ;
+        print &html_user_table_header() ;
 
         for $user (@{$users}) {
             print "<!-- User ". $user->{'userName'} . " -->\n" ;
             print &html_row_user($user) ;
         }
 
-        print "</table>\n" ;
+        print &html_user_table_footer() ;
     }
 
     &footer($config{'app_path'} . "/search_user.cgi", 
@@ -82,34 +76,8 @@ if ($in{'do'} eq "search") {
 
 } else {
     &header($text{'search_user_t'}, "" );
-
-print <<EOF ;
-
-<hr noshade size=2>
-
-<form method="post" action="search_user.cgi">
-<input type="hidden" name="do" value="search">
-
-Search for:
-<input type="text" width="30" name="search_value">
-<select name="search_key">
-<option value="firstName">$text{'firstName'}</option>
-<option value="surName">$text{'surName'}</option>
-<option value="fullName">$text{'fullName'}</option>
-<option value="userName">$text{'userName'}</option>
-<option value="userID">$text{'userID'}</option>
-<option value="groupID">$text{'groupID'}</option>
-
-</select>
-
-<input type="submit" value="Search">
-
-</form>
-
-EOF
-
+    print &html_user_search_form() ;
     &footer($config{'app_path'}, $text{'module_title'});
-
 }
 
 
