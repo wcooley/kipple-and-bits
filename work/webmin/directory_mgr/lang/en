@@ -2,18 +2,22 @@ index_t=Directory_Mgr
 module_title=Directory_Mgr
 
 edit_users_t=Edit Users
+list_users_t=List Users
 add_user_t=Add User
 search_user_t=Search For User
 
 edit_groups_t=Edit Groups
+list_groups_t=List Groups
 add_group_t=Add Group
 search_group_t=Search For Group
 
 edit_hosts_t=Edit Hosts
+list_hosts_t=List Hosts
 add_host_t=Add Host
 search_host_t=Search For Host
 
 edit_aliases_t=Edit Aliases
+list_aliases_t=List Aliases
 add_alias_t=Add Alias
 search_alias_t=Search For Alias
 
