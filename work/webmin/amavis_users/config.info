@@ -1,0 +1,7 @@
+dbtitle=Database Connection Settings,11
+dbtype=Database Type,4,mysql-MySQL
+dbuser=Database User,0,32
+dbpasswd=Database Password,0,32
+dbhost=Database Host,0,32
+dbname=Database Name,0,32
+

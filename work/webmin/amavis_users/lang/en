@@ -1,0 +1,18 @@
+lang=en
+author=Wil Cooley <wcooley@nakedape.cc>
+module_author=Wil Cooley <wcooley@nakedape.cc>
+homepage=http://nakedape.cc/webmin/amavis_users
+home=Home
+copyright=(C) 2002 by Wil Cooley <wcooley@nakedape.cc>
+license=GPL
+index_title=Amavis Users
+module_name=amavis_users
+submit=Submit
+
+id=Id
+email=E-Mail Address
+priority=Priority
+policy=Policy
+fullname=Full Name
+modecreate=created
+modeupdate=updated

@@ -1,0 +1,6 @@
+name=amavis_users
+desc=Amavis User Settings
+os_support=solaris redhat-linux debian-linux slackware-linux suse-linux aix hpux freebsd osf1 irix
+depends=0.77
+category=servers
+version=0.1

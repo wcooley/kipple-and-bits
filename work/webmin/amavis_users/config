@@ -1,0 +1,8 @@
+dbtype=
+dbuser=amavis_admin
+dbhost=localhost
+dbname=amavis_users
+dbpasswd=
+max_prio=12
+default_prio=9
+default_policy_id=1
