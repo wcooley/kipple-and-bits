@@ -1,4 +1,5 @@
 index_t=Directory Manager
+module_title=Directory Manager
 
 edit_users_t=Edit Users
 add_user_t=Add User
@@ -15,3 +16,101 @@ search_host_t=Search For Host
 edit_aliases_t=Edit Aliases
 add_alias_t=Add Alias
 search_alias_t=Search For Alias
+
+servers_for_home_dir=Servers to create home directory on:
+
+# LDAP attribute labels
+
+# posixAccount
+uid=Login
+uidnumber=UID
+gidnumber=Primary Group
+sec_group=Secondary Groups
+gecos=GECOS
+homedirectory=Home
+loginshell=Shell
+
+gid_automatic=Automatic
+# inetOrgPerson, etc (AddrBook data)
+givenname=First Name
+sn=Surname
+cn=Full Name (Leave Blank for First name Surname)
+mail=E-mail
+title=Title
+organizationname=Company Name
+department=Department
+physicaldeliveryofficename=Office
+telephonenumber=Phone Number
+mobile=Mobile Phone
+pager=Pager
+officefax=Fax
+comment=Comments
+
+# LDAP objectclass Labels
+
+posixAccount=Unix User Profile
+addressbook=AddressBook Data
+
+# Form field labels
+
+field_obs=This field will be generated if left empty
+user_options=User Creation Options
+newpasswd=New password
+userpasswd=Initial Password
+passwdtype=Password Type
+md5=MD5
+crypt=Unix Crypt
+plaintext=Do not hash (plain text)
+create_home=Create Home Directory ?
+copy_files=Copy Files to Home Directory?
+yes=Yes
+no=No
+
+# Button labels
+
+create=Create
+modify=Modify
+delete=Delete
+set_passwd=Set Password
+just_user=Delete just the user
+user_and_home=Delete user AND his home directory
+
+# Error messages
+
+error_1=You must type at least the Login, GID, Shell, Name and Surname
+err_user_incomplete=You must provide at least username, GID, shell, name and surname
+
+error_2=You must type at least the Login, UID, GID, Homedir, Shell, Name and Surname
+error_3=The user $1 is not the owner of his home dir ($2)
+error_4=Can't connect to the LDAP server
+
+# Page header (titles)
+
+header_0=LDAP Users Admin Error
+header_1=LDAP User Created
+header_2=LDAP User Changed
+header_3=Edit LDAP User
+header_4=Create LDAP User
+header_5=Password for LDAP User
+header_6=Delete LDAP User
+
+
+edit_user=Edit User
+create_user=Create User
+created_user=Created User
+del_user=Delete User
+
+# other messages
+
+msg_1=No users found ?!?
+msg_2=Setting password for user
+msg_3=Are you sure you want to delete user <B>'$1'</B> ($2)?
+
+index_msg_1=LDAP Users
+index_msg_2=All OUs
+index_msg_3=Sorted by
+
+first_time=It looks like that's the first time you enter this module. <P>Please follow the link "Module Configuration" above and tye in the correct connection parameters to your LDAP server.
+
+err_conn=Unable to connect to $1 server on host $2.
+err_gidnumber_exists=Error: GID $1 already in use!
