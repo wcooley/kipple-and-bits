@@ -343,7 +343,7 @@ __DATA__
                                                                                 
 Name:           perl-[% pkg.package_name %]
 Version:        [% pkg.version %]
-Release:        [% rpm.package_release %].[% rpm.vendor_tag %]
+Release:        [% rpm.package_release %].[% rpm.vendor_tag %].0.0
 License:        [% pkg.license %]
 Group:          Development/Languages
 Source0:        [% pkg.package_file %]
@@ -355,7 +355,6 @@ Summary:        [% pkg.description %] (Perl module)
                                                                                 
 %description
 [% pkg.description %]
-
 This package provides the following modules:
 [% pkg.modules_string %]
 
