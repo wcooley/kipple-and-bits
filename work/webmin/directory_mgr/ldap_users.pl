@@ -17,14 +17,22 @@ sub list_users
     $filter = "(objectclass=posixAccount)";
     $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
         ("uid", "uidnumber", "gidnumber", "cn", "title", "organizationname",
-	"department", "physicalofficedelyveryname"));
+        "department", "physicalofficedelyveryname"));
 
     $i = 0;
     while ($entry) {
         my (%user);
 
-        $user{'dn'} = $entry->getDN (),
-        $user{'uid'} = $entry->{'uid'}[0],
+        # This could be done better by changing the filter
+        # string
+        if ($config{'hide_system_users'} && 
+            ($config{'min_uid'} > $entry->{'uidnumber'}[0])) {
+            $entry = $conn->nextEntry ();
+            next ;
+        }
+
+        $user{'dn'} = $entry->getDN() ;
+        $user{'uid'} = $entry->{'uid'}[0] ;
         $user{'uidnumber'} = $entry->{'uidnumber'}[0];
         $user{'gidnumber'} = $entry->{'gidnumber'}[0];
         $user{'cn'} = $entry->{'cn'}[0];
@@ -64,10 +72,10 @@ sub max_uidnumber
     $maxuid = 0;
     while ($entry) {
         $u = $entry->{'uidnumber'}[0];
-	# skip user "nobody"...
-	if ($u != 65534) {
+    # skip user "nobody"...
+    if ($u != 65534) {
             $maxuid = ($u > $maxuid) ? $u : $maxuid;
-	}
+    }
         $entry = $conn->nextEntry ();
     }
 
@@ -144,42 +152,42 @@ posixShadow accounts are not implemented.
 
 sub create_user
 {
-	my ($user) = @_ ;
+    my ($user) = @_ ;
     my ($entry, $dn, $err);
 
     $entry = $conn->newEntry ();
     $dn = "uid=" . $user->{'uid'} . ",ou=People," . $config{'base'};
     $entry->setDN ($dn);
 
-	# Set add object classes
+    # Set add object classes
     $entry->{'objectclass'} = ["posixAccount", "person", "inetOrgPerson",
         "organizationalPerson", "account", "top" ];
 
-	# Create empty fields
-	if ($user->{'cn'}) {
-		$entry->{'cn'} = [$user->{'cn'}] ;
-	} else {
-		$entry->{'cn'} = ["$user->{'givenname'} $user->{'surname'}"] ;
-	}
+    # Create empty fields
+    if ($user->{'cn'}) {
+        $entry->{'cn'} = [$user->{'cn'}] ;
+    } else {
+        $entry->{'cn'} = ["$user->{'givenname'} $user->{'surname'}"] ;
+    }
 
-	if ($user->{'gecos'}) {
-		$entry{'gecos'} = [$user->{'gecos'} ;
-	} else {
-    	$entry{'gecos'} = ["$user->{'givenname'} $user->{'sn'}"] ;
-	}
-	
-	if ($user->{'mail'}) {
-		$entry{'mail'} = [$user->{'mail'}] ;	
-	} else {
-    	$entry{'mail'} = [$uid . "@" . $config{'maildomain'}] ;
-	}
+    if ($user->{'gecos'}) {
+        $entry{'gecos'} = [$user->{'gecos'}] ;
+    } else {
+        $entry{'gecos'} = ["$user->{'givenname'} $user->{'sn'}"] ;
+    }
+    
+    if ($user->{'mail'}) {
+        $entry{'mail'} = [$user->{'mail'}] ;    
+    } else {
+        $entry{'mail'} = [$uid . "@" . $config{'maildomain'}] ;
+    }
 
-	# This should be more automatic, like in the useradmin module
-	if ($user->{'homedirectory'}) {
-		$entry{'homedirectory'} = [$user->{'homedirectory'}] ;
-	} else {
-    	$entry{'homedirectory'} = [$config{'homes'} . "/$uid"] ;
-	}
+    # This should be more automatic, like in the useradmin module
+    if ($user->{'homedirectory'}) {
+        $entry{'homedirectory'} = [$user->{'homedirectory'}] ;
+    } else {
+        $entry{'homedirectory'} = [$config{'homes'} . "/$uid"] ;
+    }
     # posixAccount
     $entry->{'uid'} = [$user->{'uid'}];
     $entry->{'uidnumber'} = [$user->{'uidnumber'}];
@@ -202,22 +210,22 @@ sub create_user
     }
 
     if ($config{'shadow'}) {
-		$entry->addValue("objectclass", "shadowAccount") ;
-		# Need to add shadow attributes
-	}
+        $entry->addValue("objectclass", "shadowAccount") ;
+        # Need to add shadow attributes
+    }
 
     if ($config{'kerberos'}) { 
-		$entry->addValue("objectclass", "kerberosSecurityObject") ;
-		# Need to add Kerberos attributes
-	}
+        $entry->addValue("objectclass", "kerberosSecurityObject") ;
+        # Need to add Kerberos attributes
+    }
 
     $entry->{'userpassword'} = ["*"];
     $conn->add ($entry);
     if ($err = $conn->getErrorCode ()) {
         return [ -1, "user add ($dn): $err: " . $conn->getErrorString () ];
     } else {
-		return [ $entry->{'uidNumber'}, $dn ] ;
-	}
+        return [ $entry->{'uidNumber'}, $dn ] ;
+    }
 }
 
 
@@ -265,12 +273,12 @@ sub set_passwd
         $salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')
             [rand 64, rand 64];
         $passwd = "{CRYPT}" . crypt ($passwd, $salt);
-    }
-    elsif ($type eq "md5") {
-        &error ("Cannot use MD5 passwords yet.");
-        #$ctx = Digest::MD5->new;
-        #$ctx->add ($passwd);
-        #$passwd = "{MD5}" . encode_base64 ($ctx->digest, "");
+    } elsif ($type eq "md5") {
+        $ctx = Digest::MD5->new;
+           $ctx->add ($passwd);
+        $passwd = "{MD5}" . encode_base64 ($ctx->digest, "");
+    } elsif ($type eq "sha") {
+        
     }
     $entry->{'userpassword'} = [$passwd];
     $conn->update ($entry);
