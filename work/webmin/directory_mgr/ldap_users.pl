@@ -165,10 +165,9 @@ to limit attributes returned.
 RETURN VALUE
 
 Returns reference to an array of hashes with the attributes requested
-in I<@attr_array>.  The hash values are themselves arrays, since
-LDAP can have multi-valued attributes.  On error, returns an array
-with -1 as the first element, the LDAP error code as the second,
-and the LDAP error string as the third.
+in I<@attr_array>.  The hash values are themselves arrays, since LDAP
+can have multi-valued attributes.  On error, returns an array with
+-1 as the first element and a formatted error string as the third.
 
 NOTES
 
