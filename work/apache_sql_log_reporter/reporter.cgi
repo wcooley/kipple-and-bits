@@ -9,50 +9,39 @@
 #
 # $Id$
 
-import sys,cgi
-import MySQLdb
+import sys, cgi, time, socket
+
+# Local stuff
+import sql
 from config import config
 
-sql = {
-    'total_entries':
-        """ SELECT COUNT(*) 
-            FROM %(access_tab)s 
-            WHERE virtual_host="%(vhost)s"
-        """,
-
-    'bytes_sent':
-        """ SELECT SUM(bytes_sent) 
-            FROM %(access_tab)s 
-            WHERE virtual_host="%(vhost)s"
-        """,
-
-    'distinct_uris':
-        """ SELECT request_uri
-            FROM %(access_tab)s
-            WHERE status=200 
-            AND virtual_host="%(vhost)s"
-            GROUP BY request_uri
-        """,
-
-    'distinct_rhosts':
-        """ SELECT remote_host
-            FROM %(access_tab)s
-            WHERE status=200
-            AND virtual_host="%(vhost)s"
-            GROUP BY remote_host
-        """,
-}
-
+_known_bots = [ "Googlebot", "Ask Jeeves", "Yahoo", 
+    "fmII URL validator", "appie", "NPBot"
+    ]
 
 def html_header():
     return """Content-Type: text/html
 
 <html>
 <head>
-<title>Test</title>
+<title>Apache Log Report</title>
 </head>
 
 <body style="background: white">
+<h1>Apache Log Report</h1>
+"""
+
+def html_navbar():
+    return """
+[
+<a href="#rpt_summary">Summary</a> |
+<a href="#rpt_referer">Top Referers</a> |
+<a href="#rpt_request">Top Requests</a> |
+<a href="#rpt_requestor">Top Requestors</a> |
+<a href="#rpt_error_request">Top Error Requests</a> |
+<a href="#rpt_error_requestor">Top Error Requestors</a> |
+<a href="#rpt_bot_request">Bot Requests</a>
+]
 """
 
 def html_footer():
@@ -61,51 +50,202 @@ def html_footer():
 </html>
 """
 
-def db_conn():
-    conn = MySQLdb.connect(db=config['dbname'], user=config['dbuser'],
-        passwd=config['dbpass'], host=config['dbhost'])
-    if conn is None:
-        print "Unable to make MySQL connection"
-        sys.exit(1)
-    return conn
+def resolve_hostname(addr):
+    """ resolve_hostname - Quick and dirty hostname lookups.  If it's too
+    slow, rewrite to be parallel or async or something."""
+    try:
+        name = socket.gethostbyaddr(addr)
+    except socket.error:    # FIXME: Be more specific; 
+                            #   only catch 'host not found'
+        name = addr
+    else:
+        name = name[0]
 
-def rpt_summary(c):
+    return name
+
+
+def rpt_summary(q):
     rpt = {}
+    rpt['vhost'] = config['vhost']
 
-    c.execute(sql['total_entries'] % config)
-    rpt['total_entries'] = c.fetchone()[0]
-    if rpt['total_entries'] is None: rpt['total_entries'] = 0
-
-    c.execute(sql['bytes_sent'] % config)
-    rpt['bytes_sent'] = c.fetchone()[0]
-    if rpt['bytes_sent'] is None: rpt['bytes_sent'] = 0
-
-    # Stupid MySQL doesn't support sub-queries
-    r = c.execute(sql['distinct_uris'] % config)
-    if r is None: r = 0
-    rpt['distinct_uris'] = r
-
-    r = c.execute(sql['distinct_rhosts'] % config)
-    if r is None: r = 0
-    rpt['distinct_rhosts'] = r
+    rpt['total_entries'] = q.total_entries()
+    rpt['bytes_sent'] = q.bytes_sent()
+    rpt['mbytes_sent'] = int (q.bytes_sent() / (1024 * 1024))
+    rpt['distinct_uris'] = q.distinct_uris()
+    rpt['distinct_rhosts'] = q.distinct_rhosts()
+    rpt['date_begin'] = q.date_begin()
+    rpt['date_end'] = q.date_end()
 
     s = """
-        <br><b>Analysed %(total_entries)d log entries.</b>
-        <br><b>Tranferred %(bytes_sent)d bytes.</b>
-        <br><b>Served %(distinct_uris)d distinct URIs.</b>
-        <br><b>Served %(distinct_rhosts)d distinct remote hosts.</b>
-        """ % rpt
+        <h2><a name="rpt_summary">Summary</a></h2>
+        <br />Analysed <b>%(total_entries)d</b> log entries for host <b>%(vhost)s</b>.
+        <br />Tranferred <b>%(bytes_sent)d</b> bytes (%(mbytes_sent)d MB).
+        <br />Served <b>%(distinct_uris)d</b> distinct URIs.
+        <br />Served <b>%(distinct_rhosts)d</b> distinct remote hosts.
+        <br />Logs begin <b>%(date_begin)s</b>.
+        <br />Logs end <b>%(date_end)s</b>.
+        <hr /> """ % rpt
+
+    return s
+
+def rpt_referer(q, lim):
+    s = """
+        <h2><a name="rpt_referer">Referers</a></h2>
+        <table>
+        <tr>
+            <th>Count</th>
+            <th>Referer</th>
+        </tr> """
+    for row in q.top_referers(lim):
+        s = s + """
+        <tr>
+            <td>%d</td>
+            <td>%s</td>
+        </tr> """ % (row)
+
+    s = s + """
+        </table>
+        <hr />
+        """
+
+    return s
+
+def rpt_request(q, lim):
+    s = """
+        <h2><a name="rpt_request">Top Requests</a></h2>
+        <table>
+        <tr>
+            <th>Count</th>
+            <th>Request</th>
+        </tr> """
+    for row in q.top_request(lim):
+        s = s + """
+        <tr>
+            <td>%d</td>
+            <td>%s</td>
+        </tr> """ % (row)
+
+    s = s + """
+        </table>
+        <hr />
+        """
+
+    return s
+
+def rpt_requestor(q, lim):
+    s = """
+        <h2><a name="rpt_requestor">Top Requestors</a></h2>
+        <table>
+        <tr>
+            <th>Count</th>
+            <th>Requestor</th>
+        </tr>
+        """
+    for row in q.top_requestor(lim):
+        s = s + """
+        <tr>
+            <td>%d</td>
+            <td>%s</td>
+        </tr> """ % (row[0], resolve_hostname(row[1]))
+
+    s = s + """
+        </table>
+        <hr />
+        """
+
+    return s
+
+def rpt_error_request(q, lim):
+    s = """
+        <h2><a name="rpt_error_request">Top Error Requests</a></h2>
+        <table>
+        <tr>
+            <th>Count</th>
+            <th>Request</th>
+        </tr>"""
+
+    for row in q.top_error_request(lim):
+        s = s + """
+        <tr>
+            <td>%d</td>
+            <td>%s</td>
+        </tr> """ % (row)
+
+    s = s + """
+        </table>
+        <hr />
+        """
+
+    return s
+
+
+def rpt_error_requestor(q, lim):
+    s = """
+        <h2><a name="rpt_error_requestor">Top Error Requestors</a></h2>
+        <table>
+        <tr>
+            <th>Count</th>
+            <th>Requestor</th>
+        </tr>"""
+
+    for row in q.top_error_requestor(lim):
+        s = s + """
+        <tr>
+            <td>%d</td>
+            <td>%s</td>
+        </tr> """ % (row[0], resolve_hostname(row[1]))
+
+    s = s + """
+        </table>
+        <hr />
+        """
+
+    return s
+
+def rpt_bot_request(q):
+
+    s = """
+        <h2><a name="rpt_bot_request">Bot Requests</a></h2>
+        <table>
+        <tr>
+            <th>Bot</th>
+            <th>Count</th>
+        </tr>"""
+
+    for bot in _known_bots:
+        s = s + """
+        <tr>
+            <td>%s</td>
+            <td>%d</td>
+        </tr>""" % (bot, q.bot_request(bot))
+
+    s = s + """
+        </table>
+        <hr />
+        """
 
     return s
 
 
 if __name__ == '__main__':
-    dbconn = db_conn()
-    cursor = dbconn.cursor()
+    query = sql.ReportQuery()
+    lim = 20
 
     print html_header()
-    print "<h1>Stuff</h1>"
-    print rpt_summary(cursor)
+    print html_navbar()
+    print rpt_summary(query)
+    print html_navbar()
+    print rpt_referer(query, lim)
+    print html_navbar()
+    print rpt_request(query, lim)
+    print html_navbar()
+    print rpt_requestor(query, lim)
+    print html_navbar()
+    print rpt_error_request(query, lim)
+    print html_navbar()
+    print rpt_error_requestor(query, lim)
+    print html_navbar()
+    print rpt_bot_request(query)
     print html_footer()
 
 # vim: set ft=python
