@@ -6,57 +6,145 @@
 
 SYNOPSIS 
 
-new_group_ok ( I<\%group> )
+C<new_group_ok ( I<\%group> )>
 
 DESCRIPTION
 
-Checks that required attributes are present in group hash.
+Checks that required attributes are present in group hash;
+false otherwise.
 
 RETURN VALUE
 
-Returns true is group hash has all required attributes.
+Returns true if group hash has all required attributes;
+false otherwise.
 
 =cut
 
-sub new_group_ok
+sub new_group_ok ($)
 {
 	my ($group) = @_ ;
-    return
-        $group->{'gidNumber'} &&
-        $group->{'cn'};
+    if ($group->{'groupID'} && $group->{'groupName'}) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 
-sub changed_group_ok
+=head 2 changed_group_ok
+
+SYNOPSIS
+
+C<changed_group_ok ( I<\%group> )>
+
+DESCRIPTION
+
+Validates a changed group hash for attribute requirements.
+
+RETURN VALUE
+
+Returns true if group hash has all required attributes;
+false otherwise.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+sub changed_group_ok ($)
 {
-    return &new_group_ok;
+    my ($group) = @_ ;
+    return &new_group_ok ($group);
 }
 
 
-sub group_from_entry
+
+=head 2 group_from_entry
+
+SYNOPSIS
+
+C<group_from_entry ( I<\%entry> )>
+
+DESCRIPTION
+
+Creates a group hash from a given directory entry.
+
+RETURN VALUE
+
+Returns a reference to a newly-created group hash.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+
+sub group_from_entry ($)
 {
-    my ($group) = @_;
+    my ($entry) = @_;
+    my (%group) ;
 
     # posixGroup
-    $gidNumber = $user->{'gidNumber'}[0];
-    $cn = $user->{'cn'}[0];
+    $group{'groupID'} = $entry->{'gidNumber'}[0];
+    $group{'groupName'} = $entry->{'cn'}[0];
+    $group{'groupDescription'} = $entry->{'description'}[0] ;
+    $group{'memberUsername'} = $entry->{'memberUid'} ;
+    
+    return \%group ;
 }
 
 
-sub group_defaults
+
+=head 2 group_defaults
+
+SYNOPSIS
+
+C<group_defaults ( I<\%group> )>
+
+DESCRIPTION
+
+Sets defaults for a new group hash.
+
+RETURN VALUE
+
+Returns a reference to the passed-in group hash.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+sub group_defaults ($)
 {
-    $gidNumber = &max_gidNumber() + 1;
+    my ($group) = @_ ;
+
+    $group->{'groupID'} = &find_free_groupid($config{'min_gid'},
+        $config{'max_gid'}) ;
+
+    return $group ;
 }
 
 =head 2 entry_from_group 
 
 SYNOPSIS
 
-C<entry_from_group ( I<$entry>, I<$group> )>
+C<entry_from_group ( I<\%entry>, I<\%group> )>
 
 DESCRIPTION
 
-This function created an LDAP group entry from a group hash.
+This function creates an LDAP group entry from a group hash.
 
 RETURN VALUE
 
@@ -75,7 +163,7 @@ None.
 
 =cut
 
-sub entry_from_group
+sub entry_from_group ($$)
 {
     my ($entry, $group) = @_;
 
