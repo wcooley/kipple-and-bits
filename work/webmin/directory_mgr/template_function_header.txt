@@ -1,0 +1,24 @@
+
+=head 2 function
+
+SYNOPSIS
+
+C<function ( I<param> )>
+
+DESCRIPTION
+
+description
+
+RETURN VALUE
+
+True
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
