@@ -11,13 +11,7 @@
 
 import sys,cgi
 import MySQLdb
-
-config = {
-    'dbname':       "httpd_logs",
-    'dbuser':       "httpd_log",
-    'dbpass':       "abc123",
-    'access_tab':   "access_log",
-}
+from config import config
 
 sql = {
     'total_entries':
@@ -69,7 +63,10 @@ def html_footer():
 
 def db_conn():
     conn = MySQLdb.connect(db=config['dbname'], user=config['dbuser'],
-        passwd=config['dbpass'])
+        passwd=config['dbpass'], host=config['dbhost'])
+    if conn is None:
+        print "Unable to make MySQL connection"
+        sys.exit(1)
     return conn
 
 def rpt_summary(c):
@@ -77,15 +74,19 @@ def rpt_summary(c):
 
     c.execute(sql['total_entries'] % config)
     rpt['total_entries'] = c.fetchone()[0]
+    if rpt['total_entries'] is None: rpt['total_entries'] = 0
 
     c.execute(sql['bytes_sent'] % config)
     rpt['bytes_sent'] = c.fetchone()[0]
+    if rpt['bytes_sent'] is None: rpt['bytes_sent'] = 0
 
     # Stupid MySQL doesn't support sub-queries
     r = c.execute(sql['distinct_uris'] % config)
+    if r is None: r = 0
     rpt['distinct_uris'] = r
 
     r = c.execute(sql['distinct_rhosts'] % config)
+    if r is None: r = 0
     rpt['distinct_rhosts'] = r
 
     s = """
@@ -101,7 +102,6 @@ def rpt_summary(c):
 if __name__ == '__main__':
     dbconn = db_conn()
     cursor = dbconn.cursor()
-    config['vhost'] = 'haus.nakedape.cc'
 
     print html_header()
     print "<h1>Stuff</h1>"
