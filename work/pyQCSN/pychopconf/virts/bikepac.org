@@ -1,0 +1,13 @@
+<VirtualHost 198.145.93.8 65.201.55.8>
+	ServerName bikepac.org
+	ServerAlias *.bikepac.org
+	ServerAdmin webmaster@bikepac.org
+	DocumentRoot /home/httpd/virtual/bikepac.org
+	ErrorLog /var/log/httpd/bikepac.org/error
+	CustomLog /var/log/httpd/bikepac.org/access combined
+	ScriptLog /var/log/httpd/bikepac.org/script
+	ScriptAlias /cgi-bin/ /home/httpd/virtual/bikepac.org/cgi-bin/
+	ScriptAlias /sys-bin/ /home/httpd/cgi-bin/ 
+	Alias /stats/ /home/httpd/stats/bikepac.org/
+</Virtualhost>
+	

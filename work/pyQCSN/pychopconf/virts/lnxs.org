@@ -1,0 +1,15 @@
+<VirtualHost 198.145.93.8 65.201.55.8>
+	ServerName lnxs.org
+	ServerAlias *.lnxs.org
+	ServerAlias lnxs.org www1.lnxs.org
+	ServerAdmin webmaster@lnxs.org
+	DocumentRoot /home/httpd/virtual/lnxs.org
+	ErrorLog /var/log/httpd/lnxs.org/error
+	CustomLog /var/log/httpd/lnxs.org/access combined
+	ScriptLog /var/log/httpd/lnxs.org/script
+	ScriptAlias /cgi-bin/ /home/httpd/virtual/lnxs.org/cgi-bin/
+	ScriptAlias /sys-bin/ /home/httpd/cgi-bin/ 
+	Alias /stats/images/ /home/httpd/html/images/
+	Alias /stats/ /home/httpd/stats/lnxs.org/
+</Virtualhost>
+	

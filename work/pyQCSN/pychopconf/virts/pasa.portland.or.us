@@ -1,0 +1,13 @@
+<VirtualHost 198.145.93.8 65.201.55.8>
+	ServerName pasa.portland.or.us
+	ServerAlias *.pasa.portland.or.us
+	ServerAlias pasa.portland.or.us
+	ServerAdmin webmaster@pasa.portland.or.us
+	DocumentRoot /home/httpd/virtual/pasa.portland.or.us
+	ErrorLog /var/log/httpd/pasa.portland.or.us/error
+	CustomLog /var/log/httpd/pasa.portland.or.us/access combined
+	ScriptLog /var/log/httpd/pasa.portland.or.us/script
+	ScriptAlias /cgi-bin/ /home/httpd/virtual/pasa.portland.or.us/cgi-bin/
+	ScriptAlias /sys-bin/ /home/httpd/cgi-bin/ 
+</Virtualhost>
+	

@@ -1,0 +1,11 @@
+test Auth-Type = Local, Password = "testy"
+        Fall-Through=Yes        
+
+test1 Auth-Type = Local, Password = "test1"
+        Fall-Through=Yes        
+
+test2 Auth-Type = Local, Password = "test2"
+        Fall-Through=Yes        
+
+example Auth-Type = Local, Password = "example"
+        Fall-Through=Yes        

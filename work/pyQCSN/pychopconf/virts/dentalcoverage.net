@@ -1,0 +1,12 @@
+<VirtualHost 198.145.93.8 65.201.55.8>
+	ServerName dentalcoverage.net
+	ServerAlias *.dentalcoverage.net
+	ServerAdmin webmaster@dentalcoverage.net
+	DocumentRoot /home/httpd/virtual/dentalcoverage.net
+	ErrorLog /var/log/httpd/dentalcoverage.net/error
+	CustomLog /var/log/httpd/dentalcoverage.net/access combined
+	ScriptLog /var/log/httpd/dentalcoverage.net/script
+	ScriptAlias /cgi-bin/ /home/httpd/virtual/dentalcoverage.net/cgi-bin/
+	ScriptAlias /sys-bin/ /home/httpd/cgi-bin/ 
+</Virtualhost>
+	

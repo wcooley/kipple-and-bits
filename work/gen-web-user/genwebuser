@@ -1,0 +1,78 @@
+#!/usr/bin/python
+#
+# This script takes a number of entries and an optional password file
+# name and generates random usernames and passwords and adds them with
+# 'htpasswd'.  Note that the password file needs to first be created if 
+# if does not exist.
+
+import whrandom
+import tempfile
+import base64
+import sys
+import os
+import string
+
+def usage():
+	print "Usage: %s <number> [<password file>]" % sys.argv[0]
+	print "Generates a list of usernames (from system dictionary) and random passwords"
+	print "If not <password file> is given, \"passwd\" is used"
+#End usage
+
+def get_word_list(listfile="/usr/dict/words"):
+	try:
+		sysdict = open (listfile)
+	except IOError:
+		print "Unable to open system dictionary"
+	else:
+		return sysdict.readlines()
+# End get_word_list
+
+def get_random_word (lines_sysdict = get_word_list()):
+	lines_sysdict = get_word_list()
+
+	rand_word = whrandom.choice (lines_sysdict)
+
+	# Lengths are +1 than desired, because of newline
+	while ( len(rand_word) < 4 or len(rand_word) > 9 ):
+		rand_word = whrandom.choice (lines_sysdict)
+
+	if rand_word[len(rand_word) - 1] == '\n':
+		return rand_word[:-1]
+# End get_randow_word
+
+def get_random_str(randin = "/dev/random", randbytes=8):
+	try:
+		rand_file = open (randin)
+	except IOError:
+		print "Error opening %s" % randin
+	else:
+		return rand_file.read(randbytes)
+# End get_rand_str
+
+def make_password():
+
+		password = base64.encodestring(get_random_str())
+		return password[:6]
+
+# End make_password
+
+# Begin main line
+
+if len(sys.argv) < 2:
+	usage()
+	sys.exit()
+
+if len(sys.argv) < 3:
+	passfile = "passwd"
+else:
+	passfile = sys.argv[2]
+
+num_entries = string.atoi(sys.argv[1])
+
+for i in range(num_entries):
+	username = get_random_word()
+	password = make_password()
+
+	print "%s %s" % (username, password)
+	os.system ("htpasswd -b %s %s %s >/dev/null 2>&1"
+		% (passfile, username, password))

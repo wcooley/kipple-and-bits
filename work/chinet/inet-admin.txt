@@ -1,0 +1,18 @@
+Command prototypes for [x]inetd management:
+
+mkinet - Adds an entry to inetd configuration
+rminet - Removes an entry from inetd configuration
+chinet - Enables or disables a service
+lsinet - Lists services.  With no options, just lists service names in columns
+	-l -- Long list; prints table of configured services if not given a service
+		name.  If given a service name, prints all information about that service.
+	-A -- Includes disabled (i.e., commented-out) services
+    -s -- Displays socket type 
+	-p -- Displays protocol
+	-w -- Displays wait/nowait options
+	-m -- Displays max connections 
+	-u -- Displays user name which service runs as
+	-g -- Displays group name which service runs as
+	-P -- Displays program name
+	-a -- Displays arguments
+

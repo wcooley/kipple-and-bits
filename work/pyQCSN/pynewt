@@ -1,0 +1,24 @@
+#!/usr/bin/python
+
+from snack import *
+from time  import *
+
+#myscreen = SnackScreen()
+
+#myscreen.drawRootText (0,0, "This is root text")
+#myscreen.pushHelpLine("This is help")
+
+#buttonResp = ButtonChoiceWindow(myscreen, "ChoiceWindow", "Text", 
+#							[ 'Ok', 'Fuck off'])
+
+#entryInput = EntryWindow (myscreen, "Enter Name", "Enter your name",
+#							[ "foo" ], 0)
+
+#myInput = ListboxChoiceWindow (myscreen, "List Box", "Text",
+#				[ "Apples", "Oranges", "Butter" ] )
+
+#myInput = RadioBar (myscreen, [ Button("Button1"),  Button("Button2") ] )
+
+#myscreen.finish()
+
+print myInput

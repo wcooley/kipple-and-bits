@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+#
+# addchapuser - Quick script to add a username and password
+# to an external RADIUS users file.  Lots of assumptions
+# about current enviroment being setup correctly ;)
+#
+# Written by Wil Cooley <wcooley@nakedape.cc>
+# 22 March 2002
+#
+
+users_file = "users.chap"
+
+radentry = """
+%s Auth-Type = Local, Password = "%s"
+        Fall-Through=Yes        
+"""
+
+
+if __name__ == '__main__':
+    username = raw_input ("Dial-up username (without @qcsn.com): ")
+    password = raw_input ("Password: ")
+
+    ofile = open (users_file, "a")
+    ofile.write (radentry % (username, password))
+    ofile.close()

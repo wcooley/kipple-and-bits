@@ -1,0 +1,79 @@
+#!/usr/bin/python
+
+
+_version = "0.1"
+
+import rwhois, dnslib
+import sys, string, getopt, os, socket
+
+def check_dns(domain, dnsip):
+	protocol = 'udp'
+	server = dnsip
+	port = 53
+	rd = 0 # Recursion depth
+	opcode = dnslib.dnsopcode.QUERY
+	qtype = dnslib.dnstype.SOA
+
+	m = dnslib.Mpacker()
+	m.addHeader(0,0,opcode,0,0,rd,0,0,0,1,0,0,0)
+	m.addQuestion(domain, qtype, dnslib.dnsclass.IN)
+	request = m.getbuf()
+
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	s.connect((server, port))
+	s.send(request)
+	reply = s.recv(1024)
+	#u = dnslib.Hunpacker(reply)
+	u = dnslib.Munpacker(reply)
+	#(id, qr, opcode, aa, tc, rd, ra, z, rcode, qdcount, ancount, nscount, arcount) = u.getHeader()
+	#print "rcode: %s" % rcode
+	print u.getHeader()
+	#rr = dnslib.RRunpacker(reply)
+	#h = dnslib.Hunpacker(reply)
+	#print dnslib.dumpM(u)
+	print u.getSOAdata()
+	#print dnslib.dumpRR(u)
+	
+
+def usage(progname):
+		version = _version
+		print "%s <domain>"
+
+def main(argv, stdout, environ):
+	progname = argv[0]
+	list, args = getopt.getopt(argv[1:], "", ["help", "version"])
+
+	for (field, val) in list:
+		if field == "--help":
+			usage(progname)
+			return
+		elif field == "--version":
+			print progname, _version
+			return
+
+	rec = rwhois.DomainRecord()
+
+	for domain in args:
+		whoisserver=None
+
+		if string.find(domain, '@') != -1:
+			(domain,whoisserver) = string.split ( domain, '@')
+
+		try:
+			rec.whois(domain,whoisserver)
+			rec.Parse()
+			#print rec.servers
+			for (dnshost, dnsip) in rec.servers:
+				check_dns (domain, dnsip)
+				print "%s" % dnsip
+		except 'NoSuchDomain', reason:
+			print "ERROR: no such domain %s" % domain
+		except socket.error, (ecode,reason):
+			print reason
+		except "TimedOut", reason:
+			print "WHOIS request timed out", reason
+
+if __name__ == "__main__":
+	#main(sys.argv, sys.stdout, os.environ)
+	check_dns("nakedape.priv", "localhost")
+	check_dns("boosdlfksdjflsdkfjslk.org", "localhost")
