@@ -22,26 +22,14 @@ sub new_group_ok
 {
 	my ($group) = @_ ;
     return
-        $group{'gidNumber'} &&
-        $group{'cn'};
+        $group->{'gidNumber'} &&
+        $group->{'cn'};
 }
 
 
 sub changed_group_ok
 {
-    return new_group_ok;
-}
-
-
-sub group_from_form
-{
-    my ($in) = @_;
-
-    # posixGroup
-    $gidnumber = $in{gidnumber};
-    $cn = $in{cn};
-
-    # generate empty fields
+    return &new_group_ok;
 }
 
 
@@ -50,14 +38,14 @@ sub group_from_entry
     my ($group) = @_;
 
     # posixGroup
-    $gidnumber = $user->{gidnumber}[0];
-    $cn = $user->{cn}[0];
+    $gidNumber = $user->{'gidNumber'}[0];
+    $cn = $user->{'cn'}[0];
 }
 
 
 sub group_defaults
 {
-    $gidnumber = &max_gidnumber() + 1;
+    $gidNumber = &max_gidNumber() + 1;
 }
 
 
@@ -66,8 +54,8 @@ sub entry_from_group
     my ($entry) = @_;
 
     # posixGroup
-    $entry->{gidnumber} = [$gidnumber];
-    $entry->{cn} = [$cn];
+    $entry->{'gidNumber'} = [$gidNumber];
+    $entry->{'cn'} = [$cn];
     
     return $entry;
 }
@@ -81,8 +69,8 @@ sub group_from_form {
 		if ($in->{'gid_from'} != "automatic") {
 			$group{'gidNumber'} = $in->{'input_gid'} ;
 		}
-		if ($in->{'uidnumber'}) {
-			$group{'memberUid'} = $in->{'uidnumber'} ;
+		if ($in->{'uidNumber'}) {
+			$group{'memberUid'} = $in->{'uidNumber'} ;
 		}
 		if ($in->{'groupDescription'}) {
 			$group{'description'} = $in->{'groupDescription'} ;
@@ -97,7 +85,6 @@ sub group_from_form {
 
 	return \%group ;
 }
-
 
 =head1 NOTES
 
