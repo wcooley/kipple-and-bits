@@ -2,12 +2,6 @@
 
 # groups.pl $Revision$ $Date$ $Author$
 
-use strict ;
-no strict "vars" ;
-
-use diagnostics ;
-$diagnostics::PRETTY =1 ;
-
 =head1 NAME
 
 groups.pl
@@ -21,6 +15,10 @@ managing groups.
 
 =cut
 
+use strict ;
+no strict "vars" ;
+
+use diagnostics ;
 
 =head2 new_group_ok
 
