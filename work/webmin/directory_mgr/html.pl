@@ -20,6 +20,61 @@ no strict "vars" ;
 use diagnostics ;
 
 
+
+=head2 html_passwd_rows
+
+SYNOPSIS
+
+C<html_passwd_rows ( I<\%user> )>
+
+DESCRIPTION
+
+C<html_passwd_rows> formats HTML tables rows suitable for
+inclusion in a 2 column table.
+
+RETURN VALUE
+
+Returns the HTML string to be printed.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+
+sub html_passwd_rows ()
+{
+
+    my $rows = "" ;
+
+    $rows = "\t<tr>\n\t\t<td>$text{'new_passwd'}</td>\n" ;
+
+    $rows .= "\t\t<td><input type=\"text\" name=\"userPassword\"></td>" ;
+
+    $rows .= "\t<tr>\n\t\t<td>$text{'passwdtype'}</td>\n" ;
+    $rows .= "\t\t<td>\n" ;
+    $rows .= "\t\t\t<input type=\"radio\" name=\"hash\" value=\"ssha\" checked>" 
+        . $text{'ssha'} . "\n" ;
+    $rows .= "\t\t\t<input type=\"radio\" name=\"hash\" value=\"sha\">" 
+        . $text{'sha'} . "\n" ;
+    $rows .= "\t\t\t<input type=\"radio\" name=\"hash\" value=\"smd5\">" 
+        . $text{'smd5'} . "\n" ;
+    $rows .= "\t\t\t<input type=\"radio\" name=\"hash\" value=\"md5\">" 
+        . $text{'md5'} . "\n" ;
+    $rows .= "\t\t\t<input type=\"radio\" name=\"hash\" value=\"crypt\">" 
+        . $text{'crypt'} . "\n" ;
+    $rows .= "\t\t\t</td>\n" ;
+
+    $rows .= "\t\t<tr>\t\t\t<td><input type=\"submit\" value=\"Submit\"></td>\n\t\t</tr>\n" ;
+
+    return $rows ;
+
+}
+
 =head2 html_shell_options
 
 SYNOPSIS
@@ -520,16 +575,15 @@ EOF
         if ($form_type eq "modify") {
 	        print <<EOF ;
 	<td align="center">
-		<form method="post" action="set_passwd.cgi">
+		<form method="post" action="edit_user.cgi">
 		<input type="hidden" name="dn" value="$dn">
-		<input type="hidden" name="sort_on" value="$sort_on">
+		<input type="hidden" name="do" value="set_passwd">
 		<input type="submit" value="$text{'set_passwd'}">
 		</form>
 	</td>
 	<td align="right">
 		<form method="post" action="save_user.cgi">
 		<input type="hidden" name="dn" value="$dn">
-		<input type="hidden" name="sort_on" value="$sort_on">
 		<input type="hidden" name="do" value="delete">
 		<input type="submit" value="$text{'delete'}">
 		</form>
