@@ -49,6 +49,11 @@ fi
 srpm=$(awk '/^Wrote:.*src.rpm$/ {print $2}' ${tmpfile})
 rpms=$(awk '/^Wrote:.*(noarch|i?86|athlon)/ {print $2}' ${tmpfile})
 
+if [ $(echo $srpm|wc -c) -lt 5 ]; then
+    printf "Error in build.  Inspect build log at ${tmpfile}.\n"
+    exit 1
+fi
+
 pprintf "Signing packages...\n"
 echo ${srpm} ${rpms} |xargs rpm --addsign
 
