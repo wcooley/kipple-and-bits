@@ -9,13 +9,12 @@ from epylog import InternalModule
 class amavis_mod(InternalModule):
     def __init__(self, opts, logger):
         InternalModule.__init__(self)
-        self.logger = logger
+
         self.total_msgs = 0
         self.total_score = 0
         self.total_time = 0.0
         self.excess_time_cnt = 0
         self.max_time_msg = 0.0
-        self.excess_time_floor = 45 * 1000
         self.ham_total = 0
         self.spam_total = 0
         self.ham_score_total = 0.0
@@ -24,6 +23,9 @@ class amavis_mod(InternalModule):
         self.banned_cnt = 0
         self.banned_types = {}
         self.recip_domains = {}
+
+        etf = int(opts.get('excess_time_floor', 45))
+        self.excess_time_floor = etf * 1000
 
         self.timing_re = rc(r'^.*total (\d+) .*$')
         self.spam_tag_re = rc(r'(Yes|No), hits=([^\s]*) ')
