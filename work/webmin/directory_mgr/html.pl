@@ -26,7 +26,7 @@ sub html_shell_options
 
 sub html_group_options
 {
-    my ($gidnumber) = @_;
+    my ($gidNumber) = @_;
     
     my (@all_groups, @groups); 
     my ($group, $selected);
@@ -36,9 +36,9 @@ sub html_group_options
     @groups = sort {$a->{cn} cmp $b->{cn}} @all_groups;
 
     foreach $group (@groups) {
-        $selected = ($group->{'gidnumber'} == $gidnumber) ? "selected" : "";
-        print "<option value=\"$group->{'gidnumber'}\" $selected>" 
-			. "$group->{'cn'} ($group->{'gidnumber'})</option>\n";
+        $selected = ($group->{'gidNumber'} == $gidNumber) ? "selected" : "";
+        print "<option value=\"$group->{'gidNumber'}\" $selected>" 
+			. "$group->{'cn'} ($group->{'gidNumber'})</option>\n";
     }
 }
 
@@ -61,7 +61,7 @@ Returns a formatted HTML row of user information.
 
 sub html_row_user {
 	my ($user) = @_ ;
-	my ($gid) = &find_gid ($user->{'gidnumber'}) ;
+	my ($gid) = &find_gid ($user->{'gidNumber'}) ;
 
 	my ($row) = "
 <tr>
@@ -70,7 +70,7 @@ sub html_row_user {
 			$user->{'uid'}</a>
 	</td>
 	<td>
-		$user->{'uidnumber'}
+		$user->{'uidNumber'}
 	</td>
 	<td>
 		$gid
