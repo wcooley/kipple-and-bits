@@ -64,19 +64,26 @@ attributes for user data:
 
 =back # end account
 
-=item * inetOrgPerson
+=item * person
 
 =over 4
 
-=item * cn I<(required, inherited from 'person' object class)>
+=item * cn I<(required)>
 
-=item * sn I<(required, inherited from 'person' object class)>
+=item * sn I<(required)>
+
+=item * telephoneNumber
+
+=back # end person
+
+=item * inetOrgPerson
+
+=over 4
 
 =item * givenName
 
 =item * mail
 
-=item * telephoneNumber I<(inherited from 'person' object class)>
 
 =back # end inetOrgPerson
 
