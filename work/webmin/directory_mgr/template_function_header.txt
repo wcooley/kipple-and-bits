@@ -1,5 +1,5 @@
 
-=head 2 function
+=head2 function
 
 SYNOPSIS
 
