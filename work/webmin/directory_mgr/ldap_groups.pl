@@ -7,6 +7,12 @@
 
 # must be included (required) after ldap-users.pl
 
+use strict ;
+no strict "vars" ;
+
+use diagnostics ;
+$diagnostics::PRETTY =1 ;
+
 =head1 NAME
 
 ldap_groups.pl
@@ -22,59 +28,11 @@ in LDAP.
 
 
 
-
-=head2 max_gidNumber
-
-SYNOPSIS
-
-max_gidNumber ( )
-
-DESCRIPTION
-
-Finds the maximum used gidNumber.
-
-RETURN VALUE
-
-Returns the maximum used gidNumber.
-
-NOTES
-
-What is this function useful for?  I think it was intended to create
-new groups, but it doesn't take into account minimum group IDs (to
-distinguish system and normal users) and holes in list of group IDs.
-It is, however, faster than 'find_next_gid' because it makes only
-one query.
-
-=cut
-
-sub max_gidNumber
-{
-    my ($filter, $maxgid, $u);
-
-    # ldap should have a way to find this...
-    $filter = "(objectclass=posixGroup)";
-    $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
-        ("gidNumber"));
-
-    $maxgid = 0;
-    while ($entry) {
-        $u = $entry->{'gidNumber'}[0];
-	# is there a group "nobody"...
-	#if ($u != 65534) {
-            $maxgid = ($u > $maxgid) ? $u : $maxgid;
-	#}
-        $entry = $conn->nextEntry ();
-    }
-
-    return $maxgid;
-}
-
-
 =head2 is_gid_free
 
 SYNOPSIS
 
-is_gid_free ( I<$gid> )
+C<is_gid_free ( I<$gid> )>
 
 DESCRIPTION
 
@@ -102,14 +60,18 @@ sub is_gid_free
     $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
         ("objectclass", "cn"));
 
-    return $entry;
+    if ($entry) {
+        return 0 ;
+    } else {
+        return 1 ;
+    }
 }
 
 =head2 is_gidNumber_free
 
 SYNOPSIS
 
-is_gidNumber_free ( I<$gidNumber> )
+C<is_gidNumber_free ( I<$gidNumber> )>
 
 DESCRIPTION
 
@@ -142,7 +104,7 @@ sub is_gidNumber_free
 
 SYNOPSIS
 
-list_groups ( I<$ou_filter> )
+C<list_groups ( I<$ou_filter> )>
 
 DESCRIPTION
 
@@ -197,53 +159,11 @@ sub list_groups
     return @groups;
 }
 
-=head2 list_groups_by_gid
-
-SYNOPSIS
-
-list_groups_by_gid ( I<$ou_filter> )
-
-DESCRIPTION
-
-Lists CNs of groups indexed by gidNumber.
-
-RETURN VALUE
-
-Returns a reference to a hash containing the CNs of the
-groups, keyed by gidNumber.
-
-BUGS
-
-The I<$ou_filter> is not implemented.
-
-=cut
-
-sub list_groups_by_gid
-{
-    # do not filter OU yet
-    # should display the OU for each entry
-    my ($ou_filter) = @_;
-
-    my ($filter, $entry, $i);
-    my (%groups);
-
-    $filter = "(objectclass=posixGroup)";
-    $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
-        ("cn", "gidNumber"));
-
-    while ($entry) {
-        $groups{$gidNumber} = $entry->{'cn'}[0];
-        $entry = $conn->nextEntry ();
-    }
-
-    return \%groups;
-}
-
 =head2 find_gid
 
 SYNOPSIS
 
-find_gid ( I<$gidNumber> )
+C<find_gid ( I<$gidNumber> )>
 
 DESCRIPTION
 
@@ -274,11 +194,11 @@ sub find_gid
     }
 }
 
-=head2 find_free_gid
+=head2 find_free_groupid
 
 SYNOPSIS
 
-find_free_gid ( [I<$minGid>], [I<$maxGid>] )
+C<find_free_groupid ( [I<$minGid>], [I<$maxGid>] )>
 
 DESCRIPTION
 
@@ -297,7 +217,7 @@ results.
 
 =cut
 
-sub find_free_gid
+sub find_free_groupid ($:$)
 {
 
 	my ($minGid, $maxGid) = @_ ;
@@ -323,7 +243,7 @@ sub find_free_gid
 
 SYNOPSIS
 
-create_group( I<\%group> )
+C<create_group( I<\%group> )>
 
 DESCRIPTION
 
@@ -333,7 +253,7 @@ aliased hash I<\%group>.
 
 REQUIRED HASH KEYS: 
 
-=over 
+=over 4
 
 =item * I<groupName> The name of the group.
 
@@ -343,7 +263,7 @@ REQUIRED HASH KEYS:
 OPTIONAL HASH KEYS:
 
 
-=over
+=over 4
 
 =item * I<gidNumber> The gidNumber attribute; if not set, a new
 	gidNumber is automatically chosen.
@@ -365,7 +285,7 @@ OPTIONAL HASH KEYS:
 RETURN VALUE
 
 Returns a 2-element array containing, in the case of success,
-the gidNumber used and the DN.
+1 and the DN.
 
 In the case of an error, returns an array of -1 and a formatted
 error string.
@@ -376,68 +296,33 @@ OU for groups is not configurable.
 
 =cut
 
-sub create_group {
+sub create_group ($)
+{
 
 	my ($group) = @_ ;
-	my ($dn, $min_gid) ;
-
-	if ( $group->{'gidNumber'} ) {
-		unless (&is_gidNumber_free($group->{'gidNumber'})) {
-			return [ -1, $text{'gidNumber_is_taken'} ] ;
-		}
-	} else {
-		if ($group->{'systemUser'}) {
-			$min_gid = 0 ;
-		} else {
-			$min_gid = $config{'min_gid'} ;
-		}
-
-		$group->{'gidNumber'} = &find_free_gid($min_gid); 
-
-		if ( $group->{'gidNumber'} == -1 ) {
-			return [ -1, $text{'err_no_free_gid'} ] ;
-		}
-
-	}
+	my ($entry, $dn, $err) ;
 
 	$entry = $conn->newEntry() ;
 	$dn = "cn=" . $group->{'groupName'} . ",ou=Group," . $config{'base'} ;
 	$entry->setDN($dn) ;
-
-	$entry->{'objectClass'} = [ "posixGroup", "top" ];
-	$entry->{'cn'} = [$group->{'groupName'}] ;
-	$entry->{'gidNumber'} = [$group->{'gidNumber'}] ;
-
-	if ( $group->{'memberUid'} ) {
-		$entry->{'memberUid'} = [$group->{'memberUid'}] ;
-	}
-
-	if ( $group->{'description'} ) {
-		$entry->{'description'} = [$group->{'description'}] ;
-	}
-
-	if ($group->{'userPassword'}) {
-		$entry->{'userPassword'} = [$group->{'userPassword'}] ;
-	} else {
-		$entry->{'userPassword'} = ['{crypt}x'] ;
-	}
+    $entry = &entry_from_group($entry, $group) ;
 
 	$conn->add($entry) ;
 
 	if ($err = $conn->getErrorCode()) {
 		return [ -1, "group add ($dn): $err " . $conn->getErrorString()] ;
 	} else {
-		return [$entry->{'gidNumber'}[0], $dn] ;
+		return [ 1, $dn] ;
 	}
 
 }
 
 
-=head 2 group_entry_add_username
+=head2 group_entry_add_username
 
 SYNOPSIS
 
-C<group_entry_add_username ( I<$entry>, I<$username> )>
+C<group_entry_add_username ( I<\%entry>, I<$username> )>
 
 DESCRIPTION
 
