@@ -38,6 +38,7 @@ loginshell=Shell
 gidnumber_is_taken=Sorry, the supplied GID is taken.
 group_desc=Private group for user $1
 err_no_free_gid=Sorry, there appear to be no free GIDs.
+err_group_incomplete=Group incomplete.  You must provide at least cn and gidNumber.
 
 gid_automatic=Automatic
 # inetOrgPerson, etc (AddrBook data)
@@ -88,7 +89,7 @@ user_and_home=Delete user AND his home directory
 # Error messages
 
 error_1=You must type at least the Login, GID, Shell, Name and Surname
-err_user_incomplete=You must provide at least username, GID, shell, name and surname
+err_user_incomplete=You must provide at least username, shell, name and surname
 
 error_2=You must type at least the Login, UID, GID, Homedir, Shell, Name and Surname
 error_3=The user $1 is not the owner of his home dir ($2)
