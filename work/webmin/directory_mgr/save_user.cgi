@@ -151,6 +151,10 @@ EOF
 
     }
 
+} elsif ($in{'do'} eq "passwd") {
+    $user = &user_from_form(\%in) ;
+    &update_user($in{'dn'}, $user) ;
+
 } else {
 	&header ('"do" not set', "");
 }
