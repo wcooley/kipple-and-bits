@@ -1,29 +1,110 @@
 #!/usr/bin/perl -w
+#
+# File:         imap-msg-cnt.pl
+#
+# Description:  Counts the number of messages and folders in
+#               an IMAP server.  Tested with Cyrus IMAP;
+#               might work with other IMAP servers.  One day
+#               I might implement calculating folder sizes,
+#               but it's not as quick an operation (nor is
+#               it as easy to implement).
+#
+# Author:       Wil Cooley <wcooley@nakedape.cc>
+#
+# $Id$
 
 use strict ;
-require Mail::IMAPClient;
+use vars qw($opt_s $opt_u $opt_p) ;
+use Mail::IMAPClient;
+use Getopt::Std;
+use File::Basename;
 
-my $imap = {
-    Server => 'localhost',
-    User => 'wcooley',
-    Password =>  'UnV3r$'
-} ;
+my ($imap, $tmpuser, $tots, $folder) ;
 
-my $conn = new Mail::IMAPClient(%{$imap}) ;
+$tots = &list_folders(&get_options()) ;
 
-$conn or die "Unable to connect to server: $!" ;
+foreach $folder (sort keys %{$tots}) {
+    next if ($folder eq "Total") ;
 
-my @folders = $conn->folders() ;
-my $fcnt = 0 ;
-my $total = 0 ;
+    print $folder, " has ", $tots->{$folder}, " message" ;
+    print $tots->{$folder} == 1 ? "\n" : "s\n" ;
 
-foreach my $f (@folders) {
-    my $cnt = $conn->message_count($f) ;
-    next unless ($cnt) ; # Skip bogus folders
-    $total += $cnt ;
-    $fcnt++ ;
-    print $f, " has ", $cnt, " message" ;
-    print $cnt == 1 ? "\n" : "s\n" ;
 }
 
-print "Total messages: ", $total, " in ", $fcnt, " folders\n" ;
+print "Total messages: ", $tots->{'Total'}[0], " in ", $tots->{'Total'}[1], 
+    " folders\n" ;
+
+BEGIN {
+    sub usage() {
+        print "Usage: ", basename($0), " [ -s imapserver ] "
+            . "[ -u username ] [ -p password ]\n"
+            . "Tallies IMAP folder and message counts.\n"
+            . "\n"
+            . "Copyright (C) 2003, Naked Ape Consulting\n"
+            . "The script distributed under the GNU GPL.\n" ;
+    }
+
+    sub get_options {
+        my %imap ;
+
+        unless (getopts('s:u:p:')) {
+            &usage;
+            exit 1;
+        }
+
+        if ($opt_s) {
+            $imap{'Server'} = $opt_s ;
+        } else {
+            print "IMAP Host (localhost): " ;
+            chop($imap{'Server'} = <STDIN>) ;
+            $imap{'Server'} = "localhost" unless ($imap{'Server'}) ;
+        }
+
+        if ($opt_u) {
+            $imap{'User'} = $opt_u ;
+        } else {
+            $tmpuser = (getpwuid($<))[0] ; # Default to the current username
+            print "Username ($tmpuser): " ;
+            chop($imap{'User'} = <STDIN>) ;
+            $imap{'User'} = $tmpuser unless ($imap{'User'}) ;
+        }
+
+        if ($opt_p) {
+            $imap{'Password'} = $opt_p ;
+        } else {
+            system "stty -echo" ;
+            print "Password: " ;
+            chop($imap{'Password'} = <STDIN>) ;
+            print "\n" ;
+            system "stty echo" ;
+        }
+
+        return \%imap ;
+    }
+
+
+    sub list_folders ($) {
+        my $imap = shift ;
+        my %folder_totals ;
+        my $folder_cnt = 0 ;
+        my $total = 0 ;
+        my $conn = new Mail::IMAPClient(%{$imap}) ;
+
+        $conn or die "Unable to connect to server: $!" ;
+
+        my @folders = $conn->folders() ;
+
+        foreach my $f (@folders) {
+            my $cnt = $conn->message_count($f) ;
+            next unless ($cnt) ; # Skip bogus folders
+            $total += $cnt ;
+            $folder_cnt++ ;
+            $folder_totals{$f} = $cnt ;
+        }
+
+        # 'Total' is a special key
+        $folder_totals{'Total'} = [$total, $folder_cnt] ;
+
+        return \%folder_totals ;
+    }
+}
