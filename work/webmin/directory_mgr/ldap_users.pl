@@ -36,7 +36,7 @@ attributes.
 
 RETURN VALUE
 
-Returns an array of users.
+Returns a refernce to an array of users.
 
 BUGS
 
@@ -65,7 +65,8 @@ sub list_users (:$$)
         my (%user);
 
         # This could be done better by changing the filter
-        # string
+        # string (except OpenLDAP doesn't support <= or >=
+        # :(
         if ($config{'hide_system_users'} && 
             ($config{'min_uid'} > $entry->{'uidNumber'}[0])) {
             $entry = $conn->nextEntry ();
