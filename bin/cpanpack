@@ -1,0 +1,422 @@
+#!/usr/bin/perl
+#
+# cpanpack - A script to automate building packages from Perl modules on
+# CPAN.
+# 
+# Written by Wil Cooley <wcooley@nakedape.cc>
+# Began 21.2.2004
+# 
+# $Id$
+
+use strict;
+$::NAME = "cpanpack";
+$::VERSION = "1.0";
+
+my $config = {
+    specoutput => \*STDOUT,
+    vendor_tag => "nac",
+    vendor => "Naked Ape Consulting <http://nakedape.cc>",
+    packager => "Wil Cooley <wcooley\@nakedape.cc>",
+    default_release => "1",
+    spec_dir => "/home/wcooley/rpm/SPECS",
+    source_dir => "/home/wcooley/rpm/SOURCES",
+};
+
+
+#
+package CPANPack::Package;
+use strict;
+use CPANPLUS::Backend;
+
+INIT {
+    my @attribs = qw(
+        modules
+        verbose
+        _cpan
+        _module
+    );
+
+    foreach my $attr (@attribs) {
+        CPANPack::Util::attribute($attr);
+    }
+}
+
+sub new {
+    my $proto = shift;
+    my $class = ref $proto || $proto;
+    my $self = bless {}, $class;
+
+    $self->{modules} = ();
+    $self->_cpan(CPANPLUS::Backend->new());
+
+    return $self;
+}
+
+sub display {
+    my $self = shift;
+
+    print "Package name: ", $self->package_name(), "\n";
+    print "Package file: ", $self->package_file(), "\n";
+    print "CPAN Author: ", $self->author(), "\n";
+    print "CPAN Version: ", $self->version(), "\n";
+    print "Description: ", $self->description(), "\n";
+    print "License: ", $self->license(), "\n";
+    print "Included Modules:\n";
+    print $self->modules_string();
+}
+
+
+sub license {
+    # Stupid CPANPLUS doesn't give us an easy way to get a more accurate
+    # license description.
+    return "Freely Distributable";
+}
+
+sub author {
+    my $self = shift;
+    my ($auth_id) = @_;
+
+    $self->{auth_id} = $auth_id if ($auth_id);
+
+    my $auth = $self->_cpan->author_tree()->{$self->{auth_id}};
+
+    return $auth->name() . " <" . $auth->email() . ">";
+}
+
+sub package_name {
+    my $self = shift;
+    my $name = $self->package_file();
+
+    if ($self->version()) {
+        my $ver = $self->version();
+        $name =~ s/-${ver}.*$//;
+        return $name; 
+    }
+
+    else {
+        return "Package_name_unknown";
+    }
+}
+
+sub version {
+    my $self = shift;
+    return $self->_module->version();
+}
+
+sub package_file {
+    my $self = shift;
+    return $self->_module()->package();
+}
+
+sub description {
+    my $self = shift;
+    return $self->_module()->description();
+}
+
+sub fetch {
+    my $self = shift;
+    my $fetchdir = shift;
+    print "** Fetching ", $fetchdir . "/" . $self->package_file(), "\n" if ($self->verbose());
+    return $self->_module()->fetch(fetchdir => $fetchdir);
+}
+
+sub find_package {
+    my $self = shift;
+    my ($mod) = @_;
+
+    return 0 unless ($mod);
+
+    return 0 unless ($self->_cpan()->module_tree()->{$mod});
+    $self->_module($self->_cpan()->module_tree()->{$mod});
+
+    $self->author($self->_module->author());
+
+    foreach my $module (keys %{$self->_cpan()->search(type => 'package', 
+                list => [$self->package_file()])}) {
+        $self->_add_module($module);
+    }
+
+    return 1;
+
+}
+
+sub _add_module {
+    my $self = shift;
+    foreach my $mod (@_) {
+        push @{$self->{modules}}, $mod;
+    }
+}
+
+sub modules_string {
+    my $self = shift;
+    my $str = "";
+
+    foreach my $mod (@{$self->modules()}) {
+        $str .= "\t$mod\n";
+    }
+
+    return $str;
+}
+
+
+#
+package CPANPack::RPM;
+use Template;
+use strict;
+
+INIT {
+    my @attribs = qw(
+        cpan_package
+        package_release     
+        vendor_tag   
+        vendor      
+        packager            
+        spec_dir
+        source_dir
+        verbose
+    );
+
+    foreach my $attr (@attribs) {
+        CPANPack::Util::attribute($attr);
+    }
+}
+
+sub new {
+    my $proto = shift;
+    my $class = ref $proto || $proto;
+    my $self = bless {}, $class;
+
+    return $self;
+}
+
+sub base_specfile {
+    my $self = shift;
+    return $self->cpan_package->package_name() . ".spec";
+}
+
+sub specout {
+    my $self = shift;
+    my ($out) = @_;
+
+    # Allow explicitly setting the output file or filehandle
+    $self->{_specfile} = $out if $out;
+    return $self->{_specfile} if $self->{_specfile};
+
+    # Otherwise generate it automatically
+    $out = $self->spec_dir . "/" . $self->base_specfile();
+    print "** Writing: $out\n" if $self->verbose();
+    open OUTF, ">$out";
+    return \*OUTF;
+}
+
+sub write_specfile {
+    my $self = shift;
+    my $template = Template->new();
+
+    $template->process(\*CPANPack::DATA, 
+        { 
+            pkg => $self->cpan_package(), 
+            rpm => $self 
+        }, 
+        $self->specout()) 
+    || die $Template::ERROR, "\n";
+}
+
+sub genscript { return $::NAME; }
+
+sub genscriptver { return $::VERSION; }
+
+sub editor_settings { return "vim: ft=spec"; }
+
+sub change_log_date {
+    use POSIX qw(strftime);
+    return strftime "%a %b %e %Y", localtime();
+}
+
+#
+package CPANPack::Util;
+use strict;
+use vars qw/@EXPORT/;
+
+@EXPORT = qw/attribute/;
+
+sub attribute {
+    my( $attribute, $method ) = @_;
+    $method ||= $attribute;
+
+    my $pkg = caller;
+    no strict 'refs';
+    *{ "${ pkg }::$method" } =
+        sub {
+            my $self = shift;
+            my( $value ) = @_;
+            if( defined $value ) {
+                $self->{ $attribute } = shift;
+            }
+            else {
+                return unless $self->{$attribute};
+                return $self->{$attribute};
+            }
+        };
+}
+
+
+#
+package CPANPack::TestPackage;
+use strict;
+
+sub new {
+    my $pkg = CPANPack::Package->new();
+
+    $pkg->specfile("Package-Name.spec");
+    $pkg->_add_module("Package::Name");
+    $pkg->_add_module("Package::Name2");
+    $pkg->version("1.0");
+    $pkg->description("Perl module for Package::Name");
+    $pkg->change_log_date("Sat Feb 21 2004");
+
+    return $pkg;
+}
+
+#
+package CPANPack;
+use strict;
+use Getopt::Std;
+
+my (%opts, $pkg, $rpm);
+
+getopts('m:vh', \%opts);
+
+if ($opts{h} or !$opts{m}) {
+    print "Usage: $::NAME [-v] [-h] -m Module\n";
+    print "  -v - Be verbose\n";
+    print "  -h - Show usage\n";
+    print "  -m Module - Work for listed module\n";
+    print "$::NAME is a tool to automate building packages from CPAN modules.\n";
+    print "(C) 2004 Naked Ape Consulting.\n";
+    exit 0;
+}
+
+print "Searching for $opts{m}\n" if $opts{v};
+
+$pkg = CPANPack::Package->new() || die "Could not create CPANPackage";
+$pkg->verbose(1) if $opts{v};
+
+unless ($pkg->find_package($opts{m})) {
+    print STDERR "Unable to find module $opts{m}, sorry!\n";
+    exit 1;
+}
+$pkg->display();
+$pkg->fetch($config->{source_dir});
+
+$rpm = CPANPack::RPM->new();
+$rpm->verbose(1) if $opts{v};
+$rpm->cpan_package($pkg);
+
+$rpm->packager($config->{packager});
+$rpm->vendor($config->{vendor});
+$rpm->package_release($config->{default_release});
+$rpm->vendor_tag($config->{vendor_tag});
+#    $rpm->specout($config->{specoutput});
+$rpm->spec_dir($config->{spec_dir});
+$rpm->source_dir($config->{source_dir});
+$rpm->write_specfile();
+
+1;
+
+__DATA__
+# BEGIN [% rpm.base_specfile %]
+%define         filelist %{name}-%{version}-filelist
+%define         package_name [% pkg.package_name %]
+%{!?maketest:   %define maketest 0}
+                                                                                
+Name:           perl-[% pkg.package_name %]
+Version:        [% pkg.version %]
+Release:        [% rpm.package_release %].[% rpm.vendor_tag %]
+License:        [% pkg.license %]
+Group:          Applications/CPAN
+Source0:        [% pkg.package_file %]
+URL:            http://www.cpan.org
+BuildRoot:      %{_tmppath}/%{name}-%{version}-root
+BuildRequires:  perl >= 5.6.1
+Requires:       perl >= 5.6.1
+Summary:        [% pkg.description %] (Perl module)
+                                                                                
+%description
+[% pkg.description %]
+
+This package provides the following modules:
+[% pkg.modules_string %]
+
+Written by:
+    [% pkg.author %]
+                                                                                
+%prep
+%setup -q -n %{package_name}-%{version}
+                                                                                
+%build
+%{__perl} Makefile.PL INSTALLDIRS="vendor"
+
+%{__make}
+
+%if %{maketest}
+%{__make} test
+%endif
+                                                                                
+%clean
+%{__rm} -rf %{buildroot}                                                                          
+%install
+%{__rm} -rf %{buildroot}
+                                                                                
+export PERL_INSTALL_ROOT=%{buildroot}
+%{makeinstall}
+                                                                                
+[ -x /usr/lib/rpm/brp-compress ] && /usr/lib/rpm/brp-compress
+                                                                                
+# Prune special files
+find %{buildroot}%{_prefix} -name .packlist    \
+    -o -name perllocal.pod                  \
+    -o -name \*.bs                          \
+    | xargs -r %{__rm} -f
+
+# Prune empty directories
+find %{buildroot}%{_prefix} -empty -maxdepth 1 -type d | xargs -r rmdir
+                                                                                
+# Build file list
+find %{buildroot}%{_prefix} -type f -print -o -type l -print |
+    %{__sed} "s@^%{buildroot}@@g" > %{filelist}
+                                                                                
+if [ ! -s %{filelist} ]; then
+    echo "ERROR: EMPTY FILE LIST %{filelist}"
+    exit -1
+fi
+
+
+# Clean up some assumptions so we don't get bogus dependencies
+grep -lr /usr/local/bin/perl %{buildroot} | \
+    xargs -tr perl -pi.bak -e 's#/usr/local/bin/perl#%{__perl}#g'
+
+grep -lr /usr/bin/perl5 %{buildroot} | \
+    xargs -tr perl -pi.bak -e 's#/usr/bin/perl5#%{__perl}#g'
+
+find %{buildroot} -name \*.bak | xargs -tr %{__rm} -f
+
+# Also do the source, since docs might have examples
+grep -lr /usr/local/bin/perl . | \
+    xargs -tr perl -pi.bak -e 's#/usr/local/bin/perl#/usr/bin/perl#g'
+
+grep -lr /usr/bin/perl5 . | \
+    xargs -tr perl -pi.bak -e 's#/usr/bin/perl5#/usr/bin/perl#g'
+
+find . -name \*.bak | xargs -tr rm -f
+
+%files -f %{filelist}
+%defattr(-,root,root)
+%doc README
+                                                                                
+%changelog
+* [% rpm.change_log_date %] [% rpm.packager %] [% pkg.version %]-[% rpm.package_release %].[% rpm.vendor_tag %]
+- Inital package creation with [% rpm.genscript %] [% rpm.genscriptver %].
+
+# [% rpm.editor_settings %]
+# EOF [% rpm.base_specfile %]
