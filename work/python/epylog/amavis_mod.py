@@ -254,6 +254,7 @@ class amavis_mod(InternalModule):
         """ % len(doms)
 
         for dom in doms:
+            dom = dom.lower()
             report += """
         <tr>
             <td>%s</td>
