@@ -74,16 +74,22 @@ if ($in{'do'} eq "create") {
 	}
 	&header ($text{'header_2'}, "");
 	&update_user ($in{'dn'}, $user);
-    #&html_user_form("display", $user) ;
+    &html_user_form("display", $user) ;
+	&footer ("index.cgi", $text{'module_title'});
+	do "footer.pl";
 
 } elsif ($in{'do'} eq "delete") {
 
 	if ($in{'delete_user'}) {
-    	&delete_user ($in{'dn'});
-    	&redirect ("index.cgi?sort_on=$sort_on");
-    	exit (0);
-	}
-	if ($in{'delete_home'}) {
+    	$ret = &delete_user ($in{'dn'});
+        if ($ret->[0] != 1) {
+            $whatfailed = "Deletion of user $in{'dn'}" ;
+            &error($ret->[1]) ;
+        } else {
+            &redirect ("index.cgi?sort_on=$sort_on");
+        }
+	} elsif ($in{'delete_home'}) {
+        # This needs to be reworked.
     	$entry = &get_user_attr ($in{'dn'});
     	$home = $entry->{'homeDirectory'}[0];
     	$owner = ((stat($home))[4]);
@@ -94,22 +100,25 @@ if ($in{'do'} eq "create") {
     	}
     	&delete_user ($in{'dn'});
     	&redirect ("index.cgi?sort_on=$sort_on");
-    	exit (0);
-	}
+	} else {
 
-	# display current user data
-	$dn = $in{'dn'};
-	$entry = &get_user_attr ($dn);
-	&user_from_entry ($entry);
+        # display current user data
+        $dn = $in{'dn'};
+        $entry = &get_user_attr ($dn);
+        $user = &user_from_entry ($entry);
 
-	&header ($text{'header_6'}, "");
-	print "<HR noshade size=2>\n";
+        &header ($text{'header_6'}, "");
+        print "<HR noshade size=2>\n";
+        &html_user_form("display", $user) ;
 
-	print "<H3>".&text ("msg_3", $cn, $uid)."</H3>\n";
-	print <<EOF ;
+        print "<h3>\n" ;
+        print &text ("delete_user_confirm", $user->{'firstName'} 
+            . " " . $user->{'surName'}, $user->{'userName'}) ;
+        print "</h3>\n";
+        print <<EOF ;
 	<form method="post" action="save_user.cgi">
 	<input type="hidden" name="do" value="delete">
-	<input type="hidden" name="dn" value="$dn">
+	<input type="hidden" name="dn" value="$in{'dn'}">
 	<input type="hidden" name="sort_on" value="$sort_on">
 	<input type="submit" name="delete_user" value="$text{'just_user'}">
 	<input type="submit" name="delete_home" value="$text{'user_and_home'}">
@@ -118,6 +127,8 @@ if ($in{'do'} eq "create") {
 EOF
 	&footer ("index.cgi?sort_on=$sort_on", $text{'module_title'});
 	do "footer.pl";
+
+    }
 
 } else {
 	&header ('"do" not set', "");
