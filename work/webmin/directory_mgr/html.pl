@@ -146,19 +146,19 @@ None.
 
 sub html_group_options (:$)
 {
-    my ($gidNumber) = @_;
+    my ($groupID) = @_;
     
     my (@all_groups, @groups); 
     my ($group, $selected);
 
-    @all_groups = &list_groups;
+    $all_groups = &list_groups;
     
-    @groups = sort {$a->{'cn'} cmp $b->{'cn'}} @all_groups;
+    @groups = sort {$a->{'groupName'} cmp $b->{'groupName'}} @{$all_groups};
 
     foreach $group (@groups) {
-        $selected = ($group->{'gidNumber'} == $gidNumber) ? "selected" : "";
-        print "<option value=\"$group->{'gidNumber'}\" $selected>" 
-			. "$group->{'cn'} ($group->{'gidNumber'})</option>\n";
+        $selected = ($group->{'groupID'} == $groupID) ? "selected" : "";
+        print "<option value=\"$group->{'groupID'}\" $selected>" 
+			. "$group->{'groupName'} ($group->{'groupID'})</option>\n";
     }
 
     return 1;
