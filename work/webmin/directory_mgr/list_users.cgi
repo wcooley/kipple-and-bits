@@ -1,45 +1,88 @@
 #!/usr/bin/perl
+
 #
-#    LDAP Manager Webmin Module
-#    Copyright (C) 2001 by Will Cooley
+# LDAP Users Admin
+# edit_users.cgi $Revision$ $Date$ $Author$ 
+# by Fernando Lozano <fsl@centroin.com.br> under the GNU GPL (www.gnu.org)
 #
-#    This program is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation; either version 2 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    This module inherited from the Webmin Module Template 0.79.1 by tn
 
 do '../web-lib.pl';
 $|=1;
-&init_config();
 
-%access=&get_module_acl;
+require "directory-lib.pl" ;
 
-## put in ACL checks here if needed
+&check_setup() ;
+&connect () ;
+&ReadParse() ;
 
+$sort_on = ($in{sort_on}) ? $in{sort_on} : "uid";
 
-## sanity checks
+&header ($text{module_title}, "", "intro", 1, 1);
+print "<HR noshade size=2>\n";
+print "<P><B>$text{index_msg_1} ($text{index_msg_2})</B> -- $text{index_msg_3} ";
 
+@all_users = &list_users ("");
+if ($sort_on eq "uidnumber") {
+    @users = sort {$a->{$sort_on} <=> $b->{$sort_on}} @all_users;
+    print $text{uidnumber} . "\n";
+}
+elsif ($sort_on eq "uid") {
+    @users = sort {$a->{$sort_on} cmp $b->{$sort_on}} @all_users;
+    print $text{uid} . "\n";
+}
+elsif ($sort_on eq "cn") {
+    @users = sort {$a->{$sort_on} cmp $b->{$sort_on}} @all_users;
+    print $text{cn} . "\n";
+}
+elsif ($sort_on eq "gidnumber") {
+    @users = sort {($a->{$sort_on} . $a->{cn}) cmp
+        ($b->{$sort_on} . $b->{cn})} @all_users;
+    print $text{gidnumber} . "\n";
+}
+else {
+    @users = sort {($a->{department} . $a->{cn}) cmp
+       ($b->{department} . $b->{cn})} @all_users;
+    print $text{department} . "\n";
+}
 
+print "<p>This is the list of users:<br>\n" ;
 
-&header($text{'index_t'}, "" );
-# uses the index_title entry from ./lang/en or appropriate
+print "<TABLE border width=100% $cb>\n";
+print "<TR $tb>\n";
+print "<TD><B><A href=\"edit_users.cgi?sort_on=uid\">" .
+    $text{uid} . "</A></B>\n";
+print "<TD><B><A href=\"edit_users.cgi?sort_on=uidnumber\">" .
+    $text{uidnumber} . "</A></B>\n";
+print "<TD><B><A href=\"edit_users.cgi?sort_on=gidnumber\">" .
+    $text{gidnumber} . "</A></B>\n";
+print "<TD><B><A href=\"edit_users.cgi?sort_on=cn\">" .
+    $text{cn} . "</A></B>\n";
+print "<TD><B><A href=\"edit_users.cgi?sort_on=department\">" .
+    $text{department} . "</A></B>\n";
+# do not show DN until we can select and edit OUs
+#print "<TD><B><A href=\"edit_users.cgi?sort_on=dn\">DN</A></B>\n";
 
-## Insert Output code here
-print "<hr>\n<h2>This feature is not here yet.</h2>\n<hr>" ;
+if ($#users < 0) {
+    print "<TR><TD colspan=4>" . $text{msg_1} . "\n";
+}
+else {
+    $i = 0;
+    foreach $user (@users) {
+        $dn = $user->{dn};
+        print "<TR>";
+        print "<TD><A href=\"add_user.cgi?sort_on=$sort_on&dn=$dn\">" .
+            $user->{uid} . "</A>";
+        print "<TD>" . $user->{uidnumber};
+        print "<TD>" . &find_gid ($user->{gidnumber});
+        print "<TD>" . $user->{cn};
+        print "<TD>&nbsp;" . $user->{department};
+        #print "<TD>" . $user->{dn};
+        print "\n";
+    }
+}
+print "</TABLE>\n";
 
-&footer("/ldap_mgr", $text{'index'});
-# uses the index entry in /lang/en
+print "<BR>\n";
+&footer ("/", "index");
+do "footer.pl";
 
-
-
-## if subroutines are not in an extra file put them here
-
-
-### END of template.cgi ###.
