@@ -85,6 +85,34 @@ sub changed_user_ok
         $user->{'sn'};
 }
 
+=head2 auto_home_dir
+
+SYNOPSIS
+
+C<auto_home_dir ( I<$username>, I<$homestyle> )>
+
+DESCRIPTION
+
+Creates a home directory path based on I<$homestyle>.
+
+RETURN VALUE
+
+Returns a string with the home directory path.
+
+BUGS
+
+Currently ignores I<$homestyle>.
+
+=cut
+
+sub auto_home_dir {
+
+    my ($username, $homestyle) = @_ ;
+
+    return $config{'homes'} . "/" . $username ;
+
+}
+
 =head2 is_uidNumber_free
 
 SYNOPSIS
@@ -135,39 +163,44 @@ sub user_from_form
     my ($in) = @_;
 	my (%user) ;
 
-    # posixAccount
-    $user{'uid'} = $in->{'uid'};
-    if ($in{'uidNumber'} eq '') {
-        $user{'uidNumber'} = &find_free_uid($config{'min_uid'}) ;
-    } else {
-        $user{'uidNumber'} = $in->{'uidNumber'};
+    $user{'firstName'} = &remove_whitespace($in->{'firstName'});
+    $user{'surName'} = &remove_whitespace($in->{'surName'});
+    # Need to make this an array
+
+    for $telnum (split (',', $in->{'telephoneNumber'})) {
+        push @{$user{'telephoneNumber'}}, &remove_whitespace($telnum) ;
     }
 
-    #$user{'gidNumber'} = $in->{'gidNumber'};
-    $user{'gecos'} = $in->{'gecos'};
+    # Comma-separated hosts
+    for $host (split (',', $in->{'allowedHosts'})) {
+        push @{$user{'allowedHosts'}}, &remove_whitespace($host) ;
+    }
 
     if ($in->{'homedirectory'} eq "") {
-        $user{'homedirectory'} = $config{'homes'} .  $user{'uid'} ;
+        $user{'homedirectory'} = &auto_home_dir ($user{'userName'}) ;
     } else {
-        $user{'homedirectory'} = $in->{'homedirectory'};
+        $user{'homedirectory'} = &remove_whitespace($in->{'homedirectory'});
     }
-    $user{'loginshell'} = $in->{'loginshell'};
 
-    # address book data
-    $user{'cn'} = $in->{'cn'};
-    $user{'sn'} = $in->{'sn'};
-    $user{'givenname'} = $in->{'givenname'};
-    $user{'title'} = $in->{'title'};
-    $user{'organizationname'} = $in->{'organizationname'};
-    $user{'department'} = $in->{'department'};
-    $user{'physicaldeliveryofficename'} = $in->{'physicaldeliveryofficename'};
-    $user{'mail'} = $in->{'mail'};
-    $user{'telephonenumber'} = $in->{'telephonenumber'};
-    $user{'mobile'} = $in->{'mobile'};
-    $user{'pager'} = $in->{'pager'};
-    $user{'officefax'} = $in->{'officefax'};
-    $user{'comment'} = $in->{'comment'};
-    $user{'userpassword'} = $in->{'userpassword'};
+    if ($in{'userID'} eq '') {
+        $user{'userID'} = &find_free_uid($config{'min_uid'}) ;
+    } else {
+        $user{'userID'} = &remove_whitespace($in->{'userID'});
+    }
+
+    $user{'userName'} = &remove_whitespace($in->{'userName'});
+
+    if ($in->{'groupID'}) {
+        $user{'groupID'} = &remove_whitespace($in->{'groupID'}) ;
+    }
+
+    $user{'password'} = &remove_whitespace($in->{'password'});
+
+    $user{'loginShell'} = &remove_whitespace($in->{'loginShell'});
+
+    $user{'description'} = &remove_whitespace($in->{'description'});
+
+    $user{'email'} = &remove_whitespace($in->{'email'});
 
 	return \%user ;
 }
@@ -309,42 +342,89 @@ Needs to handle passed-in user hash.
 
 sub entry_from_user
 {
-    my (%entry, %user) = @_;
+    my ($entry, $user) = @_;
 
-    # posixAccount
-    $entry->{'uid'} = [$user{'uid'}];
-    $entry->{'uidNumber'} = [$user{'uidNumber'}];
-    $entry->{'gidNumber'} = [$user{'gidNumber'}];
-    $entry->{'gecos'} = [$user{'gecos'}];
-    $entry->{'homedirectory'} = [$user{'homedirectory'}];
-    $entry->{'loginshell'} = [$user{'loginshell'}];
+   # Set add object classes
+    $entry->{'objectclass'} = ["posixAccount", "person", "inetOrgPerson",
+        "organizationalPerson", "account", "top", "pilotPerson" ];
 
-    # address book data
-    # should identify the correct objectClass for each attribute and configure this way
-
-    $entry->{'sn'} = [$user{'sn'}];
-    $entry->{'cn'} = [$user{'cn'}];
-    $entry->{'mail'} = [$user{'mail'}];
-
-    if ($config{'outlook'}) {
-        $entry->{'givenname'} = [$user{'givenname'}];
-        $entry->{'title'} = [$user{'title'}];
-        $entry->{'organizationname'} = [$user{'organizationname'}];
-        $entry->{'department'} = [$user{'department'}];
-        $entry->{'physicaldeliveryofficename'} = [$user{'physicaldeliveryofficename'}];
-        $entry->{'telephonenumber'} = [$user{'telephonenumber'}];
-        $entry->{'mobile'} = [$user{'mobile'}];
-        $entry->{'pager'} = [$user{'pager'}];
-        $entry->{'officefax'} = [$user{'officefax'}];
-        $entry->{'comment'} = [$user{'comment'}];
+    # Start posixAccount attributes
+    # Create empty fields
+    if ($user->{'cn'}) {
+        $entry->{'cn'} = [$user->{'cn'}] ;
+    } else {
+        $entry->{'cn'} = ["$user->{'givenname'} $user->{'surname'}"] ;
     }
 
-	if ($config{'shadow'}) {
-	}
-
-	if ($config{'kerberos'}) {
-	}
+    # This should be more automatic, like in the useradmin module
+    if ($user->{'homedirectory'}) {
+        $entry{'homedirectory'} = [$user->{'homedirectory'}] ;
+    } else {
+        $entry{'homedirectory'} = [$config{'homes'} . "/$uid"] ;
+    }
     
+    if ($user->{'gecos'}) {
+        $entry{'gecos'} = [$user->{'gecos'}] ;
+    } else {
+        $entry{'gecos'} = ["$user->{'givenname'} $user->{'sn'}"] ;
+    }
+
+    $entry->{'uid'} = [$user->{'uid'}];
+    $entry->{'uidNumber'} = [$user->{'uidNumber'}];
+    $entry->{'gidNumber'} = [$user->{'gidNumber'}];
+    $entry->{'userpassword'} = ["*"];
+    $entry->{'loginshell'} = [$user->{'loginshell'}];
+    $entry->{'description'} = [$user->{'description'}] ;
+    # End posixAccount attributes
+
+    # Start 'person' attributes
+    $entry->{'sn'} = [$user->{'sn'}];
+    $entry->{'telephonenumber'} = [$user->{'telephonenumber'}];
+    # End 'person' attributes
+    
+    # Start 'inetOrgPerson' attributes
+    $entry->{'givenname'} = [$user->{'givenname'}];
+    if ($user->{'mail'}) {
+        $entry{'mail'} = [$user->{'mail'}] ;
+    } else {
+        $entry{'mail'} = [$uid . "@" . $config{'maildomain'}] ;
+    }
+    # End 'inetOrgPergon' attributes
+
+    # Start 'organizationalPerson' attributes
+    $entry->{'title'} = [$user->{'title'}];
+    $entry->{'physicaldeliveryofficename'} = [$user->{'physicaldeliveryofficename'}];
+    # End 'organizationalPerson' attributes
+
+    # Start 'account' attributes
+    $entry->{'userid'} = [$user->{'uid'}];
+    $entry->{'organizationname'} = [$user->{'organizationname'}];
+    $entry->{'host'} = $user->{'host'} ; # 'host' should be an array already
+    # End 'account' attributes
+
+    # Start 'pilotPerson' attributes
+    # End 'pilotPerson' attributes
+
+    if ($config{'outlook'}) {
+        $entry->{'department'} = [$user->{'department'}];
+        # Pilot person?
+        $entry->{'mobile'} = [$user->{'mobile'}];
+        $entry->{'pager'} = [$user->{'pager'}];
+        $entry->{'officefax'} = [$user->{'officefax'}];
+        $entry->{'comment'} = [$user->{'comment'}];
+    }
+
+    if ($config{'shadow'}) {
+        $entry->addValue("objectclass", "shadowAccount") ;
+        # Need to add shadow attributes
+    }
+
+    if ($config{'kerberos'}) {
+        $entry->addValue("objectclass", "kerberosSecurityObject") ;
+        # Need to add Kerberos attributes
+    }
+
+
     return \%entry;
 }
 
