@@ -11,8 +11,6 @@ use strict ;
 no strict "vars" ;
 
 use diagnostics ;
-$diagnostics::PRETTY =1 ;
-
 
 =head1 NAME
 
@@ -391,6 +389,10 @@ sub entry_from_user ($$)
 
     unless ($entry->hasValue('objectClass', 'account')) {
         $entry->addValue("objectClass", "account") ;
+    }
+
+    unless ($entry->hasValue('objectClass', 'person')) {
+        $entry->addValue("objectClass", "person") ;
     }
 
     # Start posixAccount attributes
