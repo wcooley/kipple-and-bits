@@ -352,14 +352,11 @@ OPTIONAL HASH KEYS:
 
 RETURN VALUE
 
-Returns an array containing, in the case of success, the
-gidNumber used (1-element array).
+Returns a 2-element array containing, in the case of success,
+the gidNumber used and the DN.
 
-In the case of an LDAP error, returns a 2-element array of -1 and
-a formatted error string.
-
-In the case of a system error, returns a 2-element array of -1 and
-a formatted error string.
+In the case of an error, returns an array of -1 and a formatted
+error string.
 
 BUGS
 
@@ -370,6 +367,7 @@ OU for groups is not configurable.
 sub create_group {
 
 	my ($group) = @_ ;
+	my ($dn, $min_gid) ;
 
 	if ( $group->{'gidNumber'} ) {
 		unless (&is_gidnumber_free($group->{'gidNumber'})) {
@@ -412,10 +410,11 @@ sub create_group {
 	}
 
 	$conn->add($entry) ;
+
 	if ($err = $conn->getErrorCode()) {
 		return [ -1, "group add ($dn): $err " . $conn->getErrorString()] ;
 	} else {
-		return [$entry{'gidNumber'}] ;
+		return [$entry{'gidNumber'}, $dn] ;
 	}
 
 }
