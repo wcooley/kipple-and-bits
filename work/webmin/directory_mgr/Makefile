@@ -7,18 +7,17 @@
 all: help
 
 help:
-	echo "Makefile targets:"
-	echo "test: Perform test compilations on all source"
-	echo "fulltest: Perform test compilations with extra warnings"
-	echo "doc: Generate pod docs (text)"
-	echo "textdoc: Generate text pod docs"
-	echo "htmldoc: Generate HTML pod docs"
+	@echo "Makefile targets:"
+	@echo "  test:       Perform test compilations on all source"
+	@echo "  fulltest:   Perform test compilations with extra warnings"
+	@echo "  textdoc:    Generate text pod docs"
+	@echo "  htmldoc:    Generate HTML pod docs"
 
 test:
-	-@for i in *.pl *.cgi; do perl -c $$i 2>&1 |grep -v "syntax OK"; done
+	-@for i in *.pl *.cgi; do perl -c $$i 2>&1 ; done
 
 fulltest:
-	-@for i in *.pl *.cgi; do perl -wc $$i 2>&1|grep -v "syntax OK"; done
+	-@for i in *.pl *.cgi; do perl -wc $$i 2>&1 ; done
 
 doc: textdoc
 
