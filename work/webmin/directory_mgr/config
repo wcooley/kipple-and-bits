@@ -1,7 +1,7 @@
 enable_user_mgmt=1
 enable_group_mgmt=1
-enable_host_mgmt=1
-enable_alias_mgmt=1
+enable_host_mgmt=0
+enable_alias_mgmt=0
 maildomain=
 shell=
 base=dc=company
@@ -14,3 +14,4 @@ passwd=
 port=389
 gid=
 user=
+hide_system_groups=1
