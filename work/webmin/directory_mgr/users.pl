@@ -85,7 +85,7 @@ sub user_from_form
     # posixAccount
     $user{'uid'} = $in->{'uid'};
     if ($in{'uidnumber'} eq '') {
-        $user{'uidnumber'} = &find_free_uid() ;
+        $user{'uidnumber'} = &find_free_uid($config{'min_uid'}) ;
     } else {
         $user{'uidnumber'} = $in->{'uidnumber'};
     }
@@ -183,7 +183,7 @@ sub user_from_entry
 
 sub user_defaults
 {
-    $uidnumber = &find_free_uid() ;
+    $uidnumber = &find_free_uid($config{'min_uid'}) ;
     # should get these defaults fron %config or from a template
     $gidnumber = $config{'gid'};
     $loginshell = $config{'shell'};
