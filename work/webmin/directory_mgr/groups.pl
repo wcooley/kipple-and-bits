@@ -105,19 +105,20 @@ None.
 
 =cut
 
-sub group_from_entry ($)
-{
-    my ($entry) = @_;
-    my (%group) ;
-
-    # posixGroup
-    $group{'groupID'} = $entry->{'gidNumber'}[0];
-    $group{'groupName'} = $entry->{'cn'}[0];
-    $group{'groupDescription'} = $entry->{'description'}[0] ;
-    $group{'memberUsername'} = $entry->{'memberUid'} ;
-    
-    return \%group ;
-}
+#sub group_from_entry ($)
+#{
+    #my ($entry) = @_;
+    #my (%group) ;
+#
+    ## posixGroup
+    #$group{'groupID'} = $entry->{'gidNumber'}[0];
+    #$group{'groupName'} = $entry->{'cn'}[0];
+    #$group{'groupDescription'} = $entry->{'description'}[0] ;
+    #$group{'memberUsername'} = $entry->{'memberUid'} ;
+    #$group{'dn'} = $entry->{'dn'}[0] ;
+    #
+    #return \%group ;
+#}
 
 
 
@@ -209,10 +210,21 @@ sub entry_from_group ($$)
             $entry->setValues('description', $group->{'groupDescription'}) ;
         }
     }
+
     # Add member users
-    for $username (@{$group->{'memberUsernames'}}) {
-        &group_entry_add_user ($entry, $username) ;
+    #print STDERR "entry_from_group: \$group->{'memberUsername'} is " ;
+
+    if (ref($group->{'memberUsername'})) {
+        print STDERR " a ref to " .  ref($group->{'memberUsername'}) . "\n" ;
+    } else {
+        print STDERR " not a ref\n" ;
     }
+
+    #print STDERR "entry_from_group: $group->{'memberUsername'}\n" ;
+    #$entry->setValues('memberUid', @{$group->{'memberUsername'}}) ;
+    my $ret = $entry->setValues('memberUid', $group->{'memberUsername'}) ;
+
+    #print STDERR "entry_from_group: setValues returned $ret\n" ;
     
     return $entry;
 }
@@ -260,9 +272,9 @@ sub group_from_form ($) {
     if ($in->{'gid_from'} eq "automatic") {
         $group{'groupID'} = &find_free_groupid($config{'min_gid'}, 
             $config{'max_gid'}) ;
-    } elsif ($in->{'gid_from'} eq "input") {
-        $group{'groupID'} = $in->{'groupID'} ;
     } elsif ($in->{'gid_from'} eq "select") {
+        $group{'groupID'} = $in->{'groupID'} ;
+    } else {
         $group{'groupID'} = $in->{'groupID'} ;
     }
 
@@ -270,6 +282,12 @@ sub group_from_form ($) {
         $group{'groupDescription'} = $in->{'groupDescription'} ;
     } else {
         $group{'groupDescription'} = &text('group_desc', $group{'groupName'}) ;
+    }
+
+    if ($in->{'memberUsernames'}) {
+        foreach $username (split(',', $in->{'memberUsernames'})) {
+                push @{$group{'memberUsername'}}, $username;
+        }
     }
 
 	return \%group ;
@@ -280,7 +298,7 @@ sub group_from_form ($) {
 
 SYNOPSIS
 
-C<group_add_user ( I<\%group>, I<$userName> )>
+C<group_add_username ( I<\%group>, I<$userName> )>
 
 DESCRIPTION
 
@@ -304,17 +322,68 @@ None.
 sub group_add_username ($$) {
     my ($group, $inuser) = @_ ;
 
-    for $user (@{$group{'memberUsername'}}) {
+    for $user (@{$group->{'memberUsername'}}) {
         if ($user eq $inuser) {
             return 0 ;
         }
     }
 
-    push @{$group{'memberUsername'}}, $user ;
+    push @{$group->{'memberUsername'}}, $user ;
 
     return 1 ;
 
 }
+
+
+=head2 dump_group
+
+SYNOPSIS
+
+C<dump_group ( I<\%group> )>
+
+DESCRIPTION
+
+Emits a plain text string from a group, suitable for
+debugging or logging purposes.
+
+RETURN VALUE
+
+Returns a string of group information.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+
+sub dump_group ($)
+{
+    my ($group) = @_ ;
+
+    my ($group_string) ;
+
+    $group_string = $text{'groupName'} . "=" .  $group->{'groupName'} . "\n" ;
+    $group_string .= $text{'groupID'} . "=" .  $group->{'groupID'} . "\n" ;
+    $group_string .= $text{'groupDescription'} . "=" .
+        $group->{'groupDescription'} . "\n" ;
+    $group_string .= $text{'distinguishedName'} . "=" .
+        $group->{'dn'} . "\n" ;
+
+    $group_string .= $text{'memberUsernames'} . "=" ;
+
+    foreach $user (@{$group->{'memberUsername'}}) {
+        $group_string .= $user . "\n\t" ;
+    }
+        
+
+    return $group_string ;
+
+}
+
 
 =head1 NOTES
 
