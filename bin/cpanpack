@@ -287,7 +287,7 @@ my (%opts, $pkg, $rpm);
 
 getopts('m:w:vh', \%opts);
 
-if ($opts{'h'} or not ($opts{'w'} or $opts{'m'})) {
+if ($opts{'h'} or not ($opts{'w'} or $opts{'m'} or $ARGV[0])) {
     print "Usage: $::NAME [-v] { -h | -m Module | -w specfile }\n";
     print "  -v - Be verbose\n";
     print "  -h - Show usage\n";
@@ -297,6 +297,8 @@ if ($opts{'h'} or not ($opts{'w'} or $opts{'m'})) {
     print "(C) 2004 Naked Ape Consulting.\n";
     exit 0;
 }
+
+$opts{'m'} = $ARGV[0] unless (defined $opts{'m'});
 
 print "Searching for $opts{'m'}\n" if $opts{'v'};
 
@@ -334,7 +336,10 @@ __DATA__
 # BEGIN [% rpm.base_specfile %]
 %define         filelist %{name}-%{version}-filelist
 %define         package_name [% pkg.package_name %]
-%{!?maketest:   %define maketest 0}
+%{!?maketest:   %define maketest 1}
+
+# Define if man pages conflict
+%define         exclude_man_pages 0
                                                                                 
 Name:           perl-[% pkg.package_name %]
 Version:        [% pkg.version %]
@@ -385,6 +390,10 @@ find %{buildroot}%{_prefix} -name .packlist    \
     -o -name \*.bs                          \
     | xargs -r %{__rm} -f
 
+%if %exclude_man_pages
+%{__rm} -rf %{buildroot}%{_mandir}
+%endif
+
 # Prune empty directories
 find %{buildroot}%{_prefix} -empty -maxdepth 1 -type d | xargs -r rmdir
                                                                                 
@@ -418,7 +427,7 @@ find . -name \*.bak | xargs -tr rm -f
 
 %files -f %{filelist}
 %defattr(-,root,root)
-%doc README
+%doc README C*
                                                                                 
 %changelog
 * [% rpm.change_log_date %] [% rpm.packager %] [% pkg.version %]-[% rpm.package_release %].[% rpm.vendor_tag %]
