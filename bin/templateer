@@ -1,0 +1,77 @@
+#!/usr/bin/perl -w
+#
+# templateer - Automates processing of template files
+#
+#   Simply create
+# 
+# Written by Wil Cooley <wcooley@nakedape.cc>
+#
+# Copyright (C) 2004 Naked Ape Consulting, Ltd.
+#
+
+my $template = $ARGV[0];
+my $outfile = $ARGV[1];
+my %kwsubs;
+my $kwre;
+my @template;
+
+if (scalar(@ARGV) != 2) {
+    print <<EOF;
+Usage: templateer <template-file> <output-file>
+
+templateer reads in <template-file>, extracts template variables, prompts
+for values for the template variables, and writes the filled-in template
+to <outfile>.
+
+Template variables are variables surrounded on both sides with '\@\@'; e.g., 
+\@\@HOSTNAME\@\@.
+
+Bugs:
+ o Probably doesn't handle stray or unterminated \@\@ very well.
+ o Should be able to set delimiters.
+
+EOF
+    exit 1;
+}
+
+open(TEMPLATE, $template) || die "Couldn't open $template!";
+open(OUTFILE, ">>$outfile") || die "Couldn't open $outfile!";
+
+
+print "Reading template $template...\n";
+# Extract the keywords to be substituted
+while (<TEMPLATE>) {
+    push @template, $_;
+    $kwsubs{$1} = '' if (/@@([^@]+)@@/);
+}
+
+print "Kindly provide the values for the following template values:\n";
+
+# Get the info from the user
+foreach my $key (keys %kwsubs) {
+    if ($ENV{$key}) {
+        $kwsubs{$key} = $ENV{$key};
+    }
+    else {
+        print "$key = ";
+        chomp ($kwsubs{$key} = <STDIN>);
+    }
+    $kwre .= ($kwre) ? "|$key" : $key ;
+}
+
+print "Writing to $outfile...\n";
+foreach my $l (@template) { 
+    if ($l =~ /\@\@(${kwre})\@\@/i) {
+        foreach my $key (keys %kwsubs) {
+            $l =~ s/\@\@$key\@\@/$kwsubs{$key}/g;
+        }
+    } 
+    print OUTFILE $l;
+}
+
+foreach my $key (keys %kwsubs) {
+    print "$key => $kwsubs{$key}\n";
+}
+
+close(TEMPLATE);
+close(OUTFILE);
