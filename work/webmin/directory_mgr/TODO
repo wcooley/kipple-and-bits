@@ -4,14 +4,22 @@
 
 What works currently:
 
-    o Not much :)
+    o Document key data structures (user, group, etc.) (Every
+    function is documented and user and group LDAP and hashes
+    are documented.)
 
     @ User creation:
         o Auto-selecting of next UID.
         o Auto-creation of group for user.
         o User listing, sorting rows by columns.
         o Set allowed hosts attribute for users.
-        
+        o User modification.
+        o Need checking for attempt to change uid (work around
+          temporarily by making userName, groupID, and userID not
+          changable in edit form).
+        o User search.
+        o LDAP MD5 & SHA passwords.
+
 
 *******************************
 * TODO List for Directory_Mgr *
@@ -25,21 +33,19 @@ STYLE
     o Document key data structures (user, group, etc.)
 
     o Clarify abstractions between directory-agnostic functions,
-    directory-specific functions, and presentation.
+    directory-specific functions, and presentation.  Need to move
+    some functions from users.pl to ldap_users.pl and vice versa.
 
 OPERATIONAL
 ===========
 
     @ User management:
-        o User search.
-        o User modification.
-        o Need checking for attempt to change uid.
         o Delete group when removing user.
-        o LDAP MD5 & SHA passwords.
         o Samba attributes for users.
-        o Home directory creation.
+        o Home directory creation & deletion.
         o Automatic home directories like useradmin.
         o Selectable OU for users.
+        o Ability to change userName, groupID, userID.
 
     @ Group management.
         o Almost everything; some things implemented for
