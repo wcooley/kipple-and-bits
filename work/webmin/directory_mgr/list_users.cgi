@@ -60,7 +60,7 @@ print "<TD><B><A href=\"edit_users.cgi?sort_on=department\">" .
 #print "<TD><B><A href=\"edit_users.cgi?sort_on=dn\">DN</A></B>\n";
 
 if ($#users < 0) {
-    print "<TR><TD colspan=4>" . $text{msg_1} . "\n";
+    print "<TR><TD colspan=4>" . $text{'msg_1'} . "\n";
 }
 else {
     $i = 0;
