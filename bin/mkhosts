@@ -1,0 +1,40 @@
+#!/usr/bin/perl -w
+# Written by Wil Cooley
+# This script to too short to have a copyright
+
+# Script to generate generic entries for /etc/hosts for a whole range of
+# hosts, or DNS records.
+
+# Set this to a local prefix
+$prefix = "unused" ;
+
+# Set this to a domain name or something, or nothing
+$suffix = "" ;
+
+# Set this to be an MX host, and uncomment the appropriate lines
+$mx = "192.168.1.1" ;
+
+# Set this to the network number 
+$net = "192.168.1" ;
+
+# Set this to the network number reversed
+$revnet = "1.168.192" ;
+
+# Set this to the first host's IP
+$start = 2 ;
+
+# Set this to the end
+$end = 254 ;
+
+for ( $i = $start; $i <= $end; $i++)
+{
+	# Uncomment this for reverse lookups
+	printf ("$i.$revnet.IN-ADDR.ARPA.\tIN\tPTR\t$prefix%03d$suffix\n", $i) ;
+
+	# Uncomment this for forward lookups
+	# printf ("$prefix%03d$suffix\tIN\tA\t$net.$i\n", $i) ;
+	# printf ("\tIN\tMX\t10 $mx\n") ;
+
+	# Uncomment for /etc/hosts entries
+	#printf ("$net.$i\t$prefix%03d$suffix\n", $i) ;
+}

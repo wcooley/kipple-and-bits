@@ -1,0 +1,26 @@
+#!/bin/bash
+#
+# restore-perms - Redirect on stdin a file created by 'dump-perms' and
+# a directory name and it will re-create the permissions and
+# ownerships.  It will NOT create non-existant files.
+#
+# Written by Wil Cooley <wcooley@nakedape.cc>
+# 3 Sept 2001
+#
+
+if [ $# -ne 1 ]; then
+	printf "Usage: %s <directory>\n" $0
+	exit 1
+fi
+
+pushd `pwd`
+
+cd $1
+
+awk -F, '{ 
+	system ("chown " $3 " " $1)
+	system ("chgrp " $4 " " $1)
+	system ("chmod " $2 " " $1)
+}'
+
+popd

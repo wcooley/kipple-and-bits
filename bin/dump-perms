@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# dump-perms - Given a directory tree, prints a series of quadruplets on
+#  stdout containing the filename, permissions, owner, and group.  The
+#  output can then be given to the stdin of restore-perms to recreate the
+#  ownerships.
+#
+# Written by Wil Cooley <wcooley@nakedape.cc>
+# 3 Sept 2001
+#
+
+find $1 -printf "%p,%m,%u,%g\n"

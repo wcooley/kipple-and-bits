@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# Generates a reversed gendiff
+# Useful when the modified files end with an extension
+
+[ -z "$1" -o -z "$2" ] && {
+# usage
+  echo "usage: $0 <directory> <diff-extension>" 1>&2
+  exit 1
+}
+
+find $1 \( -name "*$2" -o -name ".*$2" \) -print |
+while read f; do
+	diff -u `echo $f | sed s/$2\$//` $f
+done

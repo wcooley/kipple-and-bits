@@ -1,0 +1,95 @@
+#!/usr/bin/perl -w
+#
+# ckrevdns 
+# Script to check for consistency in DNS records for
+#  simple 1:1 mapping, useful for a network with only
+#  regular users.
+#
+# Written by W. Reilly Cooley <wcooley@greets.com>
+# Begun: 11 Jan 2000
+# Last-Modified: 11 Jan 2000
+#
+# Identifies 2 errors:
+#	1. Reverse PTR without an associated forward A
+#	2. Reverse PTR with a mismatched forward A
+#
+# Does not check for A records w/o a reverse PTR!
+#
+
+use Net::DNS ;
+use Net::Netmask ;
+
+if ( @ARGV != 1 ) {
+	print <<EOF ;
+	Usage: $0 a.b.c
+	Where a.b.c is a Class C network prefix.
+	This command checks that reverse and forward DNS for consistency.
+EOF
+
+	exit -1;
+}
+
+sub chopdot ;
+
+$block = new Net::Netmask ($ARGV[0]) ;
+$res = new Net::DNS::Resolver ;
+
+print ("Beginning check of ", $block->base, "\n") ;
+
+foreach $rev_hostaddr ($block->enumerate()) {
+
+	$rev_query = $res->search("$rev_hostaddr", "PTR") ;
+
+	# Skip if the reverse query didn't return anything
+	next unless $rev_query ;
+
+	foreach $rev_rr ($rev_query->answer) {
+		next unless $rev_rr->type eq "PTR" ;
+
+		$rev_hostname = $rev_rr->rdatastr ;
+		#print "IP: $rev_hostaddr\t\tName: $rev_hostname\n" ;
+
+		# Got the hostname, now check the IP addr
+		$for_query = $res->search("$rev_hostname") ;
+					
+		# Skip if the forward query didn't return anything	
+		unless ($for_query) {
+			print ("Error! Missing A record for host $rev_hostname.\n") ;
+			print ("Rev Addr: $rev_hostaddr does not exist!\n") ;
+			next ;
+		}
+
+		foreach $for_rr ($for_query->answer) {
+			next unless $for_rr->type eq "A" ;
+			
+			#$for_hostname = $for_rr->name ;
+			$for_hostaddr = $for_rr->address ;
+			#print "IP: $for_hostaddr\t\tName: $for_hostname\n" ;
+
+			unless ("$for_hostaddr" eq "$rev_hostaddr") {
+				print ("Error! Mismatched addresses for host $rev_hostname.\n") ;
+				print ("Rev Addr: $rev_hostaddr\n") ;
+				print ("For Addr: $for_hostaddr\n") ;
+			}
+		}
+	}
+}
+
+($user, $system, $cuser,$csystem) = times ;
+print ("$0 finished.\n") ;
+print ("Running time: ", $user+$system+$cuser+$csystem, " secs\n") ;
+
+#
+# This function removes a dot from the end of a scalar, if there is one.
+#  It takes a scalar, and returns a scalar minus an ending dot.
+#
+sub chopdot {
+	($strname) = @_ ;
+
+	if ($strname =~ /\.$/) {
+		chop ($strname) ;	
+	} 
+
+	$strname ;
+}
+
