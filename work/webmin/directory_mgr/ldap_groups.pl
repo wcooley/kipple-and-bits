@@ -23,11 +23,11 @@ in LDAP.
 
 
 
-=head2 max_gidnumber
+=head2 max_gidNumber
 
 SYNOPSIS
 
-max_gidnumber ( )
+max_gidNumber ( )
 
 DESCRIPTION
 
@@ -47,18 +47,18 @@ one query.
 
 =cut
 
-sub max_gidnumber
+sub max_gidNumber
 {
     my ($filter, $maxgid, $u);
 
     # ldap should have a way to find this...
     $filter = "(objectclass=posixGroup)";
     $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
-        ("gidnumber"));
+        ("gidNumber"));
 
     $maxgid = 0;
     while ($entry) {
-        $u = $entry->{'gidnumber'}[0];
+        $u = $entry->{'gidNumber'}[0];
 	# is there a group "nobody"...
 	#if ($u != 65534) {
             $maxgid = ($u > $maxgid) ? $u : $maxgid;
@@ -105,11 +105,11 @@ sub is_gid_free
     return $entry;
 }
 
-=head2 is_gidnumber_free
+=head2 is_gidNumber_free
 
 SYNOPSIS
 
-is_gidnumber_free ( I<$gidNumber> )
+is_gidNumber_free ( I<$gidNumber> )
 
 DESCRIPTION
 
@@ -117,27 +117,25 @@ Check if supplied gidNumber is available.
 
 RETURN VALUE
 
-Returns the directory entry from the corresponding gidNumber
-if available, which is undef if there is no entry.
-
-BUGS
-
-The logic here is backwards.  Returns data if gidNumber IS NOT free
-(true); returns undef (false) if the number IS free.
+Returns true if the gidNumber is free; false if it isn't.
 
 =cut
 
-sub is_gidnumber_free
+sub is_gidNumber_free
 {
-    my ($gidnumber) = @_;
+    my ($gidNumber) = @_;
 
     my ($filter);
 
-    $filter = "(&(objectclass=posixGroup)(gidnumber=$gidnumber)";
+    $filter = "(&(objectclass=posixGroup)(gidNumber=$gidNumber))";
     $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
-        ("objectclass", "gidnumber"));
+        ("objectclass", "gidNumber"));
 
-    return $entry;
+    if ($entry) {
+        return 0;
+    } else {
+        return 1;
+    }
 }
 
 =head2 list_groups
@@ -153,7 +151,7 @@ Lists groups with DN, CN, and gidNumber.
 RETURN VALUE
 
 Returns an array of references to hashes, where each hash
-has keys 'dn', 'cn' and 'gidnumber'.
+has keys 'dn', 'cn' and 'gidNumber'.
 
 BUGS
 
@@ -173,7 +171,7 @@ sub list_groups
 
     $filter = "(objectclass=posixGroup)";
     $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
-        ("cn", "gidnumber"));
+        ("cn", "gidNumber"));
 
     $i = 0;
     while ($entry) {
@@ -182,15 +180,15 @@ sub list_groups
         # This could be done better by changing the filter
         # string
         if ($config{'hide_system_groups'} &&
-            ($config{'min_gid'} > $entry->{'gidnumber'}[0])) {
+            ($config{'min_gid'} > $entry->{'gidNumber'}[0])) {
             $entry = $conn->nextEntry ();
             next ;
         }
 
 
-        $group{dn} = $entry->getDN (),
-        $group{cn} = $entry->{cn}[0],
-        $group{gidnumber} = $entry->{gidnumber}[0];
+        $group{'dn'} = $entry->getDN (),
+        $group{'cn'} = $entry->{'cn'}[0],
+        $group{'gidNumber'} = $entry->{'gidNumber'}[0];
         $groups[$i++] = \%group;
 
         $entry = $conn->nextEntry ();
@@ -231,10 +229,10 @@ sub list_groups_by_gid
 
     $filter = "(objectclass=posixGroup)";
     $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
-        ("cn", "gidnumber"));
+        ("cn", "gidNumber"));
 
     while ($entry) {
-        $groups{$gidnumber} = $entry->{'cn'}[0];
+        $groups{$gidNumber} = $entry->{'cn'}[0];
         $entry = $conn->nextEntry ();
     }
 
@@ -264,9 +262,9 @@ sub find_gid
 
     my ($filter, $entry);
 
-    $filter = "(&(objectclass=posixGroup)(gidnumber=$gid))";
+    $filter = "(&(objectclass=posixGroup)(gidNumber=$gid))";
     $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
-        ("cn", "gidnumber"));
+        ("cn", "gidNumber"));
 
     if ($entry) {
         return $entry->{'cn'}[0];
@@ -276,43 +274,48 @@ sub find_gid
     }
 }
 
-=head2 find_next_gid
+=head2 find_free_gid
 
 SYNOPSIS
 
-find_next_gid ( [I<$minGid>] )
+find_free_gid ( [I<$minGid>], [I<$maxGid>] )
 
 DESCRIPTION
 
-Finds the next available gidNumber, starting at I<minGid>.
+Finds the free available gidNumber, starting at I<minGid> but not
+over I<maxGid>.
 
 RETURN VALUE
 
-Returns the next available GID or -1 if an available GID isn't found.
+Returns the free available GID or -1 if an available GID isn't found.
 
 BUGS
 
-Calls &is_gidnumber_free() repeatedly, which can cause lots of
+Calls &is_gidNumber_free() repeatedly, which can cause lots of
 queries to server.  Fix by doing a single query and examining
 results.
 
 =cut
 
-sub find_next_gid
+sub find_free_gid
 {
 
-	my ($minGid) = @_ ;
+	my ($minGid, $maxGid) = @_ ;
 
 	$minGid = 0 unless $minGid ;
+    $maxGid = $config{'max_gid'} unless $maxGid ;
 
-	for ( $i = $minGid; not &is_gidnumber_free($i); $i++ ) { 
-		if ( $i > $config->{'max_gid'} ) {
-			$i = -1 ;
-			last ;
-		}
-	}
+    my $free_gid = -1 ;
 
-	return $i ;
+    while ($minGid <= $maxGid) {
+        if (&is_gidNumber_free($minGid)) {
+            $free_gid = $minGid ;
+            last ;
+        }
+        $minGid++ ;
+    }
+
+	return $free_gid ;
 }
 
 
@@ -379,25 +382,26 @@ sub create_group {
 	my ($dn, $min_gid) ;
 
 	if ( $group->{'gidNumber'} ) {
-		unless (&is_gidnumber_free($group->{'gidNumber'})) {
-			return [ -1, $text{'gidnumber_is_taken'} ] ;
+		unless (&is_gidNumber_free($group->{'gidNumber'})) {
+			return [ -1, $text{'gidNumber_is_taken'} ] ;
 		}
 	} else {
 		if ($group->{'systemUser'}) {
 			$min_gid = 0 ;
 		} else {
-			$min_gid = $config->{'min_gid'} ;
+			$min_gid = $config{'min_gid'} ;
 		}
 
-		$group->{'gidNumber'} = &find_next_gid($config->{'min_gid'}); 
+		$group->{'gidNumber'} = &find_free_gid($min_gid); 
 
 		if ( $group->{'gidNumber'} == -1 ) {
 			return [ -1, $text{'err_no_free_gid'} ] ;
 		}
+
 	}
 
 	$entry = $conn->newEntry() ;
-	$dn = "gid=" . $group->{'groupName'} . "ou=Groups," . $config{'base'} ;
+	$dn = "cn=" . $group->{'groupName'} . ",ou=Group," . $config{'base'} ;
 	$entry->setDN($dn) ;
 
 	$entry->{'objectClass'} = [ "posixGroup", "top" ];
@@ -423,7 +427,7 @@ sub create_group {
 	if ($err = $conn->getErrorCode()) {
 		return [ -1, "group add ($dn): $err " . $conn->getErrorString()] ;
 	} else {
-		return [$entry{'gidNumber'}, $dn] ;
+		return [$entry->{'gidNumber'}[0], $dn] ;
 	}
 
 }
