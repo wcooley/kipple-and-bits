@@ -1,0 +1,3 @@
+#!/bin/sh
+
+awk -f /usr/local/lib/amavis-timing.awk /var/log/maillog
