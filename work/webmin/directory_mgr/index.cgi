@@ -31,51 +31,51 @@ print "<hr>\n" ;
 
 if ($config{'enable_user_mgmt'}) {
 	push @wlinks, 
-		( "edit_users.cgi", "add_user.cgi", "search_user.cgi" ) ;
+		( "list_users.cgi", "add_user.cgi", "search_user.cgi" ) ;
 
 	push @wtitles,
-		($text{'edit_users_t'},$text{'add_user_t'},$text{'search_user_t'}) ;
+		($text{'list_users_t'},$text{'add_user_t'},$text{'search_user_t'}) ;
 
 	push @wicons,
-		("images/edit_users.gif", "images/add_user.gif", 
+		("images/list_users.gif", "images/add_user.gif", 
 		"images/search_user.gif") ;
 }
 
 if ($config{'enable_group_mgmt'}) {
 	push @wlinks, 
-		( "edit_groups.cgi", "add_group.cgi", "search_group.cgi" ) ;
+		( "list_groups.cgi", "add_group.cgi", "search_group.cgi" ) ;
 
 	push @wtitles,
-		($text{'edit_groups_t'},$text{'add_group_t'},
+		($text{'list_groups_t'},$text{'add_group_t'},
 			$text{'search_group_t'}) ;
 
 	push @wicons,
-		("images/edit_groups.gif", "images/add_group.gif", 
+		("images/list_groups.gif", "images/add_group.gif", 
 			"images/search_group.gif") ;
 }
 
 if ($config{'enable_host_mgmt'}) {
 	push @wlinks, 
-		( "edit_hosts.cgi", "add_host.cgi", "search_host.cgi" ) ;
+		( "list_hosts.cgi", "add_host.cgi", "search_host.cgi" ) ;
 
 	push @wtitles,
-		($text{'edit_hosts_t'},$text{'add_host_t'},$text{'search_host_t'}) ;
+		($text{'list_hosts_t'},$text{'add_host_t'},$text{'search_host_t'}) ;
 
 	push @wicons,
-		("images/edit_hosts.gif", "images/add_host.gif", 
+		("images/list_hosts.gif", "images/add_host.gif", 
 			"images/search_host.gif") ;
 }
 
 if ($config{'enable_alias_mgmt'}) {
 	push @wlinks, 
-		( "edit_aliases.cgi", "add_alias.cgi", "search_alias.cgi" );
+		( "list_aliases.cgi", "add_alias.cgi", "search_alias.cgi" );
 
 	push @wtitles,
-		($text{'edit_aliases_t'},$text{'add_alias_t'},
+		($text{'list_aliases_t'},$text{'add_alias_t'},
 			$text{'search_alias_t'}) ;
 
 	push @wicons,
-		("images/edit_aliases.gif", "images/add_user.gif", 
+		("images/list_aliases.gif", "images/add_user.gif", 
 			"images/search_user.gif") ;
 }
 
