@@ -111,23 +111,32 @@ sub create_home_dir {
 		# Create the remote directory, by calling itself on
 		# the remote host
 		$debug && &webmin_log ('call', 'sub', 'remote_foreign_check') ;
-		&remote_foreign_check("$host", 'create_homedir') ||
-			&error(&text('err_remote_foreign_check', 'create_homedir', $host)) ;
+		eval (&remote_foreign_check("$host", 'create_homedir')) ;
+        if ($@) {
+            $whatfailed = &text('err_remote_foreign_check', 'create_homedir', $host) ;
+			&error($@) ;
+        }
 
 		$debug && &webmin_log ('call', 'sub', 'remote_foreign_require');
-		&remote_foreign_require("$host", 'create_homedir',
-			'create_home_dir.pl')
-			# Jamie says this shouldn't work
-			#  ||
-			# &error(&text('err_remote_foreign_require', 'create_homedir',
-			# 	'create_home_dir.pl', $host)) ;
+		eval (&remote_foreign_require("$host", 'create_homedir',
+			'create_home_dir.pl')) ;
+        if ($@) {
+            $whatfailed = &text('err_remote_foreign_require', 'create_homedir', 
+                'create_home_dir.pl', $host) ;
+            &error($@) ;
+        }
 
 		$debug && &webmin_log ('call', 'sub', 'remote_foreign_call') ;
 		$loghash{'make_home_local'} = &remote_foreign_call("$host", 
 			'create_homedir', 'make_home_local', $user) ;
 
 		$debug && &webmin_log ('call', 'sub', 'remote_finished') ;
-		&remote_finished() ;
+		eval (&remote_finished()) ;
+        if ($@) {
+            $whatfailed = &text('err_remote_finished', 'create_homedir',
+                 'create_home_dir.pl', $host);
+            &error($@) ;
+        }
 
 	}
 
@@ -139,6 +148,5 @@ sub create_home_dir {
 	return 1;
 
 }
-
 
 1;
