@@ -19,6 +19,10 @@ if ($in{'do'} eq "create") {
 	$user_info = &user_from_form(\%in) ;
 	$group_info = &group_from_form(\%in) ;
 
+	unless ( &new_group_ok ($group_info) ) {
+		&error($text{'err_group_incomplete'}) ;
+	}
+
 	# Create group before user, so if we're using
 	# user-private-groups we can get a free gidNumber.
 	$ret = &create_group($group_info) ;
@@ -29,11 +33,14 @@ if ($in{'do'} eq "create") {
 		$user_info{'gidnumber'} = $ret->[0] ;
 	}
 
-	if (! &new_user_ok ($user_info) ) {
+	unless ( &new_user_ok ($user_info) ) {
 		&error ($text{'err_user_incomplete'});
 	}
-	$uidnumber = ($uidnumber) ? $uidnumber : &max_uidnumber;
-	$dn = &create_user ($in{'uid'}) ;
+	$in{'uidnumber'} = ($in{'uidnumber'}) 
+		? $in{'uidnumber'} 
+		: &max_uidnumber;
+
+	$dn = &create_user ($user_info) ;
 
 	&set_passwd ($dn, $userpassword, $in{'hash'});
 
