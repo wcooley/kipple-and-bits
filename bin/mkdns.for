@@ -15,7 +15,7 @@ $domain = "creative.gemmaster.com." ;
 $prefix = "unassigned" ;
 $suffix = "" ;
 $ttl	= 86400 ;
-$mx	= "mail.gemmaster.com." ;
+$mx     = "mail.gemmaster.com." ;
 $mx_prio = 10 ;
 
 if ( @ARGV != 1 && @ARGV != 2) {
