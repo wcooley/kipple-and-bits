@@ -1,4 +1,4 @@
-#! /bin/ksh
+#! /bin/bash
 # or /bin/ksh
 #**********************************************************************
 #
@@ -18,7 +18,9 @@
 #   o 1.0 - Initial implementation
 #   o 1.1 - Allow for checking of hosts other than the
 #           gateways themselves; use 'route' and 'netstat' instead
-#           of 'iproute' for portability.  Added a "dry-run"
+#           of 'iproute' for portability.  This version
+#           should be portable across SysV and BSD systems;
+#           if not, please let me know.  Added a "dry-run"
 #           option.  Verify that route changing happens
 #           correctly, and if not, roll back to the previous
 #           gateway.
