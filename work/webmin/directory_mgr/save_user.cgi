@@ -8,6 +8,7 @@
 # $Id$
 #
 
+$debug = 1 ;
 require "directory-lib.pl" ;
 
 &ReadParse() ;
@@ -27,7 +28,7 @@ if ($in{'do'} eq "create") {
 	# user-private-groups we can get a free gidNumber.
 	$ret = &create_group($group_info) ;
 
-	if ( $ret->[0] == -1 ) {
+	if ( $ret->[2] == -1 ) {
 		&error($ret->[1]) ;
 	} else {
 		$user_info{'gidnumber'} = $ret->[0] ;
@@ -44,15 +45,26 @@ if ($in{'do'} eq "create") {
 
 	&set_passwd ($dn, $userpassword, $in{'hash'});
 
+    # Create home directory
+
+    if ($config{'createhome'}) {
+
+        if ($config{'createhomeremote'}) {
+            @remote_homes_hosts =  split(/\0/, $in{'servers_for_home_dir'}) ;
+            # Finish me here
+        
+        } else {
+	        mkdir $user_info{'homedirectory'}, 0700;
+	        if ($in{'copy'}) {
+		        system "cp -rf /etc/skel/* $user_info{'homedirectory'}";
+		        system "cp -rf /etc/skel/.[^.]+ $user_info{'homedirectory'}";
+	        }
+	        system "chown -R $uidnumber.$gidnumber $user_info{'homedirectory'}";
+        }
+    }
 
 	# Fix this here -- this should be done with my
 	# create_homedir module
-	mkdir $homedirectory, 0700;
-	if ($in{'copy'}) {
-		system "cp -rf /etc/skel/* $homedirectory";
-		system "cp -rf /etc/skel/.[^.]+ $homedirectory";
-	}
-	system "chown -R $uidnumber.$gidnumber $homedirectory";
 
 	&header ($text{'created_user'}, "");
 } elsif ($in{'do'} eq "modify") {
