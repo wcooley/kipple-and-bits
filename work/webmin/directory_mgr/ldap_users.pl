@@ -405,7 +405,7 @@ sub create_user ($)
 
 SYNOPSIS
 
-C<update_user ( I<$dn> )>
+C<update_user ( I<$dn>, I<\%user> )>
 
 DESCRIPTION
 
@@ -420,7 +420,6 @@ None.
 
 BUGS
 
-Doesn't work: Uses global user hash, which no longer exists.
 Doesn't return error codes; instead, calls &error()
 directly.  Does not allow for DN/uid changes.
 
@@ -496,6 +495,7 @@ sub set_passwd ($$)
     my ($user, $type) = @_ ;
 
     my $salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z') [rand 64, rand 64];
+    my $tmppass ;
 
     if ($type eq "crypt") {
         $user->{'password'} = "{CRYPT}" . crypt ($user->{'password'}, $salt);
@@ -506,16 +506,21 @@ sub set_passwd ($$)
         if ($@) {
             return [ -1, "unable to load Digest::MD5 or MIME::Base64: $@" ] ;
         }
-        $ctx = Digest::MD5->new;
-        $ctx->add($user{'password'});
+
+        my $md5 = Digest::MD5->new;
+        $md5->add($user->{'password'});
 
         if ($type eq "md5") {
-            $user{'password'} = "{MD5}" . 
-               encode_base64 ($ctx->digest(), "");
+            $tmppass = encode_base64 ($md5->digest(), '');
+            chomp($tmppass) ;
+            $user->{'password'} = "{MD5}" . $tmppass ; 
+
         } elsif ($type eq "smd5") {
-            $ctx->add($salt) ;
-            $user->{'password'} = "{SMD5}" . 
-                encode_base64 ($ctx->digest() . $salt, "");
+            $md5->add($salt) ;
+            $tmppass = encode_base64 ($md5->digest() . $salt, '');
+            chomp($tmppass) ;
+            $user->{'password'} = "{SMD5}" . $tmppass ;
+
         } else {
             return [ -1, "unrecognized password hash type &quot;$type&quot;" ] ;
         }
@@ -528,16 +533,19 @@ sub set_passwd ($$)
             return [ -1, "unable to load Digest::SHA1 or MIME::Base64: $@" ] ;
         }
 
-        $ctx = Digest::SHA1->new ;
-        $ctx->add($user{'password'}) ;
+        my $sha = Digest::SHA1->new ;
+        $sha->add($user->{'password'}) ;
 
         if ($type eq "sha") {
-            $user->{'password'} = "{SHA}" .  
-                encode_base64($ctx->digest(), "") ;
+            $tmppass = encode_base64($sha->digest(), "") ;
+            chomp ($tmppass) ;
+            $user->{'password'} = "{SHA}" . $tmppass ;
+
         } elsif ($type eq "ssha") {
-            $ctx->add($salt) ;
-            $user->{'password'} = "{SSHA}" . 
-                encode_base64 ($ctx->digest(). $salt, "");
+            $sha->add($salt) ;
+            $tmppass = encode_base64 ($sha->digest() . $salt, "");
+            chmod ($tmppass) ;
+            $user->{'password'} = "{SSHA}" . $tmppass ;
         } else {
             return [ -1, "unrecognized password hash type &quot;$type&quot;" ] ;
         }
