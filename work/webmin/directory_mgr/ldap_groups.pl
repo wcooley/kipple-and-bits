@@ -11,15 +11,14 @@ use strict ;
 no strict "vars" ;
 
 use diagnostics ;
-$diagnostics::PRETTY =1 ;
 
 =head1 NAME
 
-ldap_groups.pl
+I<ldap_groups.pl>
 
 =head1 DESCRIPTION
 
-ldap_groups contains subroutines related to managing POSIX groups
+I<ldap_groups> contains subroutines related to managing POSIX groups
 in LDAP.
 
 =head1 FUNCTIONS
@@ -50,7 +49,7 @@ no entries.
 
 =cut
 
-sub is_gid_free
+sub is_gid_free ($)
 {
     my ($gid) = @_;
 
@@ -83,7 +82,7 @@ Returns true if the gidNumber is free; false if it isn't.
 
 =cut
 
-sub is_gidNumber_free
+sub is_gidNumber_free ($)
 {
     my ($gidNumber) = @_;
 
@@ -122,7 +121,7 @@ instead of a reference to an array.
 
 =cut
 
-sub list_groups
+sub list_groups (:$)
 {
     # do not filter OU yet
     # should display the OU for each entry
@@ -176,7 +175,7 @@ gidNumber isn't found.
 
 =cut
 
-sub find_gid
+sub find_gid ($)
 {
     my ($gid) = @_;
 
@@ -344,7 +343,8 @@ None.
 
 =cut
 
-sub group_entry_add_username ($$) {
+sub group_entry_add_username ($$) 
+{
 
     my ($entry, $inuser) ;
 
