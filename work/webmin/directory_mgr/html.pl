@@ -10,7 +10,6 @@ use strict ;
 no strict "vars" ;
 
 use diagnostics ;
-$diagnostics::PRETTY =1 ;
 
 
 sub html_shell_options
@@ -86,7 +85,7 @@ sub html_row_user {
 	</td>
 	<td>\n" ;
 
-    unless (scalar @{$user->{'telephoneNumber'}}) {
+    unless (ref($user->{'telephoneNumber'}) eq "ARRAY") {
         $row .= "&nbsp;" ;
     }
     for $telnum (@{$user->{'telephoneNumber'}}) {
