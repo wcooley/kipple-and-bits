@@ -26,7 +26,6 @@ in LDAP.
 =cut
 
 
-
 =head2 is_gid_free
 
 SYNOPSIS
@@ -103,7 +102,7 @@ sub is_gidNumber_free ($)
 
 SYNOPSIS
 
-C<list_groups ( I<$ou_filter> )>
+C<list_groups ( [I<$ou_filter>, [I<$sort_on>]] )>
 
 DESCRIPTION
 
@@ -111,35 +110,31 @@ Lists groups with DN, CN, and gidNumber.
 
 RETURN VALUE
 
-Returns an array of references to hashes, where each hash
-has keys 'dn', 'cn' and 'gidNumber'.
+Returns a reference to an array of references to hashes.
 
 BUGS
 
-The I<ou_filter> is not implemented.  Returns an array
-instead of a reference to an array.
+The I<$ou_filter> an I<$sort_on> are not implemented.
 
 =cut
 
-sub list_groups (:$)
+sub list_groups (:$$)
 {
     # do not filter OU yet
     # should display the OU for each entry
-    my ($ou_filter) = @_;
+    my ($ou_filter, $sort_on) = @_;
 
     my ($filter, $entry, $i);
     my (@groups);
 
-    $filter = "(objectclass=posixGroup)";
+    $filter = "(objectClass=posixGroup)";
     $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
-        ("cn", "gidNumber"));
+        ("cn", "gidNumber", "description"));
 
     $i = 0;
     while ($entry) {
         my (%group);
 
-        # This could be done better by changing the filter
-        # string
         if ($config{'hide_system_groups'} &&
             ($config{'min_gid'} > $entry->{'gidNumber'}[0])) {
             $entry = $conn->nextEntry ();
@@ -147,15 +142,16 @@ sub list_groups (:$)
         }
 
 
-        $group{'dn'} = $entry->getDN (),
-        $group{'cn'} = $entry->{'cn'}[0],
-        $group{'gidNumber'} = $entry->{'gidNumber'}[0];
+        $group{'dn'} = $entry->getDN ();
+        $group{'groupName'} = $entry->{'cn'}[0];
+        $group{'groupID'} = $entry->{'gidNumber'}[0];
+        $group{'groupDescription'} = $entry->{'description'}[0] ;
         $groups[$i++] = \%group;
 
         $entry = $conn->nextEntry ();
     }
 
-    return @groups;
+    return \@groups;
 }
 
 =head2 find_gid
