@@ -11,8 +11,6 @@ require "directory-lib.pl" ;
 &connect ();
 &ReadParse();
 
-$sort_on = $in{'sort_on'};
-
 # Configured to remotely create home directories
 if ($config{'createhomeremote'}) {
 	# Get a list of webmin servers
@@ -30,34 +28,13 @@ if ($config{'createhomeremote'}) {
 	push (@servers, $localhost) ;
 }
 
-# display current user data
+# Get user defaults
+$user = &user_defaults();
 
-$dn = ($dn) ? $dn : $in{'dn'};
-$user = &get_user_attr ($dn);
-
-# this isn't exactly right... should complain why
-# the dn (user) wasn't found...
-
-if ($dn && $user) {
-    $header = $text{'edit_user'};
-    $form_type = "modify" ;
-}
-else {
-    $header = $text{'create_user'};
-    $form_type = "create" ;
-}
-
-&header ($header, "");
-
+# Display HTML
+&header ($text{'create_user'}, "");
 print "<hr noshade size=2>\n";
-
-if ($form_type eq "create") {
-    $user = &user_defaults();
-} else {
-    $user = &user_from_entry ($user);
-}
-
-&html_user_form ($form_type, $user) ;
+&html_user_form ("create", $user) ;
 
 print "<BR>\n";
 &footer ($config{'app_path'}, "$text{'index_t'}");
