@@ -40,6 +40,8 @@ OPERATIONAL
 ===========
 
     @ User management:
+        o Password change form. (In progress)
+        o Remove user from existing groups.
         o Delete group when removing user.
         o Samba attributes for users.
         o Home directory creation & deletion.
