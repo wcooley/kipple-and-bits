@@ -186,7 +186,7 @@ sub is_uidNumber_free
 
 SYNOPSIS
 
-find_free_uid ( I<$minUid>, I<$maxUid> )
+C<find_free_uid ( I<$minUid>, I<$maxUid> )>
 
 DESCRIPTION
 
