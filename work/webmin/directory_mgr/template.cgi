@@ -42,4 +42,24 @@ print "<hr>\n<h2>This feature is not here yet.</h2>\n<hr>" ;
 ## if subroutines are not in an extra file put them here
 
 
+=head1 NOTES
+
+None at the moment.
+
+=head1 CREDITS
+
+This module begun by Fernando Lozano <fernando@lozano.etc.br>
+in his I<ldap-users> module.  Incorporated into I<directory_mgr>
+by Wil Cooley <wcooley@nakedape.cc>.  All bug reports should go to
+Wil Cooley.
+
+=head1 LICENSE
+
+This file is copyright Fernando Lozano <frenando@lozano.etc.br>
+and Wil Cooley <wcooley@nakedape.cc>, under the GNU General Public
+License <http://www.gnu.org/licenses/gpl.txt> or the file B<LICENSE>
+included with this program.
+
+=cut
+
 ### END of template.cgi ###.
