@@ -27,6 +27,7 @@ fi
 # If you query a spec file that makes multiple packages, you get several
 # values back.  Do a little array fiddling to get the first one
 rpmbase=($(rpm -q --queryformat '%{NAME}\n' --specfile ${specfile}))[0]
+rpmverrel=$(rpm -q --queryformat '%{VERSION}-%{RELEASE}\n' --specfile ${specfile})
 tmpfile=$(mktemp /tmp/${prog}-${rpmbase}.XXXXXX) || exit 1
 
 rpmreldir=$HOME/rpm/release/rpm/${rpmbase}
@@ -58,17 +59,26 @@ pprintf "Signing packages...\n"
 echo ${srpm} ${rpms} |xargs rpm --addsign
 
 if [[ $? -gt 0 ]]; then
-    printf "Package signing failed! Perhaps you mis-typed the passphrase? Let's try again.\n"
+    printf "Package signing failed! Perhaps you mis-typed the passphrase? Let's try once more.\n"
     echo ${srpm} ${rpms} |xargs rpm --addsign
+
+    if [[ $? -gt 0 ]]; then
+        printf "Hm, sorry, package signing failed.  Aborting."
+        exit 1
+    fi
 fi
 
-mv -v ${rpms} ${rpmreldir}
-mv -v ${srpm} ${srpmreldir}
+mv -iv ${rpms} ${rpmreldir}
+mv -iv ${tmpfile} ${rpmreldir}/buildlog-${rpmbase}-${rpmverrel}.log
+chmod 0444 ${rpmreldir}/buildlog-${rpmbase}-${rpmverrel}.log
+mv -iv ${srpm} ${srpmreldir}
 
 for rpm in ${rpms}; do
     echo " RPM: " ${rpmreldir}/$(basename $rpm)
 done
 
 echo "SRPM: " ${srpmreldir}/$(basename $srpm)
+
+
 # clean up
 #rm -vf ${tmpfile}
