@@ -37,7 +37,8 @@ userName=Username
 uidNumber=UID
 userID=User ID
 gidNumber=Primary Group
-groupID=Primary Group
+groupID=Group ID
+groupName=Group Name
 sec_group=Secondary Groups
 gecos=GECOS
 homedirectory=Home
@@ -50,6 +51,7 @@ gidNumber_is_taken=Sorry, the supplied GID is taken.
 group_desc=Group for user $1
 err_no_free_gid=Sorry, there appear to be no free GIDs.
 err_group_incomplete=Group incomplete.  You must provide at least cn and gidNumber.
+memberUsernames=Member Usernames
 
 gid_automatic=Automatic
 # inetOrgPerson, etc (AddrBook data)
@@ -160,3 +162,4 @@ err_remote_foreign_call=Error: remote_foreign_call failed for module $1, functio
 
 err_no_user_found=Sorry, no users were found.
 err_unknown_user_attr=Unknown user attribute: $1
+err_no_groups_found=Sorry, no groups were found.
