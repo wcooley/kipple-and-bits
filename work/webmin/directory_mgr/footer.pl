@@ -1,5 +1,5 @@
 
-print <<FOOTER
+print <<FOOTER;
 <HR noshade size=2>
 <DIV align="right">
 <small>
