@@ -1,0 +1,179 @@
+#!/bin/bash
+#**********************************************************************
+#
+# File:         gwswitch
+#
+# Description:  Monitors a primary and secondary gateway and
+#               switches to the secondary should the primary
+#               fail.  This should be run every minute out
+#               of cron.
+#
+# Author:       Wil Cooley <wcooley@nakedape.cc>
+#
+# License:      GNU General Public License.  See bottom of
+#               file.
+#
+# Copyright (C) 2003, Naked Ape Consulting
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#**********************************************************************
+
+#**********************************************************************
+# Configuration Variables
+#**********************************************************************
+logger="/usr/bin/logger"
+loglevel="daemon.warning"
+myname=$(basename $0)
+ping="/bin/ping"
+iproute="/sbin/ip route"
+
+#**********************************************************************
+# Shell functions
+#**********************************************************************
+
+# Log a message to syslog and stderr
+do_log () {
+   ${logger} -s -p ${loglevel} -t ${myname} "$1"
+}
+
+# Prints messages on stderr, if debug is set
+debug_msg() {
+    if [ "${debug}" == 1 ]; then
+        printf "$@" 1>&2
+    fi
+}
+
+# Show usage
+usage () {
+    printf "Usage: %s -p primary_gateway -s secondary_gateway\n" \
+        ${myname}
+    printf "Copyright (C) 2003, Naked Ape Consulting\n"
+    exit 1
+}
+
+# Get current default route
+# Note that this only works if there is one default.  I'm
+# not sure how to handle the case of multiple configured
+# default routes.
+current_gw() {
+    local gw="$(${iproute} list |awk '/^default/ {print $3}')"
+    
+    debug_msg "Current gateway is %s\n" "$gw"
+    printf "%s" $gw
+}
+
+# Check if a host is alive
+check_host_alive() {
+    ${ping} -c 3 -w 5 -q "$@" >/dev/null 2>&1
+    local ret=$?
+    if [ "$ret" == 0 ]; then
+        debug_msg "Host %s is alive\n" $1
+    else
+        debug_msg "Host %s is not alive\n" $1
+    fi
+    return $ret
+}
+
+# Set the default route
+set_default_gw() {
+    local gw=$1
+
+    debug_msg "Setting default gateway to %s\n" $gw
+    do_log "Setting default gateway to $gw"
+
+    if [ "${curr_gw}" = "" ]; then
+        ${iproute} add default via ${gw}
+    else
+        ${iproute} replace default via ${gw}
+    fi
+}
+
+
+#**********************************************************************
+# Main
+#**********************************************************************
+
+# Process arguments
+while getopts 'p:s:hd' Opt; do
+    case "$Opt" in
+        p)
+            typeset -r primary=$OPTARG
+            ;;
+        s)
+            typeset -r secondary=$OPTARG
+            ;;
+        h)
+            typeset -ri showusage=1
+            ;;
+        d)
+            typeset -ri debug=1
+            ;;
+    esac
+done
+
+if [ "${primary}" = "" ] \
+    || [ "${secondary}" = "" ] \
+    || [ "${showusage}" == 1 ]; then
+    usage
+fi
+
+curr_gw=$(current_gw)
+
+if [ "${curr_gw}" = "${primary}" ]; then
+    check_host_alive ${curr_gw}
+    if [ "$?" == 0 ]; then
+        # Primary is current gw, and is alive, so we can
+        # stop here.  This is first because it should be the
+        # commonest case.
+        exit 0
+    else
+        # Primary is current, but it's down.  Oops.
+        check_host_alive ${secondary}
+        if [ "$?" == 0 ]; then
+            set_default_gw ${secondary}
+        else
+            # We've been unable to find either the primary
+            # or secondary alive, so give up and complain
+            # loudly
+            loglevel="daemon.crit"
+            do_log "Unable to find a live default route!"
+        fi
+    fi
+else
+# Current gateway is secondary or is not set or is not one
+# given on the command line
+    check_host_alive ${primary}
+    if [ "$?" == 0 ]; then
+        set_default_gw ${primary}
+    else
+        check_host_alive ${secondary}
+        if [ "$?" == 0 ]; then
+            # Don't change the gateway if we're already on
+            # the second
+            if [ "${curr_gw}" != "${secondary}" ]; then
+                set_default_gw ${secondary}
+            fi
+        else
+            # We've been unable to find either the primary
+            # or secondary alive, so give up and complain
+            # loudly
+            loglevel="daemon.crit"
+            do_log "Unable to find a live default route!"
+        fi
+
+    fi
+fi
+
+# EOF gwswitch
