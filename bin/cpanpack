@@ -285,33 +285,39 @@ use Getopt::Std;
 
 my (%opts, $pkg, $rpm);
 
-getopts('m:vh', \%opts);
+getopts('m:w:vh', \%opts);
 
-if ($opts{h} or !$opts{m}) {
-    print "Usage: $::NAME [-v] [-h] -m Module\n";
+if ($opts{'h'} or not ($opts{'w'} or $opts{'m'})) {
+    print "Usage: $::NAME [-v] { -h | -m Module | -w specfile }\n";
     print "  -v - Be verbose\n";
     print "  -h - Show usage\n";
     print "  -m Module - Work for listed module\n";
+    print "  -w specfile - Write out a template spec file named specfile.spec\n";
     print "$::NAME is a tool to automate building packages from CPAN modules.\n";
     print "(C) 2004 Naked Ape Consulting.\n";
     exit 0;
 }
 
-print "Searching for $opts{m}\n" if $opts{v};
+print "Searching for $opts{'m'}\n" if $opts{'v'};
 
 $pkg = CPANPack::Package->new() || die "Could not create CPANPackage";
-$pkg->verbose(1) if $opts{v};
-
-unless ($pkg->find_package($opts{m})) {
-    print STDERR "Unable to find module $opts{m}, sorry!\n";
-    exit 1;
-}
-$pkg->display();
-$pkg->fetch($config->{source_dir});
+$pkg->verbose(1) if $opts{'v'};
 
 $rpm = CPANPack::RPM->new();
-$rpm->verbose(1) if $opts{v};
-$rpm->cpan_package($pkg);
+$rpm->verbose(1) if $opts{'v'};
+
+unless ($opts{'w'}) {
+    unless ($pkg->find_package($opts{'m'})) {
+        print STDERR "Unable to find module $opts{m}, sorry!\n";
+        exit 1;
+    }
+    $pkg->display();
+    $pkg->fetch($config->{source_dir});
+    $rpm->cpan_package($pkg);
+}
+else {
+    $rpm->specout($opts{'w'} . '.spec');
+}
 
 $rpm->packager($config->{packager});
 $rpm->vendor($config->{vendor});
@@ -334,7 +340,7 @@ Name:           perl-[% pkg.package_name %]
 Version:        [% pkg.version %]
 Release:        [% rpm.package_release %].[% rpm.vendor_tag %]
 License:        [% pkg.license %]
-Group:          Applications/CPAN
+Group:          Development/Languages
 Source0:        [% pkg.package_file %]
 URL:            http://www.cpan.org
 BuildRoot:      %{_tmppath}/%{name}-%{version}-root
