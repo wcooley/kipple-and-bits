@@ -85,6 +85,34 @@ sub changed_user_ok
         $user->{'sn'};
 }
 
+=head2 is_uidNumber_free
+
+SYNOPSIS
+
+C<is_uidNumber_free ( I<$uidNumber> )>
+
+DESCRIPTION
+
+Check if supplied uidNumber is available.
+
+RETURN VALUE
+
+Returns true if the uidNumber is free; false if it isn't.
+
+=cut
+
+sub is_uidNumber_free
+{
+    my ($uidNumber) = @_;
+
+    if ( &search_users_attr ("uidNumber=$uidNumber", ("uidNumber")) ) {
+        return 0 ;
+    } else {
+        return 1 ;
+    }
+
+}                                                                        
+
 =head2 user_from_form
 
 SYNOPSIS 
