@@ -2,6 +2,8 @@
 
 =head2 Introduction
 
+You're going to find out how great this stuff is!
+
 =head2 Understanding the Postfix C<content_filter> Mechanism
 
 The Postfix mail transfer agent (MTA) provides C<content_filter>, a
@@ -199,45 +201,307 @@ is spam or ham based on the messages it receives.
 
 =head2 Putting It All Together
 
-First, make sure you've got Postfix working as it should.  Always try
-to proceed in small, incremental steps.  Next, configure amavisd-new.
-The configuration file defaults to C</etc/amavisd.conf>, but I prefer
-to relocate mine to /etc/amavis/amavisd.conf by giving it the C<-c>
-option at start-up.  The C<amavisd.conf> file itself is very heavily
-commented, and I recommend that you read through the whole thing.  Here are a
-few changes from the defaults that should get you started:
+First, make sure you've got Postfix working as it should without any
+filtering.  Always try to proceed in small, incremental steps, testing each
+along the way.
 
-This one is obvious; you want to set your local domain here:
+Next, configure amavisd-new.  The configuration file defaults
+to C</etc/amavisd.conf>, but I prefer to relocate mine to
+/etc/amavis/amavisd.conf by giving it the C<-c> option at start-up.
+The C<amavisd.conf> file itself is very heavily commented, and I recommend
+that you read through the whole thing.  Note that the configuration
+file is all Perl code, so any settings must be valid Perl statements.
+(You will note, for example, the line 'use strict;' at the top and the line
+'1;' at the end.)
+
+C<amavisd-new> provides a few utility functions that let you provide
+configuration maps in a number of different ways; the C<read_hash>
+function lets you specify a newline-separated list, which is read into
+a hash table at initialization, where the line is a key and '1' is the
+value; you will notice that this is the same format Postfix uses for
+lists in a number of places.
+
+C<new_RE> lets you specify a list of Perl regular expressions.  Other
+variables are basic Perl arrays or hashes, often using the 'qw()' form
+for a "quoted word" array (i.e., each whitespace-separated "word" is an
+element) or 'qr()' for quoted regular expressions.
+
+Here are a few changes from the defaults that should get you started.
+The first C<$mydomain> is obvious; you should set your local domain here
+(don't worry if you also host other domains):
+
 $mydomain = 'example.com'; 
 
 I prefer to run mine as user/group 'amavis/amavis', created with
 home directory /var/amavis:
 
-$daemon_user  = 'vscan';
-$daemon_group = 'sweep';
+$daemon_user  = 'amavis';
+$daemon_group = 'amavis';
 
 I like to make the directory C<amavisd-new> does most of its work
 in a tmpfs file system, but you want certain things (like the
 SpamAssassin Bayesian database) to be persistently stored, so the temporary
 directory should be a subdirectory of the home directory:
 
-$TMPBASE = $MYHOME/tmp
+$TEMPBASE = $MYHOME/tmp;
+
+You will also need to mount this as a temporary filesystem; under Linux 2.4
+you can do this by adding the following to your C</etc/fstab> and running
+'mount /var/amavis/tmp':
+
+none /var/amavis/tmp tmpfs mode=770,uid=amavis,gid=wheel 0 0
+
+Note the mode, uid and gid settings to change the default permissions on
+the mounted filesystem; I use the 'wheel' group because it use it in other
+places to give administrative users extra access and control access to
+'su' and 'sudo'.
 
 The C<FILTER_README> from Postfix and the C<README.postfix> from
-C<amavisd-new> differ on which ports to use; the former uses 10025
-and 10026, while the latter uses 10024 and 10025.  It doesn't matter
-which you choose, as long as you use the pair consistently.  If you want to
-use change to the (10025,10026) pair, use:
+C<amavisd-new> differ on which ports to use; the former uses 10025 and
+10026, while the latter uses 10024 and 10025.  It doesn't matter which you
+choose, as long as you use the pair consistently.  If you want to change
+to the (10025,10026) pair (which will be used in these examples), use:
 
 $inet_socket_port = 10025;
 $forward_method = 'smtp:127.0.0.1:10026';
 $notify_method = $forward_method;
 
-=head2 Understanding Logging
+To configure the domains local to the mail system, you may use the
+C<read_hash> function as described above:
 
-=head2 Debugging
+read_hash(\%local_domains, '/etc/postfix/local_domains');
+
+If you're keeping your Postfix local domains in a flat file, this will
+let you maintain one list shared between both systems.
+
+The C<read_hash> function is also useful for maintaining white and black
+lists; I find the newline-separated list a little easier to maintain than
+having it within the C<amavisd.conf> file, particularly if these will be
+maintained by a junior administrator.
+
+read_hash(\%whitelist_sender, '/etc/amavis/whitelist_sender');
+
+You might also want to keep a blacklist of known bad senders; however,
+it might be more trouble than its worth, because spammers rarely use
+the same address for long and the sender is usually faked, and because
+SpamAssassin provides superior detection with less fuss.
+
+read_hash(\%blacklist_sender, '/etc/amavis/blacklist_sender');
+
+To avoid sending bogus virus bounces from viruses like Klez that are
+known to fake the sender's address, there is a regular expression map;
+I recommend that you maintain this list very carefully, because new
+viruses which do this come out frequently and bounces are nearly as much
+of a problem as the viruses themselves (especially who do not run Outlook
+which are rarely vulenerable in the first place).  This is done using the
+'new_RE' function mentioned above:
+
+$viruses_that_fake_sender_re = new_RE(
+  qr'nimda|hybris|klez|bugbear|yaha|braid|sobig|fizzer|palyh|peido|holar'i,
+  qr'tanatos|lentin|bridex|mimail|trojan\.dropper'i,
+);
+
+You might consider, instead, changing the action C<amavisd-new> takes to
+simply discard virus messages.  Doing so might not alert a sender that
+the message he has sent had a virus in an attachment (such as when your
+boss sends an infected Word document to a colleague and wonders why she
+gets no response), so use it with caution.  You can do this by using
+'D_DISCARD' instead of 'D_BOUNCE' in C<$final_virus_destiny>:
+
+$final_virus_destiny = D_DISCARD;
+
+Even if you do not use anti-virus software, you can reduce the chance
+a virus will infect your users simply by having C<amavisd-new> filter
+dangerous attachment types which generally should not be passed through
+e-mail.  Microsoft has a Knowledge Base article which lists these, and
+this setting is based on that list (see References).  I get an occasional
+complaint about the ban on TNEF attachments; if you have Outlook users
+who like to send these, you might want to remove 'tnef' from below.
+
+$banned_filename_re = new_RE(
+   qr'\.[a-zA-Z][a-zA-Z0-9]{0,3}\.(vbs|pif|scr|bat|com|exe|dll)$'i,
+  qr'.\.(ade|adp|bas|bat|chm|cmd|com|cpl|crt|exe|hlp|hta|inf|ins|isp|js|
+         jse|lnk|mdb|mde|msc|msi|msp|mst|pcd|pif|reg|scr|sct|shs|shb|vb|
+         vbe|vbs|wsc|wsf|wsh)$'ix,
+  qr'^\.(exe|lha|tnef)$'i,
+  qr'^application/x-msdownload$'i,
+  qr'^message/partial$'i, qr'^message/external-body$'i,
+);
+
+Controlling who gets scanned for what may be either the simplest or
+the most complex configuration setting, depending on your site.  Most
+businesses will probably want to apply a uniform setting; an ISP might
+want to provide different degrees of aggressiveness depending on customer
+sensitivity, or simply not filter certain customers at all.  In the case of
+applying a uniform setting, no additional configuration needs to be done.
+For the latter case, however, C<amavisd-new> offers a number of options,
+including various Perl array, hash, or regular expression maps, and SQL and
+LDAP lookups.  The SQL and LDAP maps have the benefit of being able to be
+updated without restarting the C<amavisd-new> daemon, which is necessary
+in an environment where frequent changes are made.  The C<README.lookups>
+document in the C<amavisd-new> distribution is the authoritative text on
+configuring these; the scope of these are outside of this document.
+
+Roughly speaking, the 'lovers' maps will allow users to receive all
+messages, even if it is found to be spam or found to contain a virus, while
+it will notify administrators and recipients (if configured to do so).
+The 'bypass' maps bypass scanning for the selected type altogether; I
+recommend you use this only for viruses.  For spam, I recommend that if
+you do not filter for all users, you should not use the 'bypass' maps but
+set impossibly high values for tag and kill levels (such as '999')--this
+will let SpamAssassin scan the message and the autolearning feature will
+feed Bayesian classifier, making it more accurate.
+
+The C<tag>, C<tag2> and C<kill> levels let you control the filtering that
+is applied to spam based on the score supplied by SpamAssassin.  C<tag>
+just adds 'X-Spam-Status' and 'X-Spam-Level' headers, so most users will
+not notice them.  If you want to see the score for all messages, use a
+very low C<tag> level, such as '-999'.  C<tag2> level adds 'X-Spam-Flag:
+YES' and prepends to the subject '***SPAM***'; I do not usually use
+this, because I have enough confidence in SpamAssassin that I just let
+it quarantine the messages.  C<kill> does just that--quarantines the
+message and sends a report to the administrator.  The default C<kill>
+level is 6.3, which is not bad; to start out, consider raising it 8 or
+10 just to be safe.  To set these levels globally, use the following:
+
+$sa_tag_level_deflt  = -999;
+$sa_tag2_level_deflt = 6.3;
+$sa_kill_level_deflt = $sa_tag2_level_deflt;
+
+For initial testing, you might want to disable external tests in
+SpamAssassin.  This will disable DNSRBL, DCC, Razor2 and Pyzor tests.
+You will certainly want to use these, but turn them off initially until
+you're confident that the rest of the system is working:
+
+$sa_local_tests_only = 1;
+
+To configure virus-scanning, the '@av_scanners' array lists a number
+of configurations for well-known virus scanners.  As the comment in
+the default configuration file preceeding this array states, leaving
+in scanners which use internal subroutines such as '\&ask_daemon' will
+aversely affect performance; command-line scanners which are not found at
+initialization time will not be used, but I prefer to keep them commented
+out altogether.
+
+Since we're using Sophie, a daemon wrapped around Sophos Anti-Virus'
+scanning engine, uncomment that section:
+
+ ['Sophie',
+   \&ask_daemon, ["{}/\n", '/var/run/sophie'],
+   qr/(?x)^ 0+ ( : | [\000\r\n]* $)/,  qr/(?x)^ 1 ( : | [\000\r\n]* $)/,
+   qr/(?x)^ [-+]? \d+ : (.*?) [\000\r\n]* $/ ],
+
+When you built Sophie, you might have given its C<configure> script
+the C<--with-socketfile> option to place it somewhere other than
+C</var/run/sophie>.  If you did, you should change the second line above
+to match that.  You should also have built it with C<--with-user=amavis>
+and C<--with-group=amavis>; if you did not, add the C<amavis> user to
+whatever group you provided.  If you do not, C<amavisd-new> will not be
+able to communicate with Sophie.
+
+To use the Bayesian classifier in SpamAssassin, the following variables for
+SpamAssassin should be set in the C</etc/mail/spamassassin/local.cf>:
+
+use_bayes 1
+auto_learn 1
+
+Once you're confident of the rest of the system working, you might want to
+make it auto-learn faster; to do so add:
+
+auto_learn_threshold_spam 8
+
+By default, this is set to 12, which will make it learn fairly slowly.
+The Bayesian classifier will not begin to contribute to the score
+of messages until there are at least 200 spam and non-spam messages.
+I recommend monitoring your spam alerts to determine an appropriate value
+for the spam threshold, although I would not use much below 8.
+
+To view the number of spam and non-spam messages, issue the command
+'sa-learn --dump magic' as the 'amavis' user:
+
+$ sudo su - amavis
+$ sa-learn --dump magic
+0.000          0          2          0  non-token data: bayes db version
+0.000          0       3012          0  non-token data: nspam
+0.000          0       4218          0  non-token data: nham
+...
+
+Configuring Postfix requires adding the following to
+C</etc/postfix/master.cf> and issuing the command 'postfix reload':
+
+smtp-amavis unix -      -       y/n     -       2  smtp
+    -o smtp_data_done_timeout=1200
+    -o disable_dns_lookups=yes
+                                                                                
+127.0.0.1:10026 inet n  -       y/n     -       -  smtpd
+    -o content_filter=
+    -o local_recipient_maps=
+    -o relay_recipient_maps=
+    -o smtpd_restriction_classes=
+    -o smtpd_client_restrictions=
+    -o smtpd_helo_restrictions=
+    -o smtpd_sender_restrictions=
+    -o smtpd_recipient_restrictions=permit_mynetworks,reject
+    -o mynetworks=127.0.0.0/8
+    -o strict_rfc821_envelopes=yes
+
+Note that the 'content_filter' in the second section is empty; since this
+is the receiving process, it should not pass the incoming message to the
+global content_filter, otherwise there would be a mail loop.
+
+At this point, C<amavisd-new> and Postfix are configured to receive
+messages, and C<amavisd-new> is configured to inject them back into
+Postfix, but Postfix is not sending any mail into C<amavisd-new> yet,
+so there is an opportunity to test before going live.  You should telnet
+to port 10025 on localhost and send a test message through C<amavisd-new>
+by manually entering SMTP commands.  You might want to send, for example,
+an EICAR virus-testing pattern or sample spam and non-spam messages.
+You should also telnet to port 10026 on localhost to verify that Postifx
+is listening and accepting messages.
+
+Finally, to make Postfix send all incoming messages through C<amavisd-new>,
+add the following to C</etc/postfix/main.cf> and issue the command
+'postfix reload':
+
+content_filter = smtp-amavis:[127.0.0.1]:10025
+
+You are now running live with a powerful virus and spam filter on
+your e-mail.  If you run into trouble, just comment the preceeding line
+out and reload Postfix.  If you are having trouble, start add C<debug>
+to the command-line options to start C<amavisd-new> and it will log
+verbosely and not detach from your terminal.  If you need help, re-read
+the documentation, capture a log of the problem you are seeing, and join
+the amavis-user mailing list (see References).
 
 =head2 Conclusion
+
+This is great stuff!
+
+=head2 References
+
+=item Postfix web site
+    http://www.postfix.org
+
+=item amavisd-new web site
+    http://www.ijs.si/software/amavisd/
+
+=item AMaViS web site
+    http://www.amavis.org/
+
+=item amavis-user mailing list
+    http://sourceforge.net/mail/?group_id=6006
+
+=item Sophie web site
+    http://www.vanja.com/tools/sophie/
+
+=item Sophos Anti-Virus web site
+    http://www.sophos.com
+
+=item SpamAssassin web site
+    http://www.spamassassin.org
+
+=item Microsoft Knowledge Base article listing dangerous file extentions:
+    http://support.microsoft.com/default.aspx?scid=kb;EN-US;q262631
 
 =cut
 
