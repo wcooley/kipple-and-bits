@@ -1,0 +1,47 @@
+TODO List for Directory Mgr:
+
+STYLE
+=====
+
+    o Get some real icons!
+
+    o Fix footers.
+
+    o Document key data structures (user, group, etc.)
+
+    o Fix unquoted hash keys.
+
+    o Implement section headers in Webmin. DONE
+
+
+OPERATIONAL
+===========
+
+    o Home directory creation.
+
+    o Set allowed hosts attribute for users.
+
+    o User search.
+
+    o LDAP MD5 & SHA passwords.
+
+    o Group management.
+
+    o Correctly limit 'system users/groups' by excluding them from
+    with the search filter.
+
+    o Sub-modules needs to return to main module index, instead of
+    system category.
+
+    o Clarify abstractions between directory-agnostic functions,
+    directory-specific functions, and presentation.
+
+    o Samba attributes for users.
+
+    o Host management.
+
+    o Alias management.
+
+    o Figure out, plan for, and implement Postfix map management.
+
+    o Automatic home directories like useradmin.
