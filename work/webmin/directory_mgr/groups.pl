@@ -2,6 +2,26 @@
 
 # groups.pl $Revision$ $Date$ $Author$
 
+use strict ;
+no strict "vars" ;
+
+use diagnostics ;
+$diagnostics::PRETTY =1 ;
+
+=head1 NAME
+
+groups.pl
+
+=head1 DESCRIPTION
+
+This modules contains directory-agnostic routines for
+managing groups.
+
+=head1 FUNCTIONS
+
+=cut
+
+
 =head2 new_group_ok
 
 SYNOPSIS 
@@ -31,7 +51,7 @@ sub new_group_ok ($)
 }
 
 
-=head 2 changed_group_ok
+=head2 changed_group_ok
 
 SYNOPSIS
 
@@ -63,7 +83,7 @@ sub changed_group_ok ($)
 
 
 
-=head 2 group_from_entry
+=head2 group_from_entry
 
 SYNOPSIS
 
@@ -103,7 +123,7 @@ sub group_from_entry ($)
 
 
 
-=head 2 group_defaults
+=head2 group_defaults
 
 SYNOPSIS
 
@@ -136,7 +156,7 @@ sub group_defaults ($)
     return $group ;
 }
 
-=head 2 entry_from_group 
+=head2 entry_from_group 
 
 SYNOPSIS
 
@@ -200,11 +220,11 @@ sub entry_from_group ($$)
 }
 
 
-=head 2 group_from_form
+=head2 group_from_form
 
 SYNOPSIS
 
-C<group_from_from ( I<$in> )>
+C<group_from_from ( I<\%in> )>
 
 DESCRIPTION
 
@@ -234,14 +254,14 @@ sub group_from_form ($) {
 	my (%group) ;
 
     if ($in->{'groupName'}) {
-    } else {
+        $group{'groupName'} = $in->{'groupName'} ;
+    } elsif ($in->{'userName'}) {
         $group{'groupName'} = $in->{'userName'} ;
     }
 
     if ($in->{'gid_from'} eq "automatic") {
-        unless ($in->{'groupDescription'}) {
-            $group{'groupDescription'} = &text('group_desc', $group{'groupName'}) ;
-        }
+        $group{'groupID'} = &find_free_groupid($config{'min_gid'}, 
+            $config{'max_gid'}) ;
     } elsif ($in->{'gid_from'} eq "input") {
         $group{'groupID'} = $in->{'groupID'} ;
     } elsif ($in->{'gid_from'} eq "select") {
@@ -258,11 +278,11 @@ sub group_from_form ($) {
 }
 
 
-=head 2 group_add_username
+=head2 group_add_username
 
 SYNOPSIS
 
-C<group_add_user ( I<$group>, I<$userName> )>
+C<group_add_user ( I<\%group>, I<$userName> )>
 
 DESCRIPTION
 
