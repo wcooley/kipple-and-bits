@@ -42,13 +42,13 @@ print "<p>This is the list of users:<br>\n" ;
 
 print "<table border width=100% $cb>\n";
 print "<tr $tb>\n";
-print "<td><b><a href=\"edit_users.cgi?sort_on=userName\">" .
+print "<td><b><a href=\"list_users.cgi?sort_on=userName\">" .
     $text{'userName'} . "</a></b>\n";
-print "<td><b><a href=\"edit_users.cgi?sort_on=userID\">" .
+print "<td><b><a href=\"list_users.cgi?sort_on=userID\">" .
     $text{'userID'} . "</a></b>\n";
-print "<td><b><a href=\"edit_users.cgi?sort_on=groupID\">" .
+print "<td><b><a href=\"list_users.cgi?sort_on=groupID\">" .
     $text{'groupID'} . "</a></b>\n";
-print "<td><b><a href=\"edit_users.cgi?sort_on=fullName\">" .
+print "<td><b><a href=\"list_users.cgi?sort_on=fullName\">" .
     $text{'fullName'} . "</a></b>\n";
 print "<td><b>" .
     $text{'telephoneNumber'} . "</b>\n";
