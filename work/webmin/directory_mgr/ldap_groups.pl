@@ -432,6 +432,45 @@ sub create_group {
 
 }
 
+
+=head 2 group_entry_add_username
+
+SYNOPSIS
+
+C<group_entry_add_username ( I<$entry>, I<$username> )>
+
+DESCRIPTION
+
+This function adds a username to a group LDAP entry.
+Requires a pre-initialized entry.
+
+RETURN VALUE
+
+Returns true if the username was added; false if the
+username already existed.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+
+sub group_entry_add_username ($$) {
+
+    my ($entry, $inuser) ;
+
+    if ($entry->hasValue('memberUid', $inuser)) {
+        return 0;
+    } else {
+        $entry->addValue('memberUid', $inuser) ;
+        return 1;
+    }
+}
+
 =head1 NOTES
 
 A subroutine in this library file MUST NOT call &error or otherwise
