@@ -1,11 +1,20 @@
+*******************************
+* Done List for Directory_Mgr *
+*******************************
+
 What works currently:
 
     o Not much :)
 
-    o LDAP user creation, with user-private groups.
+    @ User creation:
+        o Auto-selecting of next UID.
+        o Auto-creation of group for user.
+        o User listing, sorting rows by columns.
+        
 
-
-TODO List for Directory Mgr:
+*******************************
+* TODO List for Directory_Mgr *
+*******************************
 
 STYLE
 =====
@@ -20,22 +29,30 @@ STYLE
 OPERATIONAL
 ===========
 
-    o Group management.
+    @ User management:
+        o User search.
+        o User modification.
+        o Delete group when removing user.
+        o LDAP MD5 & SHA passwords.
+        o Samba attributes for users.
+        o Set allowed hosts attribute for users.
+        o Home directory creation.
+        o Automatic home directories like useradmin.
+        o Selectable OU for users.
 
-    o Home directory creation. IN-PROGRESS
+    @ Group management.
+        o Almost everything; some things implemented for
+        users.
 
-    o Set allowed hosts attribute for users.
+    @ Host management.
+        o Everything.
 
-    o User search.
+    @ Alias management.
+        o Everything.  Will Postfix even use the NSS alias
+            database?
 
-    o LDAP MD5 & SHA passwords.
+    @ Hosts management.
+        o Everything.
 
-    o Samba attributes for users.
+    @ Figure out, plan for, and implement Postfix map management.
 
-    o Host management.
-
-    o Alias management.
-
-    o Figure out, plan for, and implement Postfix map management.
-
-    o Automatic home directories like useradmin.
