@@ -76,16 +76,16 @@ print "<TR><TD><B>" . $text{'uid'} . "</B> (uid)\n";
 print "</TD>";
 print "<TD><INPUT name=\"uid\" size=12 value=\"$uid\">\n";
 print "</TD></TR>";
-print "<TR><TD><B>" . $text {'uidnumber'} . "</B> (uidnumber)\n";
+print "<TR><TD><B>" . $text {'uidNumber'} . "</B> (uidNumber)\n";
 print "</TD>";
-print "<TD><INPUT name=\"uidnumber\" size=5 value=\"$uidnumber\"> (*)\n";
+print "<TD><INPUT name=\"uidNumber\" size=5 value=\"$uidNumber\"> (*)\n";
 print "</TD></TR>";
 
 print "<tr>\n" ;
 if ($config{'new_group'}) {
 	print <<EOF ;
 	<td>
-	<b>$text{'gidnumber'}</b>
+	<b>$text{'gidNumber'}</b>
 	</td>
 
 	<td>
@@ -98,9 +98,9 @@ EOF
 
 } else {
 	print "\n\t<TD>"
-		. "<B>" . $text{'gidnumber'} . "</B> (gidnumber)\n</TD>"
-		. "<TD><SELECT name=\"gidnumber\" size=1>\n" ;
-	&html_group_options ($gidnumber) ;
+		. "<B>" . $text{'gidNumber'} . "</B> (gidNumber)\n</TD>"
+		. "<TD><SELECT name=\"gidNumber\" size=1>\n" ;
+	&html_group_options ($gidNumber) ;
 	print "</SELECT>\n</TD>";
 }
 print "</tr>\n" ;
@@ -264,7 +264,7 @@ EOF
 print "</TR></TABLE>\n";
 
 print "<BR>\n";
-&footer ("index.cgi?sort_on=$sort_on", "$text{'index_t'}");
+&footer ($config{'app_path'}, "$text{'index_t'}");
 do "footer.pl";
 
 =head1 NOTES
