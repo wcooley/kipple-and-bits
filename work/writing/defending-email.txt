@@ -34,30 +34,29 @@ into the content filter at the queuing stage, which in the diagrams in
 the Postfix documentation is labelled I<qmgr>, which is the name of the
 internal process that maintains queues for incoming and outgoing messages.
 
-The simplest of the interfaces is a simple UNIX pipe, where Postfix
-writes to the filter's standard input and and checks the filters return
-values for pre-defined status codes.  Mail is injected back into Postfix
-using the C<sendmail> command, which is the Postfix replacement for the
-same Sendmail command.  The example in the C<FILTER_README> document that
-ships with Postfix uses C<cat> and acts as a simple pass-through filter,
-which does nothing.
+The simplest of the C<content_filter> interfaces is a simple UNIX pipe,
+where Postfix writes to the filter's standard input and checks the filter's
+return value for pre-defined status codes.  Mail is injected back into
+Postfix using the C<sendmail> command, which is the Postfix replacement for
+the same Sendmail command.  The example in the C<FILTER_README> document
+that ships with Postfix uses C<cat> and acts as a simple pass-through
+filter which does nothing.
 
 The best interface for sophisticated mail filtering is not the pipe
 mechanism, but rather the SMTP proxy mechanism.  This provides a
 well-defined interface between Postfix and the filter and allows
-a persistent scanning daemon, which can save considerable overhead
-required for repeated start-up and easily allow the filtering proxy to
-deliver reliably.  Because the SMTP proxy mechanism operates over TCP/IP,
-the content filter can be located on a separate host than the Postfix
-service that receives the mail.
+a persistent scanning daemon, which reduces overhead and allows the
+filtering proxy to deliver reliably.  Because the SMTP proxy mechanism
+operates over TCP/IP, the content filter can be located on a separate
+host than the Postfix service that receives the mail.
 
-The C<content_filter> requires Postfix to connect to the proxy as an
-SMTP client, which handles the message and then connects back into a
-special SMTP server listening on a non-default port which handles the
-final routing and delivery of the message.  As mentioned before, Postfix
-sends the message to the content filter at the queuing stage; this will be
-called the "sending process"; the message is re-injected into the Postfix
-system in the C<smtpd> stage, which will be called the "receiving process."
+The C<content_filter> requires Postfix to connect to the proxy as an SMTP
+client, which handles the message and then connects back into a special
+SMTP server which handles the final routing and delivery of the message.
+As mentioned before, Postfix sends the message to the content filter
+at the queuing stage; this will be called the "sending process"; the
+message is re-injected into the Postfix system in the C<smtpd> stage,
+which will be called the "receiving process."
 
 =head2 Scanning with C<amavisd-new>
 
@@ -79,18 +78,16 @@ helpful and personable on the amavis-users mailing list, and the original
 AMaViS folks have been quite tolerant of the C<amavisd-new> traffic on
 their list, which these days accounts for at least half.
 
-C<amavisd-new> is written in Perl, and takes advantage of a number
-of Perl modules, such as the Net::Server module, which it uses to
-implement a forked parent/child environment, like many other UNIX daemons.
-C<amavisd-new> directly uses Mail::SpamAssassin, the core scanning engine
-of SpamAssassin, so it does not need to use 'spamd' for performance.
+C<amavisd-new> is written in Perl, and takes advantage of a number of
+Perl modules, such as the Net::Server module, which it uses to implement
+a robust forked parent/child environment, and Mail::SpamAssassin, the
+core scanning engine of SpamAssassin, so it does not need to use 'spamd'.
 
-Mark strives to make C<amavisd-new> adhere to standards and as a result
-is not widely regarded as "broken" and many systems administrators and
-developers hold it in high regard.  It is also fast, although as a Perl
-application it can use a considerable amount of memory, so it is best
-limited to a few child processes.  C<amavisd-new> is very flexible,
-but can be intimidating to configure.
+Mark strives to make C<amavisd-new> adhere to standards and as the result
+is a well-regarded and standards-friendly system.  It is also fast,
+although as a Perl application it can use a considerable amount of memory,
+so it is best limited to a few child processes.  As C<amavisd-new> is
+very flexible, the myriad of options makes it intimidating to configure.
 
 C<amavisd-new> is able to reliably deliver messages because it never has to
 store the messages itself; as soon as the Postfix sending process connects
@@ -108,10 +105,9 @@ the problem is rectified.
 Sophos Anti-Virus may be the best kept secret in the anti-virus industry.
 Sophos produces a very high quality scanning engine and provides very
 good support.  Sophos caters to the enterprise, so their products are
-built for a diversity of platforms, including OpenVMS.  Sophos caters to
-the enterprise, so their products are not sold retail, which is part of
-the reason they are able to maintain the high quality of their support.
-(NB: I am a Sophos reseller, so my opinions are biased.)
+built for a diversity of platforms.  Their products are not sold retail,
+which is part of the reason they are able to maintain the high quality
+of their support.  (NB: I am a Sophos reseller, so my opinions are biased.)
 
 Most of Sophos' products ship with 'sweep', a command-line scanner,
 but the the command-line client is mostly a wrapper around SAVI, their
@@ -156,12 +152,12 @@ message in an attempt to fool the other systems.  If possible, register
 and send checksums of spam not caught by these system back to network;
 they operate as community efforts, so your contributions help.
 
-SpamAssassin will also use DNS real-time black-hole lists (DNSRBLs)
-and right-hand-side black-hole list (RHSBLs).  It assigns different
-scores based on the reputation or focus of the RBL, and as a result is
-safer than using the lists directly; for example, instead of simply
-blocking all messages originating at from a dial-up address, the RBL
-simply adds to the score, so if the message is otherwise not spam-like,
+SpamAssassin will also use DNS real-time black-hole lists (DNSRBLs) and
+right-hand-side black-hole list (RHSBLs).  It assigns different scores
+based on the reputation or focus of the RBL, and as a result is safer
+than using the lists directly through your MTA; for example, instead of
+simply blocking all messages originating at from a dial-up address, the
+RBL simply adds to the score, so if the message is otherwise not spam-like,
 it will be allowed through.  (I have seen desperate small ISPs block mail
 entirely from addresses owned by particular national IPSs, which is a
 very bad practice, since it alienates sizable portions of the Internet.)
@@ -170,12 +166,12 @@ which the message has passed, which is more effective than only applying
 it to the SMTP peer, as an MTA usually does.
 
 Among the newest and most exciting features is the Bayesian classification
-and auto-learning, which allow it to learn spam and non-spam based on
-scores of messages it sees.  Bayesian classification is a sophisticated
+and auto-learning, which allow it to learn what is spam and non-spam based
+on scores of messages it sees.  Bayesian classification is a sophisticated
 technique to statistically determine the likelihood of a message being
 spam, based on identifying tokens (words, etc.) as either being most
 frequently used in spam or "ham" (non-spam).  It's a good deal more
-flexible than the basic keyword and phrase matching that SpamAssassin
+flexible than the static regular expression matching that SpamAssassin
 does without it; as a result it has to learn which tokens are spam tokens
 and which are ham tokens, so it must be trained, usually be feeding it
 messages and indicated which it is.  Since SpamAssassin still has a number
