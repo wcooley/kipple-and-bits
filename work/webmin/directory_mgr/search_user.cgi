@@ -76,6 +76,7 @@ if ($in{'do'} eq "search") {
 
 } else {
     &header($text{'search_user_t'}, "" );
+    print "       <hr noshade size=2>\n" ;
     print &html_user_search_form() ;
     &footer($config{'app_path'}, $text{'module_title'});
 }
