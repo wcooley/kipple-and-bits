@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #
-#    LDAP Manager Webmin Module
-#    Copyright (C) 2001 by Will Cooley <wcooley@nakedape.cc> and others
+#    Directory_Mgr Webmin Module
+#    Copyright (C) 2002 by Will Cooley <wcooley@nakedape.cc> and others
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,17 @@
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
 #
-#    This module inherited from the Webmin Module Template 0.79.1 by tn
+
+
+=head1 NAME
+
+I<index.cgi>
+
+=head1 DESCRIPTION
+
+I<index.cgi> is the top-level CGI for I<Directory_Mgr>.
+
+=cut
 
 do '../web-lib.pl';
 
@@ -92,17 +102,14 @@ None at the moment.
 
 =head1 CREDITS
 
-This module begun by Fernando Lozano <fernando@lozano.etc.br>
-in his I<ldap-users> module.  Incorporated into I<directory_mgr>
-by Wil Cooley <wcooley@nakedape.cc>.  All bug reports should go to
-Wil Cooley.
+This module begun by Wil Cooley <wcooley@nakedape.cc>.  All bug
+reports should go to Wil Cooley.
 
 =head1 LICENSE
 
-This file is copyright Fernando Lozano <frenando@lozano.etc.br>
-and Wil Cooley <wcooley@nakedape.cc>, under the GNU General Public
-License <http://www.gnu.org/licenses/gpl.txt> or the file B<LICENSE>
-included with this program.
+This file is copyright Wil Cooley <wcooley@nakedape.cc>, under the
+GNU General Public License <http://www.gnu.org/licenses/gpl.txt>
+or the file B<LICENSE> included with this program.
 
 =cut
 
