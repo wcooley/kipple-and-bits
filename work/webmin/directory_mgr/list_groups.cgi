@@ -34,7 +34,7 @@ $|=1;
 ## Insert Output code here
 print "<hr>\n<h2>This feature is not here yet.</h2>\n<hr>" ;
 
-&footer("/ldap_mgr", $text{'index'});
+&footer($config{'app_path'}, $text{'index'});
 # uses the index entry in /lang/en
 
 
