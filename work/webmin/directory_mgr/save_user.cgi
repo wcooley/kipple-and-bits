@@ -8,6 +8,17 @@
 # $Id$
 #
 
+=head1 NAME
+
+I<save_user.cgi>
+
+=head1 DESCRIPTION
+
+I<save_user.cgi> processes submissions from I<add_user.cgi>
+and I<edit_user.cgi> forms.
+
+=cut
+
 $debug = 1 ;
 require "directory-lib.pl" ;
 
@@ -19,6 +30,11 @@ $sort_on = $in{'sort_on'} ;
 if ($in{'do'} eq "create") {
 	$user_info = &user_from_form(\%in) ;
 	$group_info = &group_from_form(\%in) ;
+
+	$ret = &set_passwd ($user_info, $in{'hash'});
+    if ( $ret->[0] == -1 ) {
+        &error($ret->[1]) ;
+    }
 
 	# Create group before user, so if we're using
 	# user-private-groups we can get a free gidNumber.
@@ -47,7 +63,6 @@ if ($in{'do'} eq "create") {
         &error($ret->[1]) ;
     }
 
-	&set_passwd ($dn, $user_info->{'password'}, $in{'hash'});
 
     # Create home directory
 
@@ -125,7 +140,9 @@ if ($in{'do'} eq "create") {
 	<input type="hidden" name="dn" value="$in{'dn'}">
 	<input type="hidden" name="sort_on" value="$sort_on">
 	<input type="submit" name="delete_user" value="$text{'just_user'}">
+    <!-- We don't have homedir management yet
 	<input type="submit" name="delete_home" value="$text{'user_and_home'}">
+    -->
 
 	<p>
 EOF
