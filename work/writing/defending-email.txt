@@ -30,13 +30,18 @@ the C<sendmail> command, which is the Postfix replacement for the same
 command Sendmail uses.  The example in the C<FILTER_README> file that ships
 with Postfix uses C<cat> and acts as a simple pass-through filter, which
 does nothing.  You could, for example, write a filter to pass it though
-C<tac> to reverse al the lines of the message (not that you'd want to).
+C<tac> to reverse all the lines of the message (not that you'd want to).
 
-The pipe mechanism, however, is not the best interface for anything as
-complicated as mail filtering.  The best interface uses the filter as an
-SMTP proxy.
+The pipe mechanism, however, is not the best interface for complex mail
+filtering.  The best interface for our purposed uses the filter as an
+SMTP proxy; this provides a well-defined interface between Postfix and
+the filter and it allows a persistent scanning daemon, which can save
+considerable overhead required for repeated start-up and easily permit
+the filtering proxy to implement reliable delivery.
 
 =head2 Scanning with C<amavisd-new>
+
+C<amavisd-new> operates as an SMTP proxy, designed to hook in to  
 
 =head2 Other Components
 
