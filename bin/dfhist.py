@@ -29,6 +29,6 @@ if __name__ == '__main__':
         hashcnt = perfree / histodiv
         if ((perfree%histodiv) != 0): hashcnt+=1
         print line, 
-        print hashfmt % (hashcnt*'#', (histowidth-hashcnt)*' '),
+        print hashfmt % (hashcnt*'#', (histowidth-hashcnt)*' ')
             
 
