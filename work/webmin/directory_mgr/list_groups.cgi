@@ -44,46 +44,15 @@ if ($sort_on eq "groupID") {
 &header($text{'index_t'}, "" );
 print "<hr noshade size=2>\n" ;
 
-#print "<b>Found " . $#groups . "</b>\n" ;
-print "<i><b>Search found " . scalar(@{$all_groups}) . " groups</b></i><br>\n" ;
+print "<b>" . &text('search_found_n_groups', scalar(@groups)) . "</b>\n" ;
 
-print <<EOF ;
-
-    <b>This is the list of groups:</b>
-
-    <table border=1 cellspacing=0 cellpadding=2 width=100% $cb>
-    <tr $tr>
-    <td>
-        <b>
-        <a href="list_groups.cgi?sort_on=groupName">
-            $text{'groupName'}
-        </a>
-        </b>
-    </td>
-    <td>
-        <b>
-        <a href="list_groups.cgi?sort_on=groupID">
-            $text{'groupID'}
-        </a>
-        </b>
-    </td>
-    <td>
-        <b>$text{'description'}</b>
-    </td>
-
-EOF
-
-if ($#groups < 0) {
-    print "<tr><td colspan=3>" 
-        . $text{'err_no_groups_found'}
-        . "</td></tr>\n" ;
-} else {
+unless (scalar(@groups) < 1) {
+    print &html_group_table_header() ;
     foreach $group (@groups) {
         print &html_row_group($group) ;
     }
+    print &html_group_table_footer() ;
 }
-
-print "</table>\n" ;
 
 &footer($config{'app_path'}, $text{'index'});
 do "footer.pl" ;
