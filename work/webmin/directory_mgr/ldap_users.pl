@@ -16,7 +16,7 @@ sub list_users
 
     $filter = "(objectclass=posixAccount)";
     $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
-        ("uid", "uidnumber", "gidnumber", "cn", "title", "organizationname",
+        ("uid", "uidNumber", "gidNumber", "cn", "title", "organizationname",
         "department", "physicalofficedelyveryname"));
 
     $i = 0;
@@ -26,15 +26,15 @@ sub list_users
         # This could be done better by changing the filter
         # string
         if ($config{'hide_system_users'} && 
-            ($config{'min_uid'} > $entry->{'uidnumber'}[0])) {
+            ($config{'min_uid'} > $entry->{'uidNumber'}[0])) {
             $entry = $conn->nextEntry ();
             next ;
         }
 
         $user{'dn'} = $entry->getDN() ;
         $user{'uid'} = $entry->{'uid'}[0] ;
-        $user{'uidnumber'} = $entry->{'uidnumber'}[0];
-        $user{'gidnumber'} = $entry->{'gidnumber'}[0];
+        $user{'uidNumber'} = $entry->{'uidNumber'}[0];
+        $user{'gidNumber'} = $entry->{'gidNumber'}[0];
         $user{'cn'} = $entry->{'cn'}[0];
         $user{'title'} = $entry->{'title'}[0];
         $user{'organizationname'} = $entry->{'organizationname'}[0];
@@ -73,29 +73,49 @@ sub is_uid_free
     return $entry;
 }
 
+=head2 is_uidNumber_free
 
-sub is_uidnumber_free
+SYNOPSIS
+
+is_uidNumber_free ( I<$uidNumber> )
+
+DESCRIPTION
+
+Check if supplied uidNumber is available.
+
+RETURN VALUE
+
+Returns true if the uidNumber is free; false if it isn't.
+
+=cut
+
+sub is_uidNumber_free
 {
-    my ($uidnumber) = @_;
+    my ($uidNumber) = @_;
 
-    my ($filter);
+    my ($filter, $entry);
 
-    $filter = "(&(objectclass=posixAccount)(uidnumber=$uidnumber)";
+    $filter = "(&(objectclass=posixAccount)(uidNumber=$uidNumber))";
     $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
-        ("objectclass", "uidnumber"));
+        ("objectclass", "uidNumber"));
+    if ($entry) {
+        return 0 ;
+    } else {
+        return 1 ;
+    }
 
-    return $entry;
 }
 
 =head2 find_free_uid
 
 SYNOPSIS
 
-find_free_uid ( [I<$minUid>] )
+find_free_uid ( I<$minUid>, I<$maxUid> )
 
 DESCRIPTION
 
-Finds the next available uidNumber, starting at I<minUid>.
+Finds the next available uidNumber, starting at I<minUid> but not
+going over I<maxUid>.
 
 RETURN VALUE
 
@@ -103,7 +123,7 @@ Returns the next available UID or -1 if an available UID isn't found.
 
 BUGS
 
-Calls &is_uidnumber_free() repeatedly, which can cause lots of
+Calls &is_uidNumber_free() repeatedly, which can cause lots of
 queries to server.  Fix by doing a single query and examining
 results.
 
@@ -112,18 +132,22 @@ results.
 sub find_free_uid
 {   
     
-    my ($minUid) = @_ ;
+    my ($minUid, $maxUid) = @_ ;
 
     $minUid = 0 unless $minUid ;
+    $maxUid = $config{'max_uid'} unless $maxUid ;
 
-    for ( $i = $minUid; not &is_uidnumber_free($i); $i++ ) {
-        if ( $i > $config->{'max_uid'} ) {
-            $i = -1 ;
+    my $free_uid = -1 ;
+
+    while ($minUid <= $maxUid) {
+        if (&is_uidNumber_free($minUid)) {
+            $free_uid = $minUid ;
             last ;
         }
+        $minUid++ ;
     }
-    
-    return $i ;
+
+    return $free_uid ;
 }
 
 
@@ -207,8 +231,8 @@ sub create_user
     }
     # posixAccount
     $entry->{'uid'} = [$user->{'uid'}];
-    $entry->{'uidnumber'} = [$user->{'uidnumber'}];
-    $entry->{'gidnumber'} = [$user->{'gidnumber'}];
+    $entry->{'uidNumber'} = [$user->{'uidNumber'}];
+    $entry->{'gidNumber'} = [$user->{'gidNumber'}];
     $entry->{'homedirectory'} = [$user->{'homedirectory'}];
     $entry->{'loginshell'} = [$user->{'loginshell'}];
     $entry->{'sn'} = [$user->{'sn'}];
@@ -284,7 +308,7 @@ sub set_passwd
 
     $entry = $conn->browse ($dn);
     if ($err = $conn->getErrorCode ()) {
-        &error ("update ($dn): $err:" . $conn->getErrorString ());
+        &error ("set_passwd ($dn): $err:" . $conn->getErrorString ());
     }
     if ($type eq "crypt") {
         $salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')
