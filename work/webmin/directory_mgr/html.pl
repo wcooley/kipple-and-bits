@@ -6,6 +6,12 @@
 # by Fernando Lozano <fernando@lozano.eti.br> under the GNU GPL (www.gnu.org)
 #
 
+use strict ;
+no strict "vars" ;
+
+use diagnostics ;
+$diagnostics::PRETTY =1 ;
+
 
 sub html_shell_options
 {
@@ -146,7 +152,6 @@ sub html_user_form {
     if ($form_type ne "display") {
         print <<EOF ;
     <form method="post" action="save_user.cgi">
-    <td><input type="hidden" name="new" value="$new">
     <td><input type="hidden" name="do" value="$form_type">
     <td><input type="hidden" name="dn" value="$dn">
     <td><input type="hidden" name="sort_on" value="$sort_on">
@@ -385,7 +390,7 @@ if ($form_type eq "create") {
     print "</TD></TR>";
     print "<TR><TD>" . $text{'userpasswd'} . "\n";
     print "</TD>";
-    print "<TD><INPUT name=\"userpassword\" size=12 value=\"$userpassword\"> (*)\n";
+    print "<TD><INPUT name=\"userpassword\" size=12 > (*)\n";
     print "</TD></TR>";
     print "<TR><TD>" . $text{'passwdtype'} . "\n";
     print "</TD><TD>";

@@ -4,18 +4,24 @@
 #
 # $Id$
 
+use strict ;
+no strict "vars" ;
+
+use diagnostics ;
+$diagnostics::PRETTY =1 ;
+
 sub connect
 {
-    $conn = new Mozilla::LDAP::Conn ($config{server},
-		$config{port},
-        $config{user},
-		$config{passwd});
+    $conn = new Mozilla::LDAP::Conn ($config{'server'},
+        $config{'port'},
+        $config{'user'},
+        $config{'passwd'});
     if (! $conn) {
         &error(&text("err_conn",
-			$config{'directory_type'},
-			$config{'server'}));
+            $config{'directory_type'},
+            $config{'server'}));
         &webmin_log("connect", 
-			$config{'directory_type'},
+            $config{'directory_type'},
             $config{'server'}, \%in)
     }
 }

@@ -2,6 +2,12 @@
 
 $debug = 0 ;
 
+use strict ;
+no strict "vars" ;
+
+use diagnostics ;
+$diagnostics::PRETTY =1 ;
+
 =head1 NAME
 
 misc.pl

@@ -1,3 +1,9 @@
+use strict ;
+no strict "vars" ;
+
+use diagnostics ;
+$diagnostics::PRETTY =1 ;
+
 
 print <<FOOTER;
 <hr noshade size=2>

@@ -5,6 +5,12 @@
 # by Fernando Lozano <fernando@lozano.eti.br> under the GNU GPL (www.gnu.org)
 #
 
+use strict ;
+no strict "vars" ;
+
+use diagnostics ;
+$diagnostics::PRETTY =1 ;
+
 =head1 NAME
 
 ldap_users.pl
