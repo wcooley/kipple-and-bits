@@ -42,7 +42,7 @@ string instead of skipping entries when 'hide_system_users' is set.
 
 =cut
 
-sub list_users
+sub list_users (:$$)
 {
     # do not filter OU yet
     # should display the OU for each entry
@@ -101,7 +101,7 @@ None known.
 
 =cut
 
-sub get_user_attr
+sub get_user_attr ($)
 {
     my ($dn) = @_;
 
@@ -132,7 +132,7 @@ Return value logic backwards.
 
 =cut
 
-sub is_uid_free
+sub is_uid_free ($)
 {
     my ($uid) = @_;
 
@@ -175,7 +175,7 @@ None known.
 
 =cut
 
-sub search_users_attr
+sub search_users_attr ($@)
 {
 
     my ($attrfilter, @desired_attrs) = @_ ;
@@ -211,11 +211,11 @@ sub search_users_attr
 
 }
 
-=head2 find_free_uid
+=head2 find_free_userid
 
 SYNOPSIS
 
-C<find_free_uid ( I<$minUid>, I<$maxUid> )>
+C<find_free_userid ( I<$minUid>, I<$maxUid> )>
 
 DESCRIPTION
 
@@ -234,7 +234,7 @@ results.
 
 =cut
 
-sub find_free_uid
+sub find_free_userid ($:$)
 {   
     
     my ($minUid, $maxUid) = @_ ;
@@ -273,7 +273,7 @@ isn't.
 
 =cut
 
-sub is_mail_free
+sub is_mail_free ($)
 {
     my ($mail) = @_;
 
@@ -311,7 +311,7 @@ posixShadow accounts are not implemented.
 
 =cut
 
-sub create_user
+sub create_user ($)
 {
     my ($user) = @_ ;
     my ($entry, $dn, $err);
@@ -355,7 +355,7 @@ directly.  Does not allow for DN/uid changes.
 
 =cut
 
-sub update_user
+sub update_user ($$)
 {
     my ($dn, $user) = @_;
 
@@ -391,7 +391,7 @@ case of failure, -1 and a formatted error string.
 
 =cut
 
-sub delete_user
+sub delete_user ($)
 {
     my ($dn) = @_;
 
@@ -420,7 +420,7 @@ calls &error() directly.
 
 =cut
 
-sub set_passwd
+sub set_passwd ($$$)
 {
     my ($dn, $passwd, $type) = @_;
 
