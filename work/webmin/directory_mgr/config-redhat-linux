@@ -2,3 +2,9 @@ enable_user_mgmt=1
 enable_group_mgmt=1
 enable_host_mgmt=1
 enable_alias_mgmt=1
+min_uid=500
+min_gid=500
+max_uid=65354
+max_gid=65354
+
+app_path=/directory_mgr
