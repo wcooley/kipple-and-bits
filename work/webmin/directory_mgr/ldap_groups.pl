@@ -179,6 +179,15 @@ sub list_groups
     while ($entry) {
         my (%group);
 
+        # This could be done better by changing the filter
+        # string
+        if ($config{'hide_system_groups'} &&
+            ($config{'min_gid'} > $entry->{'gidnumber'}[0])) {
+            $entry = $conn->nextEntry ();
+            next ;
+        }
+
+
         $group{dn} = $entry->getDN (),
         $group{cn} = $entry->{cn}[0],
         $group{gidnumber} = $entry->{gidnumber}[0];
