@@ -2,12 +2,28 @@
 
 # groups.pl $Revision$ $Date$ $Author$
 
+=head2 new_group_ok
+
+SYNOPSIS 
+
+new_group_ok ( I<\%group> )
+
+DESCRIPTION
+
+Checks that required attributes are present in group hash.
+
+RETURN VALUE
+
+Returns true is group hash has all required attributes.
+
+=cut
 
 sub new_group_ok
 {
+	my ($group) = @_ ;
     return
-        $gidnumber &&
-        $cn;
+        $group{'gidNumber'} &&
+        $group{'cn'};
 }
 
 
@@ -66,7 +82,7 @@ sub group_from_form {
 			$group{'gidNumber'} = $in->{'input_gid'} ;
 		}
 		if ($in->{'uidnumber'}) {
-			$group{'memberUid'} = $uidnumber ;
+			$group{'memberUid'} = $in->{'uidnumber'} ;
 		}
 		if ($in->{'groupDescription'}) {
 			$group{'description'} = $in->{'groupDescription'} ;
