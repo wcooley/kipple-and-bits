@@ -13,7 +13,7 @@ misc.pl
 
 =head1 DESCRIPTION
 
-Miscellaneous functions that are not data-type, HTML or directory
+Miscellaneous functions that are not object-type, HTML or directory
 oriented.
 
 =head1 FUNCTIONS
