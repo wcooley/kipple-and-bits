@@ -16,6 +16,7 @@ $debug=0 ;
 use strict ;
 no strict "vars" ;
 
+
 &init_config() ;
 
 if ("$config{'directory_type'}" eq "LDAP") {
@@ -40,6 +41,9 @@ if ("$config{'directory_type'}" eq "LDAP") {
 	$conn = "" ;
 }
 
+use diagnostics ;
+$diagnostics::PRETTY =1 ;
+
 require "users.pl" ;
 require "groups.pl" ;
 require "html.pl" ;
@@ -52,17 +56,14 @@ None at the moment.
 
 =head1 CREDITS
 
-This module begun by Fernando Lozano <fernando@lozano.etc.br>
-in his I<ldap-users> module.  Incorporated into I<directory_mgr>
-by Wil Cooley <wcooley@nakedape.cc>.  All bug reports should go to
-Wil Cooley.
+This module begun by Wil Cooley <wcooley@nakedape.cc>.  All bug
+reports should go to Wil Cooley.
 
 =head1 LICENSE
 
-This file is copyright Fernando Lozano <frenando@lozano.etc.br>
-and Wil Cooley <wcooley@nakedape.cc>, under the GNU General Public
-License <http://www.gnu.org/licenses/gpl.txt> or the file B<LICENSE>
-included with this program.
+This file is copyright Wil Cooley <wcooley@nakedape.cc>, under the
+GNU General Public License <http://www.gnu.org/licenses/gpl.txt>
+or the file B<LICENSE> included with this program.
 
 =cut
 
