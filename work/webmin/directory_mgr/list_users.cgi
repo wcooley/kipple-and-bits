@@ -40,7 +40,7 @@ elsif ($sort_on eq "groupID") {
 
 print "<p>This is the list of users:<br>\n" ;
 
-print "<table border width=100% $cb>\n";
+print "<table border=1 cellspacing=0 cellpadding=2 width=100% $cb>\n";
 print "<tr $tb>\n";
 print "<td><b><a href=\"list_users.cgi?sort_on=userName\">" .
     $text{'userName'} . "</a></b>\n";
