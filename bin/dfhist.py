@@ -19,7 +19,7 @@ if __name__ == '__main__':
     histowidth = 50
     histodiv = 100/histowidth
 
-    df = os.popen('df -k').readlines()
+    df = os.popen('df -kP').readlines()
 
     print df[0],
 
