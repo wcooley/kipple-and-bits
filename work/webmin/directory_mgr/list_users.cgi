@@ -6,20 +6,17 @@
 # by Fernando Lozano <fsl@centroin.com.br> under the GNU GPL (www.gnu.org)
 #
 
-do '../web-lib.pl';
-$|=1;
-
 require "directory-lib.pl" ;
 
 &check_setup() ;
 &connect () ;
 &ReadParse() ;
 
-$sort_on = ($in{sort_on}) ? $in{sort_on} : "uid";
+$sort_on = ($in{'sort_on'}) ? $in{'sort_on'} : "uid";
 
-&header ($text{module_title}, "", "intro", 1, 1);
+&header ($text{'module_title'}, "", "intro", 1, 1);
 print "<HR noshade size=2>\n";
-print "<P><B>$text{index_msg_1} ($text{index_msg_2})</B> -- $text{index_msg_3} ";
+print "<P><B>$text{'index_msg_1'} ($text{'index_msg_2'})</B> -- $text{'index_msg_3'} ";
 
 @all_users = &list_users ("");
 if ($sort_on eq "uidnumber") {
@@ -68,16 +65,7 @@ if ($#users < 0) {
 else {
     $i = 0;
     foreach $user (@users) {
-        $dn = $user->{dn};
-        print "<TR>";
-        print "<TD><A href=\"add_user.cgi?sort_on=$sort_on&dn=$dn\">" .
-            $user->{uid} . "</A>";
-        print "<TD>" . $user->{uidnumber};
-        print "<TD>" . &find_gid ($user->{gidnumber});
-        print "<TD>" . $user->{cn};
-        print "<TD>&nbsp;" . $user->{department};
-        #print "<TD>" . $user->{dn};
-        print "\n";
+		print &html_row_user($user) ;
     }
 }
 print "</TABLE>\n";
