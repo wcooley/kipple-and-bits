@@ -1,13 +1,15 @@
 
 print <<FOOTER;
-<HR noshade size=2>
-<DIV align="right">
+<hr noshade size=2>
+<div align="right">
 <small>
-Version 0.0.2pre - 
-Copyright &copy; 2001 by Fernando Lozano &lt;fernando\@lozano.eti.br&gt;<BR>
+Version 0.1.0<br>
+Copyright &copy; 2001,2002 by Fernando Lozano &lt;fernando\@lozano.eti.br&gt; and Wil Cooley &lt;wcooley\@nakedape.cc&gt<br>
 This Webmin module is under the GNU GPL - www.gnu.org
+<a href="http://nakedape.cc/index.php3/webmin/directory_mgr" 
+>Module Home</a>
 </small>
-</DIV>
+</div>
 FOOTER
 
 
