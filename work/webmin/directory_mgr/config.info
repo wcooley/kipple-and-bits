@@ -11,7 +11,7 @@ port=Directory Server's Port Number,0,5
 base=Base DN for LDAP Tree,0,40
 user=Administrative User's Credentials (BindDN username etc),0,40
 passwd=Administrative Password (clear text),0,12
-outlook=Edit MS Outlook Address Book Fields,1,1-Yes,2-No
+outlook=Edit MS Outlook Address Book Fields,1,1-Yes,0-No
 
 sect2=User Options,11
 new_group=New Group for New User,1,1-Yes,0-No
