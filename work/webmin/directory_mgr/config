@@ -2,3 +2,15 @@ enable_user_mgmt=1
 enable_group_mgmt=1
 enable_host_mgmt=1
 enable_alias_mgmt=1
+maildomain=
+shell=
+base=dc=company
+directory_type=LDAP
+server=
+outlook=2
+createhome=2
+createhomeremote=1
+passwd=
+port=389
+gid=
+user=
