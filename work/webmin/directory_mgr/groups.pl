@@ -48,42 +48,166 @@ sub group_defaults
     $gidNumber = &max_gidNumber() + 1;
 }
 
+=head 2 entry_from_group 
+
+SYNOPSIS
+
+C<entry_from_group ( I<$entry>, I<$group> )>
+
+DESCRIPTION
+
+This function created an LDAP group entry from a group hash.
+
+RETURN VALUE
+
+Return a 2-element array with 1 as the first element on success
+and the DN of the entry as the second.  On failure, returns -1
+in the first element and a formatted error string as the second.
+Entry must already exist.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
 
 sub entry_from_group
 {
-    my ($entry) = @_;
+    my ($entry, $group) = @_;
 
-    # posixGroup
-    $entry->{'gidNumber'} = [$gidNumber];
-    $entry->{'cn'} = [$cn];
+    # Add the requisite object classes
+    unless ($entry->hasValue('objectClass', 'top')) {
+        $entry->addValue('objectClass', 'top') ;
+    }
+    unless ($entry->hasValue('objectClass', 'posixGroup')) {
+        $entry->addValue('objectClass', 'posixGroup') ;
+    }
+
+    # Add the group ID
+    unless ($entry->hasValue('gidNumber', $group->{'groupID'})) {
+        $entry->setValues('gidNumber', $group->{'groupID'});
+    }
+
+    # Add the group name
+    unless ($entry->hasValue('cn', $group->{'groupName'})) {
+        $entry->setValues('cn', $group->{'groupName'});
+    }
+
+    # Add the group description, if any
+    unless ($entry->hasValue('description', $group->{'groupDescription'})) {
+        if ($group->{'groupDescription'}) {
+            $entry->setValues('description', $group->{'groupDescription'}) ;
+        }
+    }
+    # Add member users
+    for $username (@{$group->{'memberUsernames'}}) {
+        &group_entry_add_user ($entry, $username) ;
+    }
     
     return $entry;
 }
 
-sub group_from_form {
+
+=head 2 group_from_form
+
+SYNOPSIS
+
+C<group_from_from ( I<$in> )>
+
+DESCRIPTION
+
+This function processes form input and copies input data
+into the group hash.
+
+RETURN VALUE
+
+Returns a two-element array with 1 as the first element and a
+reference to the new group hash as the second.  On error, it returns
+-1 as the first element and a formatted error string as the second.
+
+BUGS
+
+None known.
+
+NOTES
+
+Special care must be taken since this function must handle not
+only group creation through the group forms but also group creation
+through the user forms.
+
+=cut
+
+sub group_from_form ($) {
 	my ($in) = @_ ;
 	my (%group) ;
 
-	if ($config{'new_group'}) {
-		$group{'groupName'} = $in->{'uid'} ;
-		if ($in->{'gid_from'} != "automatic") {
-			$group{'gidNumber'} = $in->{'input_gid'} ;
-		}
-		if ($in->{'uidNumber'}) {
-			$group{'memberUid'} = $in->{'uidNumber'} ;
-		}
-		if ($in->{'groupDescription'}) {
-			$group{'description'} = $in->{'groupDescription'} ;
-		} else {
-			$group{'description'} = &text('group_desc',
-				$group{'groupName'}) ;
-		}
-		if ($in->{'systemUser'}) {
-			$group{'systemUser'} = 1 ;
-		}
-	}
+    if ($in->{'groupName'}) {
+    } else {
+        $group{'groupName'} = $in->{'userName'} ;
+    }
+
+    if ($in->{'gid_from'} eq "automatic") {
+        unless ($in->{'groupDescription'}) {
+            $group{'groupDescription'} = &text('group_desc', $group{'groupName'}) ;
+        }
+    } elsif ($in->{'gid_from'} eq "input") {
+        $group{'groupID'} = $in->{'groupID'} ;
+    } elsif ($in->{'gid_from'} eq "select") {
+        $group{'groupID'} = $in->{'groupID'} ;
+    }
+
+    if ($in->{'groupDescription'}) {
+        $group{'groupDescription'} = $in->{'groupDescription'} ;
+    } else {
+        $group{'groupDescription'} = &text('group_desc', $group{'groupName'}) ;
+    }
 
 	return \%group ;
+}
+
+
+=head 2 group_add_username
+
+SYNOPSIS
+
+C<group_add_user ( I<$group>, I<$userName> )>
+
+DESCRIPTION
+
+Adds a userName to a group hash.
+
+RETURN VALUE
+
+Returns true if it added the username; false if the username
+already exists.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+
+sub group_add_username ($$) {
+    my ($group, $inuser) = @_ ;
+
+    for $user (@{$group{'memberUsername'}}) {
+        if ($user eq $inuser) {
+            return 0 ;
+        }
+    }
+
+    push @{$group{'memberUsername'}}, $user ;
+
+    return 1 ;
+
 }
 
 =head1 NOTES
