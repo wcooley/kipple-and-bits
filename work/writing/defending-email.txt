@@ -32,24 +32,140 @@ with Postfix uses C<cat> and acts as a simple pass-through filter, which
 does nothing.  You could, for example, write a filter to pass it though
 C<tac> to reverse all the lines of the message (not that you'd want to).
 
-The pipe mechanism, however, is not the best interface for complex mail
-filtering.  The best interface for our purposed uses the filter as an
-SMTP proxy; this provides a well-defined interface between Postfix and
-the filter and it allows a persistent scanning daemon, which can save
-considerable overhead required for repeated start-up and easily permit
-the filtering proxy to implement reliable delivery.
+The pipe mechanism, however, is not the best interface for complex
+mail filtering.  The best interface for our purposed uses the filter
+as an SMTP proxy; this provides a well-defined interface between
+Postfix and the filter and it allows a persistent scanning daemon,
+which can save considerable overhead required for repeated start-up
+and easily permit the filtering proxy to implement reliable delivery.
+Also, because it uses SMTP, it operates over TCP/IP, so the content
+filter can be located on a separate host than the actual Postfix
+service that receives the mail.
+
+The C<content_filter> requires Postfix to connect to the proxy as an
+SMTP client, which handles the message and then connects back into
+a special SMTP server listening on a non-default port which handles
+the final routing and delivery of the message.  As mentioned before,
+Postfix sends the message to the content filter at the queuing
+stage; this will be called the "sending process"; the message is
+re-injected into the Postfix system in the C<smtpd> stage, which
+will be called the "receiving process."
 
 =head2 Scanning with C<amavisd-new>
 
-C<amavisd-new> operates as an SMTP proxy, designed to hook in to  
+C<amavisd-new> operates as an SMTP proxy, designed to hook in to
+the C<content_filter> mechanism of Postfix.  (C<amavisd-new> also
+supports Sendmail through its Milter interface and in a dual-server
+configuration and Exim using it as an SMTP proxy.)  C<amavisd-new>
+is written, maintained, and supported by Mark Martinec of the
+Jozef Stefan Institue in Slovenija and is aided by an active
+user community.  It began as a fork from C<amavisd>, a daemonized
+version of the AMaViS scanner, which was one of the first open
+source mail virus scanners.  The modern C<amavisd-new> scarcely
+resemebles its predecessor and improves upon it considerably,
+while a difference of philosophies has prevented C<amavisd-new>
+from being merged back into C<amavisd> or simply taking over as the
+official scanning engine of the AMaViS project.  That should not
+sound like a euphemism for saying that either Mark or the developers
+of the original AMaViS have overbearing personalities; Mark himself
+is helpful and personable on the amavis-users mailing list, and the
+original AMaViS folks have been quite tolerant of the C<amavisd-new>
+traffic on their list, which these days accounts for at least half.
+
+C<amavisd-new> is written in Perl, and takes advantage of a number
+of well-written Perl modules, such as the Net::Server module,
+which it uses to implement a forked parent/child environment,
+much like the traditional Apache.  Since it is written in Perl,
+it is able to directly use the Mail::SpamAssassin modules, which
+implement the core scanning engine of SpamAssassin.
+
+Mark strives make C<amavisd-new> adhere to standards and as a result
+is not widely regarded as "broken" and many systems administrators
+and developers hold it in high regard.  It is also fairly fast,
+although as a Perl application it can use a considerable amount
+of memory, so it is best limited to only a few child processes.
+It is very flexible, but can be intimidating to configure.
+
+Since C<amavisd-new> operates as an SMTP proxy within Postfix, it
+is able to reliably deliver messages because it never has to store
+the messages itself; it connects to the Postfix receiving process
+as soon as the sending process connects to it, and does not send
+an acceptance response to the sending process until the receiving
+process has also accepted the message.  Should the receiving process
+fail in some way, C<amavisd-new> will return a status code indicating
+such, and Postfix will maintain the message in its queue until the
+problem is rectified.
+
+Because C<amavisd-new> runs as a daemon, it saves considerable
+overhead over a design which runs as a normal pipe-filter.
+In particular, the initialization of SpamAssassin can be quite
+slow, which is why SpamAssassin itself ships with 'spamd', which
+provides a persistent daemon to scan mail to avoid this overhead,
+with a command-line client, 'spamc', with which other mail
+filters like Procmail my communicate.  Since C<amavisd-new> uses
+Mail::SpamAssassin directly, it does not need 'spamd' to be running.
 
 =head2 Other Components
 
 =head3 Sophos SAVI and Sophie
 
+Among the many virus scanners supported by C<amavisd-new>,
+my preferred is Sophie.  Sophie is a daemonized scanner which
+external processes communicate with through a UNIX domain socket.
+Sophie uses the Sophos scanning engine, which may be the best
+anti-virus software on the market.  (NB: I am a Sophos reseller,
+so my opinions are baised.)  Most of Sophos' products ship with
+'sweep', a command-line scanner, but loading the virus definitions
+requires considerable overhead in program initialization, so it is
+better to have a daemon, especially when the system is expected to
+scan several different files a second.
+
 =head3 SpamAssassin
 
+SpamAssassin itself probably needs no introduction.  It is widely
+regarded as the best open source spam-filtering engine available
+(and is probably better than most proprietary offerings also).
+It includes a wide range of heuristic patterns and scores which
+are applied to messages, connections to external sources, such
+as DNSRBLs, Razor2 and DCC.  Among the newest and most exciting
+features is the Bayesian analysis and auto-learning, which allows
+it to learn spam and non-spam based on scores of messages it sees.
+
 =head2 Putting It All Together
+
+First, make sure you've got Postfix working as it should.  Always try
+to proceed in small, incremental steps.  Next, configure amavisd-new.
+The configuration file defaults to C</etc/amavisd.conf>, but I prefer
+to relocate mine to /etc/amavis/amavisd.conf by giving it the C<-c>
+option at start-up.  The C<amavisd.conf> file itself is very heavily
+commented, and I recommend that you read through the whole thing.  Here are a
+few changes from the defaults that should get you started:
+
+This one is obvious; you want to set your local domain here:
+$mydomain = 'example.com'; 
+
+I prefer to run mine as user/group 'amavis/amavis', created with
+home directory /var/amavis:
+
+$daemon_user  = 'vscan';
+$daemon_group = 'sweep';
+
+I like to make the directory C<amavisd-new> does most of its work
+in a tmpfs file system, but you want certain things (like the
+SpamAssassin Bayesian database) to be persistently stored, so the temporary
+directory should be a subdirectory of the home directory:
+
+$TMPBASE = $MYHOME/tmp
+
+The C<FILTER_README> from Postfix and the C<README.postfix> from
+C<amavisd-new> differ on which ports to use; the former uses 10025
+and 10026, while the latter uses 10024 and 10025.  It doesn't matter
+which you choose, as long as you use the pair consistently.  If you want to
+use change to the (10025,10026) pair, use:
+
+$inet_socket_port = 10025;
+$forward_method = 'smtp:127.0.0.1:10026';
+$notify_method = $forward_method;
 
 =head2 Understanding Logging
 
