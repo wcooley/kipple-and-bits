@@ -208,21 +208,20 @@ EOF
     if ($form_type eq "display") {
         print "    $user->{'groupID'}\n" ;
     } elsif ($form_type eq "modify") {
-        print "    <input type=\"text\" name=\"groupID\" size=5 value=\"$user->{'groupID'}\" >\n" ;
+        print "    $user->{'groupID'}\n" ;
+        #print "    <input type=\"text\" name=\"groupID\" size=5 value=\"$user->{'groupID'}\" >\n" ;
     } else {
-        if ($config{'new_group'}) {
 
             print <<EOF ;
 	<input type="radio" name="gid_from" value="automatic" checked>
 	$text{'gid_automatic'}
 	<input type="radio" name="gid_from" value="input">
 	<input type="text" name="input_gid" size=5>
+	<input type="radio" name="gid_from" value="select">
+    <select name="group_select" size=1>
 EOF
-        } else {
-	        print "    <select name=\"groupID\" size=1>\n" ;
-	        &html_group_options ($user->{'groupID'}) ;
-	        print "    </select>" ;
-        }
+    &html_group_options ($user->{'groupID'}) ;
+    print "    </select>" ;
     }
 	print "    </td>\n" ;
     print "    </tr>\n" ;
