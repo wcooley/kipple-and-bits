@@ -25,6 +25,7 @@ if ("$config{'directory_type'}" eq "LDAP") {
 	eval {
     	use Mozilla::LDAP::Conn;
     	use Mozilla::LDAP::Utils;
+        use MIME::Base64;
 	} ;
 	# 'use' caused an error, so the modules probably aren't
 	# installed
