@@ -84,6 +84,7 @@ if ($config{'enable_alias_mgmt'}) {
 print "<hr>\n" ;
 
 &footer ("/", $text{'index'}) ;
+do "footer.pl" ;
 
 =head1 NOTES
 

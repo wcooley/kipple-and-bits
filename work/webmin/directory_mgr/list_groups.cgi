@@ -35,6 +35,7 @@ $|=1;
 print "<hr>\n<h2>This feature is not here yet.</h2>\n<hr>" ;
 
 &footer($config{'app_path'}, $text{'index'});
+do "footer.pl" ;
 # uses the index entry in /lang/en
 
 
