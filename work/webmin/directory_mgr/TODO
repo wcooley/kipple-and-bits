@@ -23,6 +23,10 @@ What works currently:
 
     @ Group managment:
         o Group listing.
+        o Delete group.
+        o Add group.
+        o Modify group.
+        o Search for group.
 
 
 *******************************
@@ -46,8 +50,10 @@ OPERATIONAL
 ===========
 
     @ User management:
+        o Secondary groups.
         o Remove user from existing groups.
         o Delete group when removing user.
+
         o Shadow attributes for users.
         o FreeRADIUS attributes for users.
         o Samba attributes for users.
@@ -55,11 +61,11 @@ OPERATIONAL
         o Automatic home directories like useradmin.
         o Selectable OU for users.
         o Ability to change userName, groupID, userID.
+        o Removing hosts from user doesn't remove them.
+        o Sort users in listing.
 
     @ Group management.
-        o Add group.
-        o Modify group.
-        o Search for group.
+        o Removing users from group doesn't remove them.
         o Remove member from group.
         o Delete group if empty.
 
@@ -68,7 +74,7 @@ OPERATIONAL
 
     @ Alias management.
         o Everything.  Will Postfix even use the NSS alias
-            database?
+            database, or do I need special entries?
 
     @ Hosts management.
         o Everything.
