@@ -1,0 +1,70 @@
+
+    * User functions:
+
+        * Per-user member functions:
+X            * firstname()
+X            * surname()
+X            * telenum() A
+X                - replace_telenum($old, $new)
+X                - has_telenum($num)
+X            * host() A
+X                - replace_host($old, $new)
+X                - has_host($host)
+X            * homedir() 
+X                - "auto" invokes auto-generation if username is set (FIXME: Still cheesy)
+X            * userid()
+X            * username()
+X            * groupid()
+X            * shell()
+X            * description() A
+X                - replace_description($old, $new)
+X                - has_description($desc)
+X            * email() A
+X                - replace_email($old, $new)
+X                - has_email($email)
+
+            * search()
+            * commit()
+            * new()
+            * delete()
+            * dump()
+
+        * Generic class functions:
+            * list()
+            * isemailfree($address)
+            * isuseridfree($uid)
+            * findfreeuserid()
+            * isvalidusername()
+
+        * Either member or class functions:
+            * html()
+
+    * LDAP Generic functions:
+X        * connect()
+X        * diff($object1, $object2)
+X        * patch($object, @patch)
+            
+
+    * Password functions:
+
+        * Member functions:
+            * new()
+            * commit()
+            * hashtype()
+            * password()
+                - replace_password($old, $new)
+            * html()
+
+    * Group functions:
+
+        * Per-group member functions:
+
+        * Generic class functions:
+    
+
+    * Questions:
+
+        * With the array _remove functions, what happens if the value
+          doesn't exist?
+
+        * What do the _remove functions return?
