@@ -15,26 +15,58 @@
 
 =head1 NAME
 
-I<template.cgi>
+I<search_group.cgi>
 
 =head1 DESCRIPTION
 
-I<template.cgi> is a template for other .cgi and .pl files.
+I<search_group.cgi> is the CGI interface for searching for groups.
 
 =cut
 
 require "directory-lib.pl" ;
 
+&check_setup() ;
+&ReadParse() ;
+
 %access=&get_module_acl;
 
+if ($in{'do'} eq "search") {
+    &connect() ;
+    $groups = &search_groups($in{'search_key'}, $in{'search_value'}) ;
 
-&header($text{'index_t'}, "" );
-# uses the index_title entry from ./lang/en or appropriate
+    if ($groups->[0] == -1) {
+        $whatfailed = $text{'search_group_t'} ;
+        &error($groups->[1]) ;
+    } elsif (scalar @{$groups} == 0) {
+        &header($text{'search_group_t'}, "") ;
+        print "<hr noshade size=2>\n" ;
+        print $text{'err_no_group_found'} ;
+    } elsif (scalar @{$groups} == 1) {
+        &header($text{'search_group_t'}, "") ;
+        print "<hr noshade size=2>\n" ;
+        &html_group_form("modify", $groups->[0]) ;
+    } else {
+        &header($text{'search_group_t'}, "") ;
+        print "<hr noshade size=2>\n" ;
+        print "<b>" . &text('search_found_n_groups',
+            scalar(@{$groups})) . "</b>\n" ;
+        print &html_table_group_header() ;
+        foreach $group (@{$groups}) {
+            print &html_row_group($group) ;
+        }
+        print &html_table_group_footer() ;
+    }
 
-## Insert Output code here
-print "<hr>\n<h2>This feature is not here yet.</h2>\n<hr>" ;
+    &footer($config{'app_path'} . "/search_group.cgi",
+        $text{'module_title'} . "::" .  $text{'search_group_t'}) ;
 
-&footer($config{'app_path'}, $text{'index'});
+} else {
+    &header($text{'search_group_t'}, "") ;
+    print "       <hr noshade size=2>\n" ;
+    print &html_group_search_form() ;
+    &footer($config{'app_path'}, $text{'module_title'});
+}
+
 do "footer.pl" ;
 
 
