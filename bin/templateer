@@ -9,13 +9,15 @@
 # Copyright (C) 2004 Naked Ape Consulting, Ltd.
 #
 
+use strict;
 my $template = $ARGV[0];
 my $outfile = $ARGV[1];
 my %kwsubs;
 my $kwre;
 my @template;
+my $needinput = 0;
 
-if (scalar(@ARGV) != 2) {
+if ((scalar(@ARGV) != 2) and (scalar(@ARGV) != 1)) {
     print <<EOF;
 Usage: templateer <template-file> <output-file>
 
@@ -34,33 +36,62 @@ EOF
     exit 1;
 }
 
-open(TEMPLATE, $template) || die "Couldn't open $template!";
-open(OUTFILE, ">>$outfile") || die "Couldn't open $outfile!";
+if ($template eq "-") {
+    *TEMPLATE = *STDIN;
+    $template = "stdin";
+}
+else {
+    open(TEMPLATE, $template) || die "Couldn't open $template!";
+}
+
+if ($outfile) {
+    open(OUTFILE, ">>$outfile") || die "Couldn't open $outfile!";
+}
+else {
+    *OUTFILE = *STDOUT;
+    $outfile = "stdout";
+}
 
 
-print "Reading template $template...\n";
+print STDERR "Reading template $template...\n";
+
 # Extract the keywords to be substituted
 while (<TEMPLATE>) {
     push @template, $_;
-    $kwsubs{$1} = '' if (/@@([^@]+)@@/);
+    my $key;
+
+    while (m/[^\\]?@@([^@]+)@@/go) {
+        $key = $1;
+
+        if ($ENV{$key}) {
+            $kwsubs{$key} = $ENV{$key};
+        } 
+        elsif ($template eq "stdin") {
+            die "Error: Not all keys provided by environment in pipe mode!\n";
+        }
+        else {
+            $kwsubs{$key} = '';
+            $needinput = 1;
+        }
+    }
 }
 
-print "Kindly provide the values for the following template values:\n";
+print STDERR "Kindly provide the values for the following template values:\n"
+    if $needinput;
 
 # Get the info from the user
 foreach my $key (keys %kwsubs) {
-    if ($ENV{$key}) {
-        $kwsubs{$key} = $ENV{$key};
-    }
-    else {
-        print "$key = ";
+    unless ($kwsubs{$key}) {
+        print STDERR "$key = ";
         chomp ($kwsubs{$key} = <STDIN>);
     }
     $kwre .= ($kwre) ? "|$key" : $key ;
 }
 
-print "Writing to $outfile...\n";
+print STDERR "Writing to $outfile...\n";
 foreach my $l (@template) { 
+    $l =~ s/([^\\]?)\\\@/$1\@/g;    # \@ => @
+
     if ($l =~ /\@\@(${kwre})\@\@/i) {
         foreach my $key (keys %kwsubs) {
             $l =~ s/\@\@$key\@\@/$kwsubs{$key}/g;
@@ -70,7 +101,7 @@ foreach my $l (@template) {
 }
 
 foreach my $key (keys %kwsubs) {
-    print "$key => $kwsubs{$key}\n";
+    print STDERR "$key => $kwsubs{$key}\n";
 }
 
 close(TEMPLATE);
