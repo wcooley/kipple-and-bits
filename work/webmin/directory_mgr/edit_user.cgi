@@ -28,20 +28,21 @@ if ($in{'do'} eq "set_passwd") {
     &header ($text{'set_passwd'}, "") ;
 
     print "<hr noshade size=2>\n";
-
-    print "\t<p>\n<b>" . &text('changing_passwd', $user->{'userName'}) .
-        "</b>\n" ;
+    print "<p><b>" . &text('changing_passwd', $user->{'userName'})
+        . "</b></p>\n" ;
 
     print <<EOF ;
-    <br>
 
     <form method="post" action="save_user.cgi">
     <input type="hidden" name="do" value="passwd">
-    <input type="hidden" name="dn" value="$user->{'dn'}">
+    <input type="hidden" name="dn" value="$dn">
 
-    <table>
+    <table border=1 cellspacing=0 cellpadding=2 width=100% $cb>
 
 EOF
+    print "\t<tr>\n<td $tb colspan=2><b>" . $text{'set_passwd'}
+        . "</b></td></tr>\n" ;
+
     print &html_passwd_rows($user) ;
 
     print "</form>\n</table>\n" ;

@@ -79,7 +79,7 @@ if ($in{'do'} eq "create") {
 		        system "cp -rf /etc/skel/* $user_info{'homeDirectory'}";
 		        system "cp -rf /etc/skel/.[^.]+ $user_info{'homeDirectory'}";
 	        }
-	        system "chown -R $user_info{'uidNumber'}.$user_info{'gidNumber'} "
+	        system "chown -R $user_info{'userID'}.$user_info{'groupID'} "
                 . "$user_info{'homeDirectory'}";
         }
     }
@@ -105,7 +105,7 @@ if ($in{'do'} eq "create") {
             $whatfailed = "Deletion of user $in{'dn'}" ;
             &error($ret->[1]) ;
         } else {
-            &redirect ("index.cgi?sort_on=$sort_on");
+            &redirect ("list_users.cgi?sort_on=$sort_on");
         }
 	} elsif ($in{'delete_home'}) {
         # This needs to be reworked.
@@ -118,7 +118,7 @@ if ($in{'do'} eq "create") {
         	&error (&text ("error_1", $entry->{'uid'}[0] , $home));
     	}
     	&delete_user ($in{'dn'});
-    	&redirect ("index.cgi?sort_on=$sort_on");
+    	&redirect ("list_users.cgi?sort_on=$sort_on");
 	} else {
 
         # display current user data
@@ -152,8 +152,18 @@ EOF
     }
 
 } elsif ($in{'do'} eq "passwd") {
-    $user = &user_from_form(\%in) ;
-    &update_user($in{'dn'}, $user) ;
+
+    $ret = &user_passwd_from_form(\%in) ;
+    if ( $ret->[0] == -1 ) {
+        $whatfailed = $ret->[1] ;
+        &error($text{'set_passwd'}) ;
+    } else {
+        &header($text{'set_passwd'}, '') ;
+        &update_user($in{'dn'}, $ret->[1]) ;
+	    &footer ("index.cgi", $text{'module_title'});
+	    do "footer.pl";
+    }
+
 
 } else {
 	&header ('"do" not set', "");
