@@ -24,7 +24,7 @@ managing users.
 
 SYNOPSIS
 
-new_user_ok ( \%user )
+new_user_ok ( I<\%user> )
 
 DESCRIPTION
 
@@ -34,6 +34,10 @@ attributes.
 RETURN VALUE
 
 Returns true if the supplied hash passes.
+
+BUGS
+
+None known.
 
 =cut
 
@@ -47,17 +51,38 @@ sub new_user_ok
         $user->{'sn'} ;
 }
 
+=head2 changed_user_ok
+
+SYNOPSIS
+
+changed_user_ok ( I<\%user> )
+
+DESCRIPTION
+
+Checks if the supplied user hash has acceptable attributes.
+
+RETURN VALUE
+
+Returns true if the supplied has passes verification; false
+otherwise.
+
+BUGS
+
+None known.
+
+=cut
 
 sub changed_user_ok
 {
+    my ($user) = @_ ;
     return
-        $uid &&
-        $uidNumber &&
-        $gidNumber &&
-        $homedirectory &&
-        $loginshell &&
-        $givenname &&
-        $sn;
+        $user->{'uid'} &&
+        $user->{'uidNumber'} &&
+        $user->{'gidNumber'} &&
+        $user->{'homedirectory'} &&
+        $user->{'loginshell'} &&
+        $user->{'givenname'} &&
+        $user->{'sn'};
 }
 
 =head2 user_from_form
@@ -69,7 +94,7 @@ user_from_form ( \%in )
 DESCRIPTION
 
 Takes a CGI input hash and copies user-relevant information
-into a user has.
+into a user hash.
 
 RETURN VALUE
 
@@ -119,26 +144,47 @@ sub user_from_form
 	return \%user ;
 }
 
+=head2 user_from_entry
+
+SYNOPSIS
+
+user_from_entry ( I<\%entry> )
+
+DESCRIPTION
+
+Creates a user hash from a given LDAP entry hash.
+
+RETURN VALUE
+
+Returns a reference to a newly-created user-hash.
+
+BUGS
+
+None known.
+
+=cut
 
 sub user_from_entry
 {
-    my ($user) = @_;
+    my ($entry) = @_;
+    my (%user) ;
 
     # posixAccount
-    $uid = $user->{'uid'}[0];
-    $uidNumber = $user->{'uidNumber'}[0];
-    $gidNumber = $user->{'gidNumber'}[0];
-    $gecos = $user->{'gecos'}[0];
-    $homedirectory = $user->{'homedirectory'}[0];
-    $loginshell = $user->{'loginshell'}[0];
+    $user{'uid'} = $entry->{'uid'}[0];
+    $user{'uidNumber'} = $entry->{'uidNumber'}[0];
+    $user{'gidNumber'} = $entry->{'gidNumber'}[0];
+    $user{'gecos'} = $entry->{'gecos'}[0];
+    $user{'homedirectory'} = $entry->{'homedirectory'}[0];
+    $user{'loginshell'} = $entry->{'loginshell'}[0];
 
-    #shadowAccount
-    #$shadowexpire
-    #$shadowflag
-    #$shadowinactive
-    #$shadowlastchange
-    #$shadowmax
-    #$shadowwarning
+    # Unimplemented shadow options
+    #$user{'shadowAccount'}
+    #$user{'shadowexpire'}
+    #$user{'shadowflag'}
+    #$user{'shadowinactive'}
+    #$user{'shadowlastchange'}
+    #$user{'shadowmax'}
+    #$user{'shadowwarning'}
 
     #inetOrgPerson
     #top
@@ -147,39 +193,61 @@ sub user_from_entry
     #person
     #account
 
-    #don't know
-    $cn = $user->{'cn'}[0];
-    $sn = $user->{'sn'}[0];
-    $givenname = $user->{'givenname'}[0];
-    $userpassword = $user->{'userpassword'}[0];
-    #$krbname
+    $user{'cn'} = $entry->{'cn'}[0];
+    $user{'sn'} = $entry->{'sn'}[0];
+    $user{'givenname'} = $entry->{'givenname'}[0];
+    $user{'userpassword'} = $entry->{'userpassword'}[0];
+    #$user{'krbname'}
 
-    #OutlookExpress
-    #$co
-    $comment = $user->{'comment'}[0];
-    $department = $user->{'department'}[0];
-    #$homephone
-    #$homepostaladdress
-    #$initials
-    #$ipphone
-    #$l
-    $mail = $user->{'mail'}[0];
-    #$manager
-    $mobile = $user->{'mobile'}[0];
-    $officefax = $user->{'officefax'}[0];
-    $organizationname = $user->{'organizationname'}[0];
-    #$otherfacsimiletelephonenumber
-    $pager = $user->{'pager'}[0];
-    $physicaldeliveryofficename = $user->{'physicaldeliveryofficename'}[0];
-    #$postaladdress
-    #$postalcode
-    #$reports
-    #$st
-    $telephonenumber = $user->{'telephonenumber'}[0];
-    $title = $user->{'title'}[0];
-    #$url
+    #Unimplemented OutlookExpress options
+    #$user{'co'}
+    #$user{'homephone'}
+    #$user{'homepostaladdress'}
+    #$user{'initials'}
+    #$user{'ipphone'}
+    #$user{'l'}
+    #$user{'manager'}
+    #$user{'otherfacsimiletelephonenumber'}
+    #$user{'postaladdress'}
+    #$user{'postalcode'}
+    #$user{'reports'}
+    #$user{'st'}
+    #$user{'url'}
+
+    $user{'comment'} = $entry->{'comment'}[0];
+    $user{'department'} = $entry->{'department'}[0];
+    $user{'mail'} = $entry->{'mail'}[0];
+    $user{'mobile'} = $entry->{'mobile'}[0];
+    $user{'officefax'} = $entry->{'officefax'}[0];
+    $user{'organizationname'} = $entry->{'organizationname'}[0];
+    $user{'pager'} = $entry->{'pager'}[0];
+    $user{'physicaldeliveryofficename'} = $entry->{'physicaldeliveryofficename'}[0];
+    $user{'telephonenumber'} = $entry->{'telephonenumber'}[0];
+    $user{'title'} = $entry->{'title'}[0];
+
+    return \%user ;
 }
 
+=head2 user_defaults
+
+SYNOPSIS
+
+user_defaults ( )
+
+DESCRIPTION
+
+Fill in default settings for a new user.
+
+RETURN VALUE
+
+None.
+
+BUGS
+
+'gid' should come from a more reliable source.  This
+function doesn't appear to be used currently.
+
+=cut
 
 sub user_defaults
 {
@@ -189,37 +257,58 @@ sub user_defaults
     $loginshell = $config{'shell'};
 }
 
+=head2 entry_from_user
+
+SYNOPSIS
+
+entry_from_user ( I<\%entry>, I<\%user> )
+
+DESCRIPTION
+
+Creates an LDAP entry from a user hash.  Entry must be
+pre-initialized.
+
+RETURN VALUE
+
+Reference to an entry hash.
+
+BUGS
+
+Doesn't work currently, or if it does, uses global variables.
+Needs to handle passed-in user hash.
+
+=cut
 
 sub entry_from_user
 {
-    my ($entry) = @_;
+    my (%entry, %user) = @_;
 
     # posixAccount
-    $entry->{'uid'} = [$uid];
-    $entry->{'uidNumber'} = [$uidNumber];
-    $entry->{'gidNumber'} = [$gidNumber];
-    $entry->{'gecos'} = [$gecos];
-    $entry->{'homedirectory'} = [$homedirectory];
-    $entry->{'loginshell'} = [$loginshell];
+    $entry->{'uid'} = [$user{'uid'}];
+    $entry->{'uidNumber'} = [$user{'uidNumber'}];
+    $entry->{'gidNumber'} = [$user{'gidNumber'}];
+    $entry->{'gecos'} = [$user{'gecos'}];
+    $entry->{'homedirectory'} = [$user{'homedirectory'}];
+    $entry->{'loginshell'} = [$user{'loginshell'}];
 
     # address book data
     # should identify the correct objectClass for each attribute and configure this way
 
-    $entry->{'sn'} = [$sn];
-    $entry->{'cn'} = [$cn];
-    $entry->{'mail'} = [$mail];
+    $entry->{'sn'} = [$user{'sn'}];
+    $entry->{'cn'} = [$user{'cn'}];
+    $entry->{'mail'} = [$user{'mail'}];
 
     if ($config{'outlook'}) {
-        $entry->{'givenname'} = [$givenname];
-        $entry->{'title'} = [$title];
-        $entry->{'organizationname'} = [$organizationname];
-        $entry->{'department'} = [$department];
-        $entry->{'physicaldeliveryofficename'} = [$physicaldeliveryofficename];
-        $entry->{'telephonenumber'} = [$telephonenumber];
-        $entry->{'mobile'} = [$mobile];
-        $entry->{'pager'} = [$pager];
-        $entry->{'officefax'} = [$officefax];
-        $entry->{'comment'} = [$comment];
+        $entry->{'givenname'} = [$user{'givenname'}];
+        $entry->{'title'} = [$user{'title'}];
+        $entry->{'organizationname'} = [$user{'organizationname'}];
+        $entry->{'department'} = [$user{'department'}];
+        $entry->{'physicaldeliveryofficename'} = [$user{'physicaldeliveryofficename'}];
+        $entry->{'telephonenumber'} = [$user{'telephonenumber'}];
+        $entry->{'mobile'} = [$user{'mobile'}];
+        $entry->{'pager'} = [$user{'pager'}];
+        $entry->{'officefax'} = [$user{'officefax'}];
+        $entry->{'comment'} = [$user{'comment'}];
     }
 
 	if ($config{'shadow'}) {
@@ -228,7 +317,7 @@ sub entry_from_user
 	if ($config{'kerberos'}) {
 	}
     
-    return $entry;
+    return \%entry;
 }
 
 =head2 create_home_dir
@@ -248,13 +337,12 @@ Returns true. ;(
 
 BUGS
 
-Should return something more intresting than true.  Should eval()
-remote_foreign_* calls and check exceptions.
+Should return something more interesting than true.  Should pass
+eval() exceptions back to calling function, instead of calling
+&error() directly.
 
 =cut
 
-
-# Creates a home directory
 sub create_home_dir {
     local ($user, $host) = @_ ;
 
