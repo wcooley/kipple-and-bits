@@ -11,7 +11,7 @@ require "directory-lib.pl" ;
 &connect ();
 &ReadParse();
 
-$sort_on = $in{sort_on};
+$sort_on = $in{'sort_on'};
 
 # Configured to remotely create home directories
 if ($config{'createhomeremote'}) {
@@ -58,19 +58,21 @@ if ($new) {
     &user_defaults;
 }
 
-print "<FORM method=\"post\"action=\"save_user.cgi\">\n";
-print "<TD><INPUT type=\"hidden\" name=\"new\" value=\"$new\">\n";
-print "<TD><INPUT type=\"hidden\" name=\"dn\" value=\"$dn\">\n";
-print "<TD><INPUT type=\"hidden\" name=\"sort_on\" value=\"$sort_on\">\n";
-print "<TABLE border width=100% $cb>\n";
-print "<TR><TD>\n";
-print "<TABLE border=0 cellspacing=0 cellpadding=2 width=100% $cb>\n";
+print "<form method=\"post\"action=\"save_user.cgi\">\n";
+print "<td><input type=\"hidden\" name=\"new\" value=\"$new\">\n";
+print "<td><input type=\"hidden\" name=\"do\" value=\"create\">\n";
+print "<td><input type=\"hidden\" name=\"dn\" value=\"$dn\">\n";
+print "<td><input type=\"hidden\" name=\"sort_on\" value=\"$sort_on\">\n";
+#print "<td><input type=\"hidden\" name=\"
+print "<table border width=100% $cb>\n";
+print "<tr><td>\n";
+print "<table border=0 cellspacing=0 cellpadding=2 width=100% $cb>\n";
 
 # posixAccount
 
-print "<TR><TD colspan=2 $tb><B>" . $text{posixAccount} . "</B> (posixAccount)\n";
+print "<TR><TD colspan=2 $tb><B>" . $text{'posixAccount'} . "</B> (posixAccount)\n";
 print "</TD></TR>";
-print "<TR><TD><B>" . $text{uid} . "</B> (uid)\n";
+print "<TR><TD><B>" . $text{'uid'} . "</B> (uid)\n";
 print "</TD>";
 print "<TD><INPUT name=\"uid\" size=12 value=\"$uid\">\n";
 print "</TD></TR>";
@@ -128,15 +130,15 @@ print "<TR><TD><B>" . $text{givenname} . "</B> (givenname)\n";
 print "</TD>";
 print "<TD><INPUT name=\"givenname\" size=20 value=\"$givenname\">\n";
 print "</TD></TR>";
-print "<TR><TD><B>" . $text{sn} . "</B> (sn)\n";
+print "<TR><TD><B>" . $text{'sn'} . "</B> (sn)\n";
 print "</TD>";
 print "<TD><INPUT name=\"sn\" size=20 value=\"$sn\">\n";
 print "</TD></TR>";
-print "<TR><TD>" . $text{cn} . " (cn)\n";
+print "<TR><TD>" . $text{'cn'} . $text{'cn_note'} . " (cn)\n";
 print "</TD>";
 print "<TD><INPUT name=\"cn\" size=40 value=\"$cn\"> (*)\n";
 print "</TD></TR>";
-print "<TR><TD>" . $text{mail} . " (mail)\n";
+print "<TR><TD>" . $text{'mail'} . " (mail)\n";
 print "</TD>";
 print "<TD><INPUT name=\"mail\" size=30 value=\"$mail\"> (*)\n";
 print "</TD></TR>";
