@@ -41,7 +41,7 @@ loginShell=Shell
 
 # posixGroup
 gidNumber_is_taken=Sorry, the supplied GID is taken.
-group_desc=Private group for user $1
+group_desc=Group for user $1
 err_no_free_gid=Sorry, there appear to be no free GIDs.
 err_group_incomplete=Group incomplete.  You must provide at least cn and gidNumber.
 
@@ -128,6 +128,7 @@ del_user=Delete User
 msg_1=No users found ?!?
 msg_2=Setting password for user
 msg_3=Are you sure you want to delete user <B>'$1'</B> ($2)?
+delete_user_confirm=Are you sure you want to delete user <b>'$1'</b> ($2)?
 
 index_msg_1=LDAP Users
 index_msg_2=All OUs
