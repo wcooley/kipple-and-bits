@@ -32,7 +32,7 @@ if ($config{'createhomeremote'}) {
 
 # display current user data
 
-$dn = ($dn) ? $dn : $in{dn};
+$dn = ($dn) ? $dn : $in{'dn'};
 $user = &get_user_attr ($dn);
 
 # this isn't exactly right... should complain why
@@ -46,7 +46,7 @@ else {
     $header = $text{'create_user'};
     $new = 1;
 }
-if (length ($in{new}) == 0) {
+if (length ($in{'new'}) == 0) {
     &header ($header, "");
 }
 print "<HR noshade size=2>\n";
@@ -76,7 +76,7 @@ print "<TR><TD><B>" . $text{'uid'} . "</B> (uid)\n";
 print "</TD>";
 print "<TD><INPUT name=\"uid\" size=12 value=\"$uid\">\n";
 print "</TD></TR>";
-print "<TR><TD><B>" . $text {uidnumber} . "</B> (uidnumber)\n";
+print "<TR><TD><B>" . $text {'uidnumber'} . "</B> (uidnumber)\n";
 print "</TD>";
 print "<TD><INPUT name=\"uidnumber\" size=5 value=\"$uidnumber\"> (*)\n";
 print "</TD></TR>";
@@ -98,22 +98,22 @@ EOF
 
 } else {
 	print "\n\t<TD>"
-		. "<B>" . $text{gidnumber} . "</B> (gidnumber)\n</TD>"
+		. "<B>" . $text{'gidnumber'} . "</B> (gidnumber)\n</TD>"
 		. "<TD><SELECT name=\"gidnumber\" size=1>\n" ;
 	&html_group_options ($gidnumber) ;
 	print "</SELECT>\n</TD>";
 }
 print "</tr>\n" ;
 
-print "<TR><TD>" . $text{gecos} . " (gecos)\n";
+print "<TR><TD>" . $text{'gecos'} . " (gecos)\n";
 print "</TD>";
 print "<TD><INPUT name=\"gecos\" size=40 value=\"$gecos\"> (*)\n";
 print "</TD></TR>";
-print "<TR><TD>" . $text {homedirectory} . " (homedirectory)\n";
+print "<TR><TD>" . $text {'homedirectory'} . " (homedirectory)\n";
 print "</TD>";
 print "<TD><INPUT name=\"homedirectory\" size=30 value=\"$homedirectory\"> (*)\n";
 print "</TD></TR>";
-print "<TR><TD><B>" . $text {loginshell} . "</B> (loginshell)\n";
+print "<TR><TD><B>" . $text {'loginshell'} . "</B> (loginshell)\n";
 print "</TD>";
 #print "<TD><INPUT name=\"loginshell\" size=20 value=\"$loginshell\">\n";
 print "<TD><SELECT name=\"loginshell\" size=1>\n";
@@ -123,10 +123,10 @@ print "</TD></TR>";
 
 # address book data (inetOrgPerson, person, etc...)
 
-print "<TR><TD colspan=2 $tb><B>" . $text{addressbook} . "</B>\n";
+print "<TR><TD colspan=2 $tb><B>" . $text{'addressbook'} . "</B>\n";
 print "</TD></TR>";
 
-print "<TR><TD><B>" . $text{givenname} . "</B> (givenname)\n";
+print "<TR><TD><B>" . $text{'givenname'} . "</B> (givenname)\n";
 print "</TD>";
 print "<TD><INPUT name=\"givenname\" size=20 value=\"$givenname\">\n";
 print "</TD></TR>";
@@ -142,40 +142,40 @@ print "<TR><TD>" . $text{'mail'} . " (mail)\n";
 print "</TD>";
 print "<TD><INPUT name=\"mail\" size=30 value=\"$mail\"> (*)\n";
 print "</TD></TR>";
-if ($config{outlook} eq "1") {
-    print "<TR><TD>" . $text{title} . " (title)\n";
+if ($config{'outlook'} eq "1") {
+    print "<TR><TD>" . $text{'title'} . " (title)\n";
     print "</TD>";
     print "<TD><INPUT name=\"title\" size=30 value=\"$title\">\n";
     print "</TD></TR>";
-    print "<TR><TD>" . $text{organizationname} . " (organizationname)\n";
+    print "<TR><TD>" . $text{'organizationname'} . " (organizationname)\n";
     print "</TD>";
     print "<TD><INPUT name=\"organizationname\" size=40 value=\"$organizationname\">\n";
     print "</TD></TR>";
-    print "<TR><TD>" . $text {department} ." (department)\n";
+    print "<TR><TD>" . $text {'department'} ." (department)\n";
     print "</TD>";
     print "<TD><INPUT name=\"department\" size=40 value=\"$department\">\n";
     print "</TD></TR>";
-    print "<TR><TD>" . $text{physicaldeliveryofficename} . " (physicaldeliveryofficename)\n";
+    print "<TR><TD>" . $text{'physicaldeliveryofficename'} . " (physicaldeliveryofficename)\n";
     print "</TD>";
     print "<TD><INPUT name=\"physicaldeliveryofficename\" size=15 value=\"$physicaldeliveryofficename\">\n";
     print "</TD></TR>";
-    print "<TR><TD>" . $text {telephonenumber} . " (tephonenumber)\n";
+    print "<TR><TD>" . $text {'telephonenumber'} . " (tephonenumber)\n";
     print "</TD>";
     print "<TD><INPUT name=\"telephonenumber\" size=20 value=\"$telephonenumber\">\n";
     print "</TD></TR>";
-    print "<TR><TD>" . $text{mobile} . " (mobile)\n";
+    print "<TR><TD>" . $text{'mobile'} . " (mobile)\n";
     print "</TD>";
     print "<TD><INPUT name=\"mobile\" size=20 value=\"$mobile\">\n";
     print "</TD></TR>";
-    print "<TR><TD>" . $text{pager} . " (pager)\n";
+    print "<TR><TD>" . $text{'pager'} . " (pager)\n";
     print "</TD>";
     print "<TD><INPUT name=\"pager\" size=20 value=\"$pager\">\n";
     print "</TD></TR>";
-    print "<TR><TD>" . $text{officefax} . " (officefax)\n";
+    print "<TR><TD>" . $text{'officefax'} . " (officefax)\n";
     print "</TD>";
     print "<TD><INPUT name=\"officefax\" size=20 value=\"$officefax\">\n";
     print "</TD></TR>";
-    print "<TR><TD>" . $text{comment} . " (comment)\n";
+    print "<TR><TD>" . $text{'comment'} . " (comment)\n";
     print "</TD>";
     print "<TD><TEXTAREA name=\"comment\" cols=50 rows=5>$comment</TEXTAREA>\n";
     print "</TD></TR>";
@@ -183,36 +183,36 @@ if ($config{outlook} eq "1") {
 
 # user creation options
 if ($new) {
-    print "<TR><TD colspan=2 $tb><B>" . $text{user_options} . "</B>\n";
+    print "<TR><TD colspan=2 $tb><B>" . $text{'user_options'} . "</B>\n";
     print "</TD></TR>";
-    print "<TR><TD>" . $text{userpasswd} . "\n";
+    print "<TR><TD>" . $text{'userpasswd'} . "\n";
     print "</TD>";
     print "<TD><INPUT name=\"userpassword\" size=12 value=\"$userpassword\"> (*)\n";
     print "</TD></TR>";
-    print "<TR><TD>" . $text{passwdtype} . "\n";
+    print "<TR><TD>" . $text{'passwdtype'} . "\n";
     print "</TD><TD>";
     print "<INPUT type=\"radio\" name=\"hash\" value=\"md5\">" .
-        $text{md5} . "\n";
+        $text{'md5'} . "\n";
     print "<INPUT type=\"radio\" name=\"hash\" value=\"crypt\" checked>" .
-        $text{crypt} . "\n";
+        $text{'crypt'} . "\n";
     print "<INPUT type=\"radio\" name=\"hash\" value=\"nome\">" .
-        $text {plaintext} . "\n";
+        $text {'plaintext'} . "\n";
     print "</TD></TR>";
-    print "<TR><TD>" . $text{create_home} . "\n";
+    print "<TR><TD>" . $text{'create_home'} . "\n";
     print "</TD><TD>";
-    $create_yes = ($config{createhome} eq "1") ? "checked" : "";
-    $create_no = ($config{createhome} eq "2") ? "checked" : "";
+    $create_yes = ($config{'createhome'} eq "1") ? "checked" : "";
+    $create_no = ($config{'createhome'} eq "2") ? "checked" : "";
     print "<INPUT type=\"radio\" name=\"create\" value=\"1\" $create_yes>" .
-        $text{yes} . "\n";
+        $text{'yes'} . "\n";
     print "<INPUT type=\"radio\" name=\"create\" value=\"0\" $create_no>" .
-        $text{no} . "\n";
+        $text{'no'} . "\n";
     print "</TD></TR>";
-    print "<TR><TD>" . $text{copy_files} . "\n";
+    print "<TR><TD>" . $text{'copy_files'} . "\n";
     print "</TD><TD>";
     print "<INPUT type=\"radio\" name=\"copy\" value=\"1\" $create_yes>" .
-        $text {yes} . "\n";
+        $text {'yes'} . "\n";
     print "<INPUT type=\"radio\" name=\"copy\" value=\"0\" $create_no>" .
-        $text {no} . "\n";
+        $text {'no'} . "\n";
     print "</TD></TR>";
 }
 
