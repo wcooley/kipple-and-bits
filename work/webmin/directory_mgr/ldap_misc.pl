@@ -4,11 +4,22 @@
 #
 # $Id$
 
+
+=head1 NAME
+
+I<ldap_misc.pl>
+
+=head1 DESCRIPTION
+
+I<ldap_misc.pl> contains LDAP routines that are not specific to
+any particular object type.
+
+=cut
+
 use strict ;
 no strict "vars" ;
 
 use diagnostics ;
-$diagnostics::PRETTY =1 ;
 
 sub connect
 {

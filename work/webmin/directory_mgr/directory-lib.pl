@@ -8,6 +8,19 @@
 # $Id$
 #
 
+
+=head1 NAME
+
+I<directory-lib.pl>
+
+=head1 DESCRIPTION
+
+The I<directory-lib.pl> is the master "header" file for the
+.cgi programs.  It selectively includes libraries based on
+selected directory type (LDAP-only, at the moment).
+
+=cut
+
 do '../web-lib.pl' ;
 $|=1 ;
 

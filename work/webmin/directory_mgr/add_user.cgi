@@ -6,6 +6,16 @@
 # by Fernando Lozano <fernando@lozano.eti.br> under the GNU GPL (www.gnu.org)
 #
 
+=head1 NAME
+
+I<add_user.cgi>
+
+=head1 DESCRIPTION
+
+I<add_user.cgi> is a CGI front-end to add a user object.
+
+=cut
+
 require "directory-lib.pl" ;
 
 &connect ();

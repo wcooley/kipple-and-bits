@@ -1,3 +1,14 @@
+
+=head1 NAME
+
+I<footer.pl>
+
+=head1 DESCRIPTION
+
+I<footer.pl> is a common footer script.
+
+=cut
+
 use strict ;
 no strict "vars" ;
 
@@ -21,7 +32,7 @@ FOOTER
 
 =head1 NOTES
 
-None at the moment.
+This should probably be moved to html.pl.
 
 =head1 CREDITS
 
