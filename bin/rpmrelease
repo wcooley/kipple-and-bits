@@ -30,7 +30,7 @@ rpmbase=($(rpm -q --queryformat '%{NAME}\n' --specfile ${specfile}))[0]
 tmpfile=$(mktemp /tmp/${prog}-${rpmbase}.XXXXXX) || exit 1
 
 rpmreldir=$HOME/rpm/release/rpm/${rpmbase}
-srpmreldir=$HOME/rpm/release/srpms/${rpmbase}
+srpmreldir=$HOME/rpm/release/srpm/${rpmbase}
 
 mkdir -p ${rpmreldir} ${srpmreldir}
 
