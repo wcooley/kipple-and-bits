@@ -59,11 +59,11 @@ pprintf "Signing packages...\n"
 echo ${srpm} ${rpms} |xargs rpm --addsign
 
 if [[ $? -gt 0 ]]; then
-    printf "Package signing failed! Perhaps you mis-typed the passphrase? Let's try once more.\n"
+    printf "Package signing failed! Perhaps you mis-typed the passphrase?\nLet's try once more.\n"
     echo ${srpm} ${rpms} |xargs rpm --addsign
 
     if [[ $? -gt 0 ]]; then
-        printf "Hm, sorry, package signing failed.  Aborting."
+        printf "Hm, sorry, package signing failed.  Aborting.\n"
         exit 1
     fi
 fi
