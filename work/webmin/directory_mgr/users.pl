@@ -3,18 +3,48 @@
 #
 # LDAP Users Admin
 # users.pl $Revision$ $Date$ $Author$
-# by Fernando Lozano <fernando@lozano.eti.br> under the GNU GPL (www.gnu.org)
 #
 
 # have a lot of global variables for user attributes
 
+=head1 NAME
+
+users.pl
+
+=head1 DESCRIPTION
+
+users.pl contains directory-agnostic subroutines for
+managing users.
+
+=head1 FUNCTIONS
+
+=cut
+
+=head2 new_user_ok
+
+SYNOPSIS
+
+new_user_ok ( \%user )
+
+DESCRIPTION
+
+Checks if the supplied user hash has minimum required
+attributes.
+
+RETURN VALUE
+
+Returns true if the supplied hash passes.
+
+=cut
 
 sub new_user_ok
 {
+	my ($user) = @_ ;
     return
-        $loginshell &&
-        $givenname &&
-        $sn;
+        $user->{'loginshell'} &&
+		$user->{'gidnumber'} &&
+        $user->{'givenname'} &&
+        $user->{'sn'} ;
 }
 
 
@@ -30,10 +60,27 @@ sub changed_user_ok
         $sn;
 }
 
+=head2 user_from_form
+
+SYNOPSIS 
+
+user_from_form ( \%in )
+
+DESCRIPTION
+
+Takes a CGI input hash and copies user-relevant information
+into a user has.
+
+RETURN VALUE
+
+Returns a reference to a hash containing user attributes.
+
+=cut
 
 sub user_from_form
 {
     my ($in) = @_;
+	my (%user) ;
 
     # posixAccount
     $user{'uid'} = $in->{'uid'};
@@ -182,4 +229,26 @@ sub entry_from_user
     return $entry;
 }
 
+=head1 NOTES
+
+None at the moment.
+
+=head1 CREDITS
+
+This module begun by Fernando Lozano <fernando@lozano.etc.br>
+in his I<ldap-users> module.  Incorporated into I<directory_mgr>
+by Wil Cooley <wcooley@nakedape.cc>.  All bug reports should go to
+Wil Cooley.
+
+=cut
+
+=head1 LICENSE
+
+This file is copyright Fernando Lozano <frenando@lozano.etc.br>
+and Wil Cooley <wcooley@nakedape.cc>, under the GNU General Public
+License <http://www.gnu.org/licenses/gpl.txt>.
+
+
+
 1;
+
