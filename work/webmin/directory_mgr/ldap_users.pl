@@ -60,29 +60,6 @@ sub get_user_attr
 }
 
 
-sub max_uidnumber
-{
-    my ($filter, $maxuid, $u);
-
-    # ldap should have a way to find this...
-    $filter = "(objectclass=posixAccount)";
-    $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
-        ("uidnumber"));
-
-    $maxuid = 0;
-    while ($entry) {
-        $u = $entry->{'uidnumber'}[0];
-    # skip user "nobody"...
-    if ($u != 65534) {
-            $maxuid = ($u > $maxuid) ? $u : $maxuid;
-    }
-        $entry = $conn->nextEntry ();
-    }
-
-    return $maxuid;
-}
-
-
 sub is_uid_free
 {
     my ($uid) = @_;
@@ -109,6 +86,46 @@ sub is_uidnumber_free
 
     return $entry;
 }
+
+=head2 find_free_uid
+
+SYNOPSIS
+
+find_free_uid ( [I<$minUid>] )
+
+DESCRIPTION
+
+Finds the next available uidNumber, starting at I<minUid>.
+
+RETURN VALUE
+
+Returns the next available UID or -1 if an available UID isn't found.
+
+BUGS
+
+Calls &is_uidnumber_free() repeatedly, which can cause lots of
+queries to server.  Fix by doing a single query and examining
+results.
+
+=cut
+
+sub find_free_uid
+{   
+    
+    my ($minUid) = @_ ;
+
+    $minUid = 0 unless $minUid ;
+
+    for ( $i = $minUid; not &is_uidnumber_free($i); $i++ ) {
+        if ( $i > $config->{'max_uid'} ) {
+            $i = -1 ;
+            last ;
+        }
+    }
+    
+    return $i ;
+}
+
 
 
 sub is_mail_free
