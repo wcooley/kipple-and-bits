@@ -6,7 +6,6 @@ use strict ;
 no strict "vars" ;
 
 use diagnostics ;
-$diagnostics::PRETTY =1 ;
 
 =head1 NAME
 
@@ -41,7 +40,7 @@ sub remove_whitespace {
 
     my ($string) = @_ ;
 
-    #$string =~ s/\s+//g ;
+    $string =~ s/\s+//g ;
 
     return $string ;
 }
