@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #
-#    LDAP Manager Webmin Module
-#    Copyright (C) 2001 by Will Cooley
+#    Directory_Mgr Webmin Module
+#    Copyright (C) 2002 by Will Cooley
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -12,8 +12,16 @@
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
-#
-#    This module inherited from the Webmin Module Template 0.79.1 by tn
+
+=head1 NAME
+
+I<template.cgi>
+
+=head1 DESCRIPTION
+
+I<template.cgi> is a template for other .cgi and .pl files.
+
+=cut
 
 require "directory-lib.pl" ;
 
@@ -28,11 +36,6 @@ print "<hr>\n<h2>This feature is not here yet.</h2>\n<hr>" ;
 
 &footer($config{'app_path'}, $text{'index'});
 do "footer.pl" ;
-# uses the index entry in /lang/en
-
-
-
-## if subroutines are not in an extra file put them here
 
 
 =head1 NOTES
