@@ -20,35 +20,39 @@ if ($in{'do'} eq "create") {
 	$user_info = &user_from_form(\%in) ;
 	$group_info = &group_from_form(\%in) ;
 
-	unless ( &new_group_ok ($group_info) ) {
-		&error($text{'err_group_incomplete'}) ;
-	}
-
 	# Create group before user, so if we're using
 	# user-private-groups we can get a free gidNumber.
 	$ret = &create_group($group_info) ;
 
-	if ( $ret->[2] == -1 ) {
+	if ( $ret->[0] == -1 ) {
 		&error($ret->[1]) ;
 	} else {
-		$user_info{'gidnumber'} = $ret->[0] ;
+		$user_info->{'gidNumber'} = $ret->[0] ;
 	}
 
     # Check user_info
-	unless ( &new_user_ok ($user_info) ) {
+    $err = &new_user_ok ($user_info) ;
+	unless ( $err ) {
 		&error ($text{'err_user_incomplete'});
 	}
 
-	$dn = &create_user ($user_info) ;
+	$ret = &create_user ($user_info) ;
 
-	&set_passwd ($dn, $user_info{'userpassword'}, $in{'hash'});
+    if ( $ret->[0] == -1 ) {
+        &error($ret->[1]) ;
+    } else {
+        $user_info->{'uidNumber'} = $ret->[0] ;
+        $dn = $ret->[1] ;
+    }
+
+	&set_passwd ($dn, $user_info->{'userpassword'}, $in{'hash'});
 
     # Create home directory
 
     if ($config{'createhome'}) {
 
         if ($config{'createhomeremote'}) {
-            @remote_homes_hosts =  split(/\0/, $in{'servers_for_home_dir'}) ;
+            @remote_home_hosts =  split(/\0/, $in{'servers_for_home_dir'}) ;
             foreach $home_host (@remote_home_hosts) {
                 &create_home_dir ($user_info{'uid'}, $home_host) ;
             }
@@ -58,12 +62,9 @@ if ($in{'do'} eq "create") {
 		        system "cp -rf /etc/skel/* $user_info{'homedirectory'}";
 		        system "cp -rf /etc/skel/.[^.]+ $user_info{'homedirectory'}";
 	        }
-	        system "chown -R $user_info{'uidnumber'}.$user_info{'gidnumber'} $user_info{'homedirectory'}";
+	        system "chown -R $user_info{'uidNumber'}.$user_info{'gidNumber'} $user_info{'homedirectory'}";
         }
     }
-
-	# Fix this here -- this should be done with my
-	# create_homedir module
 
 	&header ($text{'created_user'}, "");
 } elsif ($in{'do'} eq "modify") {
@@ -86,7 +87,7 @@ if ($in{'do'} eq "create") {
     	$entry = &get_user_attr ($in{'dn'});
     	$home = $entry->{'homedirectory'}[0];
     	$owner = ((stat($home))[4]);
-    	if ($owner == $entry->{'uidnumber'}[0]) {
+    	if ($owner == $entry->{'uidNumber'}[0]) {
         	system "rm -rf $home";
     	} else {
         	&error (&text ("error_1", $entry->{'uid'}[0] , $home));
