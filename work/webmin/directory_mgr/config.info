@@ -1,7 +1,7 @@
 enable_user_mgmt=Enable Management of Users,1,1-Yes,0-No
 enable_group_mgmt=Enable Management of Groups,1,1-Yes,0-No
-enable_host_mgmt=Enable Management of Hosts,1,1-Yes,0-No
-enable_alias_mgmt=Enable Management of Aliases,1,1-Yes,0-No
+enable_host_mgmt=Enable Management of Hosts (broken),1,1-Yes,0-No
+enable_alias_mgmt=Enable Management of Aliases (broken),1,1-Yes,0-No
 app_path=App Path (change if you clone),0,20
 directory_type=Directory Type,4,LDAP-LDAP
 
@@ -11,15 +11,14 @@ port=Directory Server's Port Number,0,5
 base=Base DN for LDAP Tree,0,40
 user=Administrative User's Credentials (BindDN username etc),0,40
 passwd=Administrative Password (clear text),0,12
-outlook=Edit MS Outlook Address Book Fields,1,1-Yes,0-No
 
 sect2=User Options,11
 new_group=New Group for New User,1,1-Yes,0-No
 maildomain=Default Mail Domain for New Users,0,40
 homes=Default Parent for New Users' Home Directories,0,40
 shell=Default Shell for New Users,0,40
-createhome=Create Home Directory for New Users,1,1-Yes,2-No
-createhomeremote=Create Home Directory Remotely,1,1-Yes,0-No
+createhome=Create Home Directory for New Users (broken),1,1-Yes,0-No
+createhomeremote=Create Home Directory Remotely (broken),1,1-Yes,0-No
 hide_system_users=Hide system users (UID < minimum UID)?,1,1-Yes,0-No
 min_uid=Minimum UID,0,5
 max_uid=Maximum UID,0,5
