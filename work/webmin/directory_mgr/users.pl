@@ -224,6 +224,53 @@ sub user_from_form ($)
 	return \%user ;
 }
 
+
+=head2 user_passwd_from_form
+
+SYNOPSIS
+
+C<user_passwd_from_form ( I<\%in> )>
+
+DESCRIPTION
+
+Changes the password for the user directory object passed in
+$in->{'dn'}.
+
+RETURN VALUE
+
+Returns a two-element array consisting of an error flag (1: no
+error; -1: error) and either a reference to the new user hash or
+a formatted error string.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+sub user_passwd_from_form ($) {
+
+    my ($in) = @_ ;
+
+    my $entry = &get_user_attr($in->{'dn'}) ;
+
+    my $user = &user_from_entry($entry) ;
+
+    $user->{'password'} = $in->{'password'} ;
+
+    my $ret = &set_passwd ($user, $in->{'hash'}) ;
+
+    if ($ret->[0] == 1) {
+        return [ 1, $user ] ;
+    } else {
+        return $ret ;
+    }
+
+}
+
 =head2 user_from_entry
 
 SYNOPSIS
@@ -261,7 +308,7 @@ sub user_from_entry ($)
     $user{'userID'} = $entry->{'uidNumber'}[0];
     $user{'userName'} = $entry->{'uid'}[0];
     $user{'groupID'} = $entry->{'gidNumber'}[0];
-    $user{'password'} = $entry->{'password'}[0];
+    $user{'password'} = $entry->{'userPassword'}[0];
     $user{'loginShell'} = $entry->{'loginShell'}[0];
     $user{'email'} = $entry->{'mail'}[0];
     $user{'description'} = $entry->{'description'}[0] ;
