@@ -28,6 +28,8 @@ require "directory-lib.pl" ;
 &check_setup() ;
 &ReadParse() ;
 
+$dn = $in{'dn'} ;
+
 %access=&get_module_acl;
 
 if ($in{'do'} eq "search") {
@@ -40,21 +42,22 @@ if ($in{'do'} eq "search") {
     } elsif (scalar @{$groups} == 0) {
         &header($text{'search_group_t'}, "") ;
         print "<hr noshade size=2>\n" ;
-        print $text{'err_no_group_found'} ;
+        print $text{'err_no_group_found'} . "<br>\n" ;
     } elsif (scalar @{$groups} == 1) {
         &header($text{'search_group_t'}, "") ;
         print "<hr noshade size=2>\n" ;
-        &html_group_form("modify", $groups->[0]) ;
+        print "<pre>" . &dump_group($groups->[0]) . "</pre>" ;
+        print &html_group_form("modify", $groups->[0]) ;
     } else {
         &header($text{'search_group_t'}, "") ;
         print "<hr noshade size=2>\n" ;
         print "<b>" . &text('search_found_n_groups',
             scalar(@{$groups})) . "</b>\n" ;
-        print &html_table_group_header() ;
+        print &html_group_table_header() ;
         foreach $group (@{$groups}) {
             print &html_row_group($group) ;
         }
-        print &html_table_group_footer() ;
+        print &html_group_table_footer() ;
     }
 
     &footer($config{'app_path'} . "/search_group.cgi",

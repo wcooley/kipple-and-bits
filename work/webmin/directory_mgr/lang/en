@@ -6,10 +6,11 @@ list_users_t=List Users
 add_user_t=Add User
 search_user_t=Search For User
 
-edit_groups_t=Edit Groups
+edit_group_t=Edit Group
 list_groups_t=List Groups
 add_group_t=Add Group
 search_group_t=Search For Group
+display_group_t=Display Group
 
 edit_hosts_t=Edit Hosts
 list_hosts_t=List Hosts
@@ -39,6 +40,7 @@ userID=User ID
 gidNumber=Primary Group
 groupID=Group ID
 groupName=Group Name
+groupDescription=Group Description
 sec_group=Secondary Groups
 gecos=GECOS
 homedirectory=Home
@@ -52,6 +54,7 @@ group_desc=Group for user $1
 err_no_free_gid=Sorry, there appear to be no free GIDs.
 err_group_incomplete=Group incomplete.  You must provide at least cn and gidNumber.
 memberUsernames=Member Usernames
+err_no_group_found=Sorry, no groups were found.
 
 gid_automatic=Automatic
 # inetOrgPerson, etc (AddrBook data)
@@ -76,6 +79,7 @@ pager=Pager
 officefax=Fax
 comment=Comments
 description=Description
+distinguishedName=Distinguished Name
 
 # LDAP objectclass Labels
 
@@ -129,6 +133,9 @@ header_4=Create LDAP User
 header_5=Password for LDAP User
 header_6=Delete LDAP User
 
+group_changed_t=Group Changed
+group_delete_t=Delete Group
+delete_group_confirm=Are you sure you want to delete group <b>'$1'</b>?
 
 edit_user=Edit User
 create_user=Create User
@@ -142,6 +149,9 @@ msg_2=Setting password for user
 changing_passwd=Changing password for <i>$1</i>
 msg_3=Are you sure you want to delete user <B>'$1'</B> ($2)?
 delete_user_confirm=Are you sure you want to delete user <b>'$1'</b> ($2)?
+
+search_found_n_users=Search found <i>$1</i> users
+search_found_n_groups=Search found <i>$1</i> groups
 
 index_msg_1=LDAP Users
 index_msg_2=All OUs
@@ -162,4 +172,5 @@ err_remote_foreign_call=Error: remote_foreign_call failed for module $1, functio
 
 err_no_user_found=Sorry, no users were found.
 err_unknown_user_attr=Unknown user attribute: $1
+err_unknown_group_attr=Unknown group attribute: $1
 err_no_groups_found=Sorry, no groups were found.

@@ -102,7 +102,7 @@ The "user" hash is an abstraction of a user account that represents
 a user as he may be represented by the back-end directory.  It is
 a higher-level representation without the naming differences
 back-end directories are subject to.  With LDAP, some elements
-may be respented by multiple, or a combination of, attributes,
+may be represented by multiple, or a combination of, attributes,
 such as the I<cn (commonName)>, I<sn (surname)>, and I<givenName>
 attributes.  The "user" hash abstraction can represent this data
 without duplication of data and without introducing idiosyncracies
@@ -128,6 +128,8 @@ The "user" hash consists of the following keys:
 
 =item * groupID
 
+=item * secondaryGroups
+
 =item * password
 
 =item * loginShell
@@ -135,6 +137,7 @@ The "user" hash consists of the following keys:
 =item * description
 
 =item * email
+
 
 =back
 

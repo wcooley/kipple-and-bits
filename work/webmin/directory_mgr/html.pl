@@ -20,7 +20,6 @@ no strict "vars" ;
 use diagnostics ;
 
 
-
 =head2 html_passwd_rows
 
 SYNOPSIS
@@ -83,18 +82,18 @@ C<html_shell_options ( [I<$default_shell>] )>
 
 DESCRIPTION
 
-C<html_shell_options> emits HTML select inputs with a configured
-list of shells.  The optional I<$default_shell> selects the
-shell to be selected by default.
+C<html_shell_options> generates HTML select inputs with a configured
+list of shells.  The optional I<$default_shell> selects the shell
+to be selected by default.
 
 RETURN VALUE
 
-True
+Returns a formatted HTML string suitable for use in an HTML
+<select> tag.
 
 BUGS
 
-Probably should return a string of HTML instead of printing it
-directly.
+None known.
 
 NOTES
 
@@ -106,16 +105,29 @@ sub html_shell_options (:$)
 {
     my ($default_shell) = @_;
     
-    my ($shell, $selected);
+    my ($shell, $selected, $html);
+
+    $html = "" ;
+    $html .= qq(
+        <select name="loginShell" size=1>
+) ;
 
     open SHELLS, "</etc/shells";
-    while (<SHELLS>) {
-        tr/\n\r\t //d;
-        $selected = ($default_shell eq $_) ? "selected" : "";
-        print "<option value=\"$_\" $selected>$_\n";
+    while ($shell = <SHELLS>) {
+        $shell =~ tr/\n\r\t //d;
+        $selected = ($default_shell eq $shell) ? "selected" : "";
+        $html .= qq(
+            <option value="$shell" $selected>
+                $shell
+            </option>
+) ;
     }
 
-    return 1;
+    $html .= qq(
+        </select>
+) ;
+
+    return $html ;
 }
 
 
@@ -127,15 +139,14 @@ C<html_group_options ( [I<$default_groupID>] )>
 
 DESCRIPTION
 
-Emits an HTML select list of groups.
+Generates an HTML select list of groups.
 
 RETURN VALUE
 
-True
+Returns an HTML-formatted list of groups.
 
 BUGS
 
-Probably should return a string instead of printing directly.
 Should be able to configure a multi-value select.
 
 NOTES
@@ -149,19 +160,24 @@ sub html_group_options (:$)
     my ($groupID) = @_;
     
     my (@all_groups, @groups); 
-    my ($group, $selected);
+    my ($group, $selected, $html);
+
+    $html = "" ;
 
     $all_groups = &list_groups;
     
     @groups = sort {$a->{'groupName'} cmp $b->{'groupName'}} @{$all_groups};
 
     foreach $group (@groups) {
-        $selected = ($group->{'groupID'} == $groupID) ? "selected" : "";
-        print "<option value=\"$group->{'groupID'}\" $selected>" 
-			. "$group->{'groupName'} ($group->{'groupID'})</option>\n";
+        $selected = ($group->{'groupID'} eq $groupID) ? "selected" : "";
+        $html .= qq(
+        <option value="$group->{'groupID'}" $selected> 
+            $group->{'groupName'} ($group->{'groupID'})
+        </option>
+) ;
     }
 
-    return 1;
+    return $html ;
 }
 
 
@@ -273,6 +289,915 @@ sub html_row_user ($)
 
 }
 
+
+
+=head2 html_group_form
+
+SYNOPSIS
+
+C<html_group_form ( I<$form_type>, I<\%group> )>
+
+DESCRIPTION
+
+Formats the HTML form for group input, display, or
+modification.
+
+RETURN VALUE
+
+Returns the HTML form as a string.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+
+sub html_group_form ($:$)
+{
+
+    my ($form_type, $group) = @_ ;
+    my ($html) ;
+
+    $html .= qq(<table $config{'html_table_options'} $cb>) ;
+
+    if ($form_type ne "display") {
+        $html .= qq(
+    <form method="post" action="save_group.cgi">
+    <input type="hidden" name="do" value="$form_type">
+    <input type="hidden" name="dn" value="$group->{'dn'}">
+    <input type="hidden" name="sort_on" value="$sort_on">
+    ) ;
+    }
+
+    if ($form_type eq "modify") {
+        $html .= qq(
+        <input type="hidden" name="groupName" value="$group->{'groupName'}">
+        <input type="hidden" name="groupID" value="$group->{'groupID'}">
+    ) ;
+    }
+
+    $html .= qq(
+    <tr>
+    <td colspan=2 $tb>) ;
+
+    if ($form_type eq "display") {
+        $html .= qq(<b>$text{'display_group_t'}</b>) ;
+    } elsif ($form_type eq "modify") {
+        $html .= qq(<b>$text{'edit_group_t'}</b>) ;
+    } elsif ($form_type eq "create") {
+        $html .= qq(<b>$text{'add_group_t'}</b>) ;
+    }
+
+    $html .= qq(
+    </td>
+    </tr>
+    ) ;
+
+    $html .= qq(
+    <tr>
+    <td><b>$text{'groupName'}</b></td>
+    ) ;
+
+    $html .= qq(
+    <td>) ;
+
+    # Group name display/input
+    if ($form_type eq "display") {
+        $html .= $group->{'groupName'} ;
+    } elsif ($form_type eq "modify") {
+        # Don't allow groupName modification yet
+        $html .= $group->{'groupName'} ;
+    } elsif ($form_type eq "create") {
+        $html .= qq(<input type="text" name="groupName" size=16>) ;
+    }
+
+    $html .= "\t</td>\n" ;
+
+    $html .= qq(
+    <tr>
+    <td>
+        <b>$text{'groupID'}</b>
+    </td>
+    <td>
+    ) ;
+
+    # Group ID display/input
+    if ($form_type eq "display") {
+        $html .= $group->{'groupID'} ;
+    } elsif ($form_type eq "modify") {
+        # Don't allow groupID modification yet
+        $html .= $group->{'groupID'} ;
+    } elsif ($form_type eq "create") {
+        $html .= qq(<input type="text" name="groupID" size=5>) ;
+    }
+
+    $html .= "\t</td>\n" ;
+
+    # FIXME: This really should be a selection list
+    $html .= qq(
+    <tr>
+    <td>
+        <b>$text{'memberUsernames'}</b>
+    </td>
+    <td>
+    ) ;
+
+    foreach $username (@{$group->{'memberUsername'}}) {
+        $list_of_usernames .= $username . "," ;
+    }
+
+    if ($form_type eq "display") {
+        $list_of_usernames =~ s/,$// ;
+        $html .= qq($list_of_usernames) ;
+    } elsif ($form_type eq "modify") {
+        $html .= qq(<input type="text" 
+            name="memberUsernames" 
+            value="$list_of_usernames"
+            size=30>\n) ;
+    }
+
+    if ($form_type eq "create") {
+        $html .= qq(<input type="text" name="memberUsernames" size=30>\n) ;
+    }
+
+    $html .= qq{</td>\n};
+
+    $html .= qq(
+    <tr>
+    <td>
+        <b>$text{'description'}</br>
+    </td>
+    <td>
+    ) ;
+
+    if ($form_type eq "display") {
+        $html .= qq($group->{'groupDescription'}) ;
+    } elsif ($form_type eq "modify") {
+        $html .= qq(
+    <input 
+        type="text"
+        name="groupDescription"
+        value="$group->{'groupDescription'}"
+        size=30
+    >
+    ) ;
+    } elsif ($form_type eq "create") {
+        $html .= qq(
+    <input 
+        type="text"
+        name="groupDescription"
+        size=30>
+    ) ;
+    }
+
+    $html .= qq (
+    </td>
+    ) ;
+
+    if ($form_type ne "display") {
+        $html .= qq(
+    <tr>
+    <td>
+        <input type="submit">
+
+        </form>
+    </td>
+    ) ;
+    }
+    
+    if ($form_type eq "modify") {
+        $html .= qq(
+    <td>
+		<form method="post" action="save_group.cgi">
+            <input type="hidden" name="dn" value="$dn">
+            <input type="hidden" name="do" value="delete">
+            <input type="submit" value="$text{'delete'}">
+		</form>
+	</td>
+    ) ;
+    }
+
+    if ($form_type ne "display") {
+        $html .= qq(
+    </tr>
+    ) ;
+
+    }
+
+    $html .= qq(</table>) ;
+
+
+    return $html ;
+}
+
+
+=head2 html_group_search_form
+
+SYNOPSIS
+
+C<html_group_search_form ( )>
+
+DESCRIPTION
+
+Generates HTML for a group search form.
+
+RETURN VALUE
+
+Returns HTML.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+sub html_group_search_form ()
+{
+
+    my $html = qq(
+
+        <form method="post" action="search_group.cgi">
+        <input type="hidden" name="do" value="search">
+
+        Search for:
+        <input type="text" width="30" name="search_value">
+        <select name="search_key">
+        <option value="groupName">$text{'groupName'}</option>
+        <option value="groupID">$text{'groupID'}</option>
+        <option value="groupDescription">$text{'groupDescription'}</option>
+
+        </select>
+
+        <input type="submit" value="Search">
+
+        </form>
+    ) ;
+
+    return $html ;
+}
+
+
+
+=head2 html_group_table_header
+
+SYNOPSIS
+
+C<html_group_table_header ( I<param> )>
+
+DESCRIPTION
+
+Generates header HTML for a group table.
+
+RETURN VALUE
+
+Returns HTML.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+sub html_group_table_header()
+{
+
+    my $html = qq(
+    <table $config{'html_table_options'} $cb>
+    <tr $tb>
+    <td>
+        <b>
+            $text{'groupName'}
+        </b>
+    </td>
+    <td>
+        <b>
+            $text{'groupID'}
+        </b>
+    </td>
+    <td>
+        <b>$text{'description'}</b>
+    </td>
+
+    ) ;
+
+    return $html ;
+
+}
+
+
+=head2 html_group_table_footer
+
+SYNOPSIS
+
+C<html_group_table_footer ( )>
+
+DESCRIPTION
+
+Generates HTML for a group table footer.
+
+RETURN VALUE
+
+Returns HTML.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+sub html_group_table_footer()
+{
+
+    my $html = qq(
+    </table>
+    ) ;
+
+    return $html ;
+}
+
+
+=head2 html_user_table_header
+
+SYNOPSIS
+
+C<html_user_table_header ( )>
+
+DESCRIPTION
+
+Emits HTML for the headers of a table of users.
+
+RETURN VALUE
+
+Returns HTML.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+sub html_user_table_header ()
+{
+
+    my ($html) ;
+
+    $html = qq(
+    <table $config{'html_table_options'} $cb>
+        <tr $tb>
+        <td><b>$text{'userName'}</b>
+        <td><b>$text{'userID'}</b>
+        <td><b>$text{'groupID'}</b>
+        <td><b>$text{'fullName'}</b>
+        <td><b>$text{'telephoneNumber'}</b>
+        </tr>
+    ) ;
+
+    return $html ;
+}
+
+
+=head2 html_user_table_footer
+
+SYNOPSIS
+
+C<html_user_table_footer ( )>
+
+DESCRIPTION
+
+Emits HTML for the footer of a table of users.
+
+RETURN VALUE
+
+Returns HTML.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+sub html_user_table_footer ()
+{
+    my ($html) ;
+
+    $html = qq(
+    </table>
+    ) ;
+
+    return $html ;
+}
+
+
+=head2 html_user_form_sect_posix
+
+SYNOPSIS
+
+C<html_user_form_sect_posix ( I<$form_type>, I<\%user> )>
+
+DESCRIPTION
+
+Generates HTML for the POSIX section of the user HTML form.
+
+RETURN VALUE
+
+Returns formatted HTML of POSIX user information.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+sub html_user_form_sect_posix ($$)
+{
+
+    my ($form_type, $user) = @_ ;
+
+    my $html = "" ;
+    
+    $html .= qq(
+    <tr><td colspan=2 $tb>
+        <b>$text{'posixAccount'}</b>
+    </td></tr>
+    <tr>
+    <td>
+        <b>$text{'uid'}</b>
+    </td>
+    <td>
+) ;
+
+    if ($form_type eq "display") {
+        $html .= qq(        $user->{'userName'}) ;
+    } elsif ($form_type eq "modify") {
+        $html .= qq(
+        $user->{'userName'}
+        <input type="hidden" name="userName" value="$user->{'userName'}">
+) ;
+    } elsif ($form_type eq "create") {
+        $html .= qq(
+        <input name="userName" size=16 value="$user->{'userName'}">
+) ;
+    }
+
+    $html .= qq(
+    </td>
+    </tr>
+
+    <tr>
+    <td>
+        <b>$text{'userID'}</b>
+    </td>
+    <td>
+) ;
+
+    if ($form_type eq "display") {
+        $html .= qq(
+        $user->{'userID'}
+) ;
+    } elsif ($form_type eq "modify") {
+        $html .= qq(
+        $user->{'userID'}
+        <input name="userID" type="hidden" value="$user->{'userID'}">
+) ;
+
+    } elsif ($form_type eq "create") {
+        $html .= qq(
+        <input name="userID" size=5 value="$user->{'userID'}">
+) ;
+    }
+
+$html .= qq(
+    </td>
+    </tr>
+
+    <tr>
+	<td>
+	<b>$text{'groupID'}</b>
+	</td>
+	<td>
+) ;
+
+    if ($form_type eq "display") {
+        $html .= qq(
+        $user->{'groupID'}
+) ;
+    } elsif ($form_type eq "modify") {
+        $html .= qq(
+        $user->{'groupID'}
+        <input type="hidden" name="groupID" value="$user->{'groupID'}">
+) ;
+    } else {
+
+    $html .= qq(
+	    <input type="radio" name="gid_from" value="automatic" checked>
+	    $text{'gid_automatic'}
+	    <input type="radio" name="gid_from" value="input">
+	    <input type="text" name="input_gid" size=5>
+	    <input type="radio" name="gid_from" value="select">
+        <select name="group_select" size=1>
+) ;
+
+    $html .= &html_group_options ($user->{'groupID'}) ;
+    $html .= qq(
+        </select>
+) ;
+    }
+
+    $html .= qq(
+        </td>
+    </tr>
+) ;
+
+    # Secondary Groups
+    $html .= qq(
+    <tr>
+        <td>
+            $text{'sec_group'}
+        </td>
+        <td>
+) ;
+
+    my $groups = "" ;
+    foreach $group (@{$user->{'secondaryGroups'}}) {
+        $groups .= "$group," ;
+    }
+
+    if ($form_type eq "display") {
+        $html .= $groups ;
+    } else {
+        $html .= qq(
+        <input name="secondaryGroups" size=30 value="$groups"> 
+) ;
+    }
+
+    $html .= qq(
+        </td>
+    </tr>
+) ;
+
+
+    $html .= qq(
+    <tr>
+    <td>$text{'homeDirectory'}</td>
+    <td>
+) ;
+
+    if ($form_type eq "display") {
+        $html .= qq(    $user->{'homeDirectory'}
+) ;
+    } else {
+        $html .= qq(    <input name="homeDirectory" size=30 value="$user->{'homeDirectory'}">
+) ;
+    }
+
+    $html .= qq(
+    </td>
+    </tr>
+    
+    <tr><td>
+        <b>$text{'loginShell'}</b>
+    </td>
+
+    <td>
+) ;
+
+    if ($form_type eq "display") {
+        $html .= qq(
+        $user->{'loginShell'}
+) ;
+    } else {
+        $html .= &html_shell_options ($user->{'loginShell'}) ;
+    }
+
+    $html .= qq(
+    </td></tr>
+) ;
+
+    return $html ;
+}
+
+
+
+=head2 html_user_form_sect_addrbk
+
+SYNOPSIS
+
+C<html_user_form_sect_addrbk ( I<$form_type>, I<\%user> )>
+
+DESCRIPTION
+
+Generates HTML for user addressbook-type information.
+
+RETURN VALUE
+
+Returns a formatted HTML string.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+sub html_user_form_sect_addrbk ($$)
+{
+
+    my ($form_type, $user) = @_ ;
+
+    my $html = "" ;
+
+    $html .= qq(
+    <tr>
+    <td colspan=2 $tb>
+        <b>$text{'addressbook'}</b>
+    </td>
+    </tr>
+
+    <tr>
+    <td>
+        <b>$text{'givenname'}</b>
+    </td>
+
+    <td>
+) ;
+
+    if ($form_type eq "display") {
+        $html .= qq(    $user->{'firstName'}
+) ;
+    } else {
+        $html .= qq(    <input name="firstName" size=30 value="$user->{'firstName'}">
+) ;
+    }
+
+    $html .= qq(
+    </td>
+    </tr>
+
+    <tr>
+    <td>
+        <b>$text{'surName'}</b>
+    </td>
+
+    <td>
+) ;
+
+    if ($form_type eq "display") {
+        $html .= qq(
+        $user->{'surName'}
+) ;
+    } else {
+        $html .= qq(
+        <input name="surName" size=30 value="$user->{'surName'}">
+) ;
+    }
+
+    $html .= qq(
+    </td>
+    </tr>
+
+    <tr>
+    <td>
+        $text{'email'}
+    </td>
+
+    <td>
+) ;
+
+    if ($form_type eq "display") {
+        $html .= qq( 
+        $user->{'email'}
+) ;
+    } else {
+        $html .= qq(
+        <input name="email" size=30 value="$user->{'email'}">
+) ;
+    }
+    $html .= qq(
+    </td>
+    </tr>
+) ;
+
+    $html .= qq(
+    <tr>
+    <td>
+        $text{'allowedHosts'}
+    </td>
+
+    <td>
+) ;
+
+    if ($form_type eq "display") {
+        foreach $hostname (@{$user->{'allowedHosts'}}) {
+            $html .= qq(
+            $hostname<br>
+) ;
+        }
+    } else {
+        $html .= qq(
+            <input name="allowedHosts" size=30 value="" 
+) ;
+        foreach $hostname (@{$user->{'allowedHosts'}}) {
+            $html .= $hostname . "," ;
+        }
+        $html .= qq(">) ;
+    }
+
+    $html .= qq(
+    </td>
+    </tr>
+
+    <tr>
+    <td>
+        $text{'telephoneNumber'}
+    </td>
+
+    <td>
+) ;
+
+    if ($form_type eq "display") {
+        foreach $telnum (@{$user->{'telephoneNumber'}}) {
+            $html .= qq(
+            $telnum<br>
+) ;
+        }
+    } else {
+        $html .= qq(
+        <input name="telephoneNumber" size=30 value="") ;
+        foreach $telnum (@{$user->{'telephoneNumber'}}) {
+            $html .= $telnum . "," ;
+        }
+        $html .= qq(">) ;
+    } 
+
+    $html .= qq(
+    </td>
+    </tr>
+
+    <tr>
+    <td>
+        $text{'description'}
+    </td>
+    <td>
+) ;
+
+    if ($form_type eq "display") {
+        $html .= qq(
+        $user->{'description'}
+) ;
+    } else {
+        $html .= qq(
+        <input name="description" size=30 value="$user->{'description'}">
+) ;
+    }
+
+    $html .= qq(
+    </td>
+    </tr>
+) ;
+}
+
+
+
+=head2 html_user_form_sect_create
+
+SYNOPSIS
+
+C<html_user_form_sect_create ( I<$form_type>, I<\%user> )>
+
+DESCRIPTION
+
+Generates HTML for new-user creation options.
+
+RETURN VALUE
+
+Returns a formatted HTML string.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+
+sub html_user_form_sect_create ($$)
+{
+
+    my ($form_type, $user) = @_ ;
+
+    my $html = "" ;
+
+    $create_yes = ($config{'createhome'} eq "1") ? "checked" : "";
+    $create_no = ($config{'createhome'} eq "2") ? "checked" : "";
+
+    $html .= qq(
+
+    <tr>
+        <td colspan=2 $tb>
+            <b>$text{'user_options'}</b>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            $text{'userpasswd'}
+        </td>
+        <td>
+            <input name="userpassword" size=12> (*)
+        </td>
+    </tr>
+    <tr>
+        <td>
+            $text{'passwdtype'}
+        </td>
+        <td>
+            <input type="radio" name="hash" value="md5">
+                $text{'md5'}
+            <input type="radio" name="hash" value="crypt" checked>
+                $text{'crypt'}
+            <input type="radio" name="hash" value="nome">
+                $text{'plaintext'}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            $text{'create_home'}
+        </td>
+        <td>
+            <input type="radio" name="create" value="1" $create_yes>
+                $text{'yes'}
+            <input type="radio" name="create" value="0" $create_no>
+                $text{'no'}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            $text{'copy_files'}
+        </td>
+        <td>
+            <input type="radio" name="copy" value="1" $create_yes>
+                $text{'yes'}
+            <input type="radio" name="copy" value="0" $create_no>
+                $text{'no'}
+        </td>
+    </tr>
+) ;
+
+    if ($config{'createhomeremote'}) {
+
+        $html .= qq(
+    <tr>
+        <td>
+            <b>$text{'servers_for_home_dir'}
+        </td>
+        <td>
+            <select name="servers_for_home_dir" multiple size=3>
+) ;
+
+        for $server (@servers) {
+            $html .= qq(
+            <option value="$server->{'host'}">
+                $server->{'host'}
+            </option>
+) ;
+        }
+
+        $html .= qq(
+            </select>
+        </td>
+    </tr>
+) ;
+
+    }
+
+    return $html ;
+}
+
 =head2 html_user_form
 
 SYNOPSIS
@@ -294,9 +1219,9 @@ Does not use an HTML form, only displays the data in a form.
 Creates a new user based on configuration data, form
 includes appropriate fields.
 
-=item * update
+=item * modify 
 
-Presents current user data to be updated.
+Presents current user data to be modified.
 
 =back
 
@@ -307,306 +1232,36 @@ sub html_user_form ($$)
 
     my ($form_type, $user) = @_ ;
 
+    my $html = "" ;
+
+    $html .= "<!-- Begin html_user_form -->\n" ;
+
     if ($form_type ne "display") {
-        print <<EOF ;
+        $html .= qq(
     <form method="post" action="save_user.cgi">
-    <td><input type="hidden" name="do" value="$form_type">
-    <td><input type="hidden" name="dn" value="$dn">
-    <td><input type="hidden" name="sort_on" value="$sort_on">
-EOF
+    <input type="hidden" name="do" value="$form_type">
+    <input type="hidden" name="dn" value="$dn">
+    <input type="hidden" name="sort_on" value="$sort_on">
+
+) ;
     }
 
-    print <<EOF ;
-    <table border width=100% $cb>
-    <tr><td>
-    <table border=0 cellspacing=0 cellpadding=2 width=100% $cb>
-EOF
+    $html .= qq(
+    <table $config{'html_table_options'} width=100% $cb>
+) ;
 
-    print <<EOF ;
-    <tr><td colspan=2 $tb>
-        <b>$text{'posixAccount'}</b>
-    </td></tr>
-    <tr>
-    <td>
-        <b>$text{'uid'}</b>
-    </td>
-    <td>
-EOF
+    $html .= &html_user_form_sect_posix($form_type, $user) ;
 
-    if ($form_type eq "display") {
-        print "    $user->{'userName'}\n" ;
-    } elsif ($form_type eq "modify") {
-        print "    $user->{'userName'}\n" ;
-        print "    <input type=\"hidden\" name=\"userName\" value=\"$user->{'userName'}\">\n" ;
-    } elsif ($form_type eq "create") {
-        print "    <input name=\"userName\" size=16 value=\"$user->{'userName'}\">\n" ;
+    $html .= &html_user_form_sect_addrbk($form_type, $user) ;
+
+    if ($form_type eq "create") {
+        $html .= &html_user_form_sect_create($form_type, $user) ;
     }
 
-    print <<EOF ;
-    </td>
-    </tr>
-
-    <tr>
-    <td>
-        <b>$text{'userID'}</b>
-    </td>
-    <td>
-EOF
-    if ($form_type eq "display") {
-        print "    $user->{'userID'}\n" ;
-    } elsif ($form_type eq "modify") {
-        print "    $user->{'userID'}\n" ;
-        print "    <input name=\"userID\" type=\"hidden\" value=\"$user->{'userID'}\">\n" ;
-    } elsif ($form_type eq "create") {
-        print "    <input name=\"userID\" size=5 value=\"$user->{'userID'}\">\n" ;
-    }
-
-    print <<EOF ;
-    </td>
-    </tr>
-EOF
-
-    print <<EOF ;
-    <tr>
-	<td>
-	<b>$text{'groupID'}</b>
-	</td>
-	<td>
-EOF
-
-    if ($form_type eq "display") {
-        print "    $user->{'groupID'}\n" ;
-    } elsif ($form_type eq "modify") {
-        print "    $user->{'groupID'}\n" ;
-        print "    <input type=\"hidden\" name=\"groupID\" value=\"$user->{'groupID'}\" >\n" ;
-    } else {
-
-            print <<EOF ;
-	<input type="radio" name="gid_from" value="automatic" checked>
-	$text{'gid_automatic'}
-	<input type="radio" name="gid_from" value="input">
-	<input type="text" name="input_gid" size=5>
-	<input type="radio" name="gid_from" value="select">
-    <select name="group_select" size=1>
-EOF
-    &html_group_options ($user->{'groupID'}) ;
-    print "    </select>" ;
-    }
-	print "    </td>\n" ;
-    print "    </tr>\n" ;
-
-
-    print "    <tr>\n    <td>$text{'homeDirectory'}</td>\n";
-    print "    <td>\n" ;
-
-    if ($form_type eq "display") {
-        print "    $user->{'homeDirectory'}\n" ;
-    } else {
-        print "<input name=\"homeDirectory\" size=30 value=\"$user->{'homeDirectory'}\">\n";
-    }
-
-    print <<EOF ;
-    </td>
-    </tr>
-    
-    <tr><td>
-        <b>$text{'loginShell'}</b>
-    </td>
-
-    <td>
-EOF
-    if ($form_type eq "display") {
-        print "    $user->{'loginShell'}\n" ; 
-    } else {
-        print "    <select name=\"loginShell\" size=1>\n" ;
-        &html_shell_options ($user->{'loginShell'}) ;
-        print "    </select>\n";
-    }
-    print "     </td></tr>";
-
-    print <<EOF ;
-    <tr>
-    <td colspan=2 $tb>
-        <b>$text{'addressbook'}</b>
-    </td>
-    </tr>
-
-    <tr>
-    <td>
-        <b>$text{'givenname'}</b>
-    </td>
-
-    <td>
-EOF
-    if ($form_type eq "display") {
-        print "    $user->{'firstName'}\n" ;
-    } else {
-        print "    <input name=\"firstName\" size=30 value=\"$user->{'firstName'}\">\n";
-    }
-
-    print <<EOF ;
-    </td>
-    </tr>
-
-    <tr>
-    <td>
-        <b>$text{'surName'}</b>
-    </td>
-
-    <td>
-EOF
-    if ($form_type eq "display") {
-        print "    $user->{'surName'}\n" ;
-    } else {
-        print "    <input name=\"surName\" size=30 value=\"$user->{'surName'}\">\n";
-    }
-
-    print <<EOF ;
-    </td>
-    </tr>
-
-    <tr>
-    <td>
-        $text{'email'}
-    </td>
-
-    <td>
-EOF
-    if ($form_type eq "display") {
-        print "    $user->{'email'}\n" ;
-    } else {
-        print "    <input name=\"email\" size=30 value=\"$user->{'email'}\">\n";
-    }
-    print <<EOF ;
-    </td>
-    </tr>
-EOF
-
-    print <<EOF ;
-    <tr>
-    <td>
-        $text{'allowedHosts'}
-    </td>
-
-    <td>
-EOF
-
-    if ($form_type eq "display") {
-        foreach $hostname (@{$user->{'allowedHosts'}}) {
-            print "    $hostname<br>\n" ;
-        }
-    } else {
-        print "    <input name=\"allowedHosts\" size=30 value=\"" ;
-        foreach $hostname (@{$user->{'allowedHosts'}}) {
-            print $hostname, "," ;
-        }
-        print "\">\n" ;
-    }
-
-    print <<EOF ;
-    </td>
-    </tr>
-
-    <tr>
-    <td>
-        $text{'telephoneNumber'}
-    </td>
-
-    <td>
-EOF
-    if ($form_type eq "display") {
-        foreach $telnum (@{$user->{'telephoneNumber'}}) {
-            print "    $telnum<br>\n" ;
-        }
-    } else {
-        print "     <input name=\"telephoneNumber\" size=30"
-            . " value=\"" ;
-        foreach $telnum (@{$user->{'telephoneNumber'}}) {
-            print $telnum, "," ;
-        }
-        print "\">\n";
-    } 
-    print <<EOF ;
-    </td>
-    </tr>
-
-    <tr>
-    <td>
-        $text{'description'}
-    </td>
-
-    <td>
-EOF
-    if ($form_type eq "display") {
-        print "    $user->{'description'}\n" ;
-    } else {
-        print "    <input name=\"description\" size=30 value="
-            . "\"$user->{'description'}\">\n" ;
-    }
-    print <<EOF ;
-    </td>
-    </tr>
-EOF
-
-# user creation options
-if ($form_type eq "create") {
-    print "<TR><TD colspan=2 $tb><B>" . $text{'user_options'} . "</B>\n";
-    print "</TD></TR>";
-    print "<TR><TD>" . $text{'userpasswd'} . "\n";
-    print "</TD>";
-    print "<TD><INPUT name=\"userpassword\" size=12 > (*)\n";
-    print "</TD></TR>";
-    print "<TR><TD>" . $text{'passwdtype'} . "\n";
-    print "</TD><TD>";
-    print "<INPUT type=\"radio\" name=\"hash\" value=\"md5\">" .
-        $text{'md5'} . "\n";
-    print "<INPUT type=\"radio\" name=\"hash\" value=\"crypt\" checked>" .
-        $text{'crypt'} . "\n";
-    print "<INPUT type=\"radio\" name=\"hash\" value=\"nome\">" .
-        $text {'plaintext'} . "\n";
-    print "</TD></TR>";
-    print "<TR><TD>" . $text{'create_home'} . "\n";
-    print "</TD><TD>";
-    $create_yes = ($config{'createhome'} eq "1") ? "checked" : "";
-    $create_no = ($config{'createhome'} eq "2") ? "checked" : "";
-    print "<INPUT type=\"radio\" name=\"create\" value=\"1\" $create_yes>" .
-        $text{'yes'} . "\n";
-    print "<INPUT type=\"radio\" name=\"create\" value=\"0\" $create_no>" .
-        $text{'no'} . "\n";
-    print "</TD></TR>";
-    print "<TR><TD>" . $text{'copy_files'} . "\n";
-    print "</TD><TD>";
-    print "<INPUT type=\"radio\" name=\"copy\" value=\"1\" $create_yes>" .
-        $text {'yes'} . "\n";
-    print "<INPUT type=\"radio\" name=\"copy\" value=\"0\" $create_no>" .
-        $text {'no'} . "\n";
-    print "</TD></TR>";
-}
-
-if ($config{'createhomeremote'}) {
-
-	print "<tr>\n<td><b>" . $text{'servers_for_home_dir'} . "</td>\n" ;
-	print "<td>\n" ;
-
-	print "<select name=\"servers_for_home_dir\" multiple size=3>\n" ;
-	for $server (@servers) {
-		print "<option value=\"$server->{'host'}\">" .
-				"$server->{'host'}</option>\n" ;
-	}
-	print "</select>\n" ;
-	print "</td>\n</tr>\n" ;
-
-}
-
-    print <<EOF ;
-    </td>
-    </tr>
-    </table>
-    </td>
-    </tr>
+    $html .= qq(
     </table>
     <br>
-EOF
+) ;
 
 
     if ($form_type ne "display") {
@@ -617,17 +1272,17 @@ EOF
             $label = $text{'modify'} ;
         }
 
-        print <<EOF ;
+        $html .= qq(
     <table width=100% border=0>
-    <TR>
-    <TD align="left">
+    <tr>
+    <td align="left">
     <input type="submit" name="save" value=" $label ">
     </form>
-    </TD>
-EOF
+    </td>
+) ;
 
         if ($form_type eq "modify") {
-	        print <<EOF ;
+            $html .= qq(
 	<td align="center">
 		<form method="post" action="edit_user.cgi">
 		<input type="hidden" name="dn" value="$dn">
@@ -642,15 +1297,72 @@ EOF
 		<input type="submit" value="$text{'delete'}">
 		</form>
 	</td>
-EOF
+) ;
         }
-        print <<EOF ;
+            $html .= qq(
     </tr>
     </table>
-EOF
+) ;
     }
 
+    $html .= "<!-- End html_user_form -->\n" ;
+
+    return $html ;
 }
+
+
+=head2 html_user_search_form
+
+SYNOPSIS
+
+C<html_user_search_form ( )>
+
+DESCRIPTION
+
+Generates HTML for user search form.
+
+RETURN VALUE
+
+Returns generated HTML.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+sub html_user_search_form ()
+{
+
+    my $html = qq(
+
+        <form method="post" action="search_user.cgi">
+        <input type="hidden" name="do" value="search">
+
+        Search for:
+        <input type="text" width="30" name="search_value">
+        <select name="search_key">
+        <option value="firstName">$text{'firstName'}</option>
+        <option value="surName">$text{'surName'}</option>
+        <option value="fullName">$text{'fullName'}</option>
+        <option value="userName">$text{'userName'}</option>
+        <option value="userID">$text{'userID'}</option>
+        <option value="groupID">$text{'groupID'}</option>
+
+        </select>
+
+        <input type="submit" value="Search">
+
+        </form>
+    ) ;
+
+    return $html ;
+
+}
+
 
 =head1 NOTES
 

@@ -26,6 +26,162 @@ in LDAP.
 =cut
 
 
+
+=head2 search_groups_attr
+
+SYNOPSIS
+
+C<search_group_attr ( I<$attr_string>, I<@attr_array> )>
+
+DESCRIPTION
+
+Searches group objects for matching attributes.  Uses
+I<@attr_array> to limit attributes returned.
+
+RETURN VALUE
+
+Returns a reference to an array of hashes with the
+attributes requested in I<@attr_array>.  The hash values are
+themselves arrays, since LDAP can have multi-valued
+attributes.  On error, returns an array with -1 as the first
+element and a formatted error string as the second.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+
+sub search_group_attr ($@) {
+
+    my ($attr_filter, @desired_attrs)= @_ ;
+    my $filter = "(&(objectClass=posixGroup)($attr_filter))" ;
+    my (@groups, $i) ;
+
+    $entry = $conn->search($config{'base'}, "subtree",
+        $filter, 0, @desired_attrs) ;
+
+    if ($err = $conn->getErrorCode()) {
+        return [ -1, "$err " . $conn->getErrorString() ] ;
+    }
+
+    $i = 0 ;
+    while ($entry) {
+        my (%group) ;
+
+        foreach $attr (@desired_attrs) {
+            if ($attr eq "dn") {
+                $group{'dn'} = [$entry->getDN()] ;
+            } else {
+                $group{$attr} = $entry->{$attr} ;
+            }
+        }
+
+        $groups[$i++] = \%group ;
+        $entry = $conn->nextEntry() ;
+    }
+    return \@groups ;
+}
+
+
+=head2 search_groups
+
+SYNOPSIS
+
+C<search_groups ( I<$search_key>, I<$search_value> )>
+
+DESCRIPTION
+
+This function searches for groups with the attribute given
+in the I<$search_key> matching I<$search_string>.
+
+RETURN VALUE
+
+Returns a reference to an array of groups or the return value of
+search_group_attr.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+sub search_groups ($$)
+{
+
+    my ($search_key, $search_value) = @_ ;
+
+    my @attrs = qw( cn dn gidNumber memberUid description ) ;
+    my (@groups, $entries, $search, $entry) ;
+
+    if ($search_key eq "groupName") {
+        $search = "cn=" . $search_value ;
+    } elsif ($search_key eq "groupID") {
+        $search = "gidNumber=" . $search_value ;
+    } elsif ($search_key eq "groupDescription") {
+        $search = "description=" . $search_value ;
+    } elsif ($search_key eq "memberUsername") {
+        $search = "memberUid=". $search_value ;
+    } else {
+        return [ -1, &text('err_unknown_group_attr',$search_key) ] ;
+    }
+    
+    $entries = &search_group_attr($search, @attrs) ;
+
+    #print "Found " . scalar(@{$entries}) . " entries" ;
+
+    if ( $entries->[0] == -1 ) {
+        return $entries ;
+    } else {
+        foreach $entry (@{$entries}) {
+            push @groups, &group_from_entry($entry) ;
+        }
+    }
+
+    return \@groups ;
+}
+
+=head2 get_group_attr 
+
+SYNOPSIS
+
+C<get_group_attr ( I<$dn> )>
+
+DESCRIPTION
+
+Retrieves a group LDAP object given a distinguished name.
+
+RETURN VALUE
+
+Returns a reference to an LDAP group entry.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+
+sub get_group_attr ($)
+{
+    my ($dn) = @_ ;
+    my $entry ;
+
+    $entry = $conn->browse($dn) ;
+    $entry->{'dn'} = [$entry->getDN()] ;
+    return $entry ;
+}
+
 =head2 is_gid_free
 
 SYNOPSIS
@@ -152,6 +308,46 @@ sub list_groups (:$$)
     }
 
     return \@groups;
+}
+
+
+=head2 group_from_entry 
+
+SYNOPSIS
+
+C<group_from_entry ( I<\%group_entry> )>
+
+DESCRIPTION
+
+Creates a group hash from a given LDAP entry hash.
+
+RETURN VALUE
+
+Returns a reference to a newly-created group hash.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+
+sub group_from_entry ($)
+{
+    my ($entry) = @_ ;
+    my (%group) ;
+
+    $group{'dn'} = $entry->{'dn'}[0] ;
+    $group{'groupName'} = $entry->{'cn'}[0] ;
+    $group{'groupID'} = $entry->{'gidNumber'}[0] ;
+    $group{'groupDescription'} = $entry->{'description'}[0] ;
+    # Array
+    $group{'memberUsername'} = $entry->{'memberUid'} ;
+
+    return \%group ;
 }
 
 =head2 find_gid
@@ -342,7 +538,7 @@ None.
 sub group_entry_add_username ($$) 
 {
 
-    my ($entry, $inuser) ;
+    my ($entry, $inuser) = @_ ;
 
     if ($entry->hasValue('memberUid', $inuser)) {
         return 0;
@@ -351,6 +547,178 @@ sub group_entry_add_username ($$)
         return 1;
     }
 }
+
+
+=head2 group_entry_del_username
+
+SYNOPSIS
+
+C<group_entry_del_username ( I<\%entry>, I<$username> )>
+
+DESCRIPTION
+
+This function deletes a username from a group entry.
+Requires a pre-initialized entry.
+
+RETURN VALUE
+
+Returns true if the username was found and removed; false if
+the username didn't exist.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+
+sub group_entry_del_username ($$)
+{
+    my ($entry, $user) = @_ ;
+
+    if ($entry->hasValue('memberUid', $user)) {
+        $entry->removeValue('memberUid', $user) ;
+        return 1 ;
+    } else {
+        return 0 ;
+    }
+}
+
+=head2 group_list_users 
+
+SYNOPSIS
+
+C<group_list_users ( I<$groupName> )>
+
+DESCRIPTION
+
+Lists users associated with a group given a group name
+
+RETURN VALUE
+
+Returns a reference to array of usernames.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+
+sub group_list_users ($) {
+
+    my ($groupName) = @_ ;
+    my ($group, $users) ;
+
+    $group = &search_group_attr("cn=$groupName", "memberUid") ;
+
+    $users = \@{$group->{'memberUid'}} ;
+    
+    return $users ;
+
+}
+
+
+=head2 delete_group
+
+SYNOPSIS
+
+C<delete_group ( I<$dn> )>
+
+DESCRIPTION
+
+Deletes a given DN from the directory.
+
+RETURN VALUE
+
+Returns a two-element array; in the case of success, the
+first element is 1 and the second the deleted DN.  In the
+case of failure, -1 and a formatted error string.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+
+sub delete_group ($)
+{
+    my ($dn) = @_ ;
+
+    $conn->delete($dn) ;
+    if ($err = $conn->getErrorCode()) {
+        return [ -1, "delete ($dn): $err: " . $conn->getErrorString()] ;
+    } else {
+        return [ 1, $dn ];
+    }
+}
+
+
+=head2 update_group
+
+SYNOPSIS
+
+C<update_group ( I<$dn>, I<\%group> )>
+
+DESCRIPTION
+
+Updates a group entry based on a group hash.
+
+RETURN VALUE
+
+Returns a two-element array; in the case of success, the first
+element is 1 and the second the modified DN.  In the case of failure,
+-1 and a formatted error string.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+sub update_group ($$)
+{
+    my ($dn, $group) = @_ ;
+    my ($entry) ;
+
+    print STDERR "Entering update_group\n" ;
+
+    $entry = $conn->browse($dn) ;
+    if ($err = $conn->getErrorCode()) {
+        return [ -1, "update_group browse ($dn): $err: " .
+            $conn->getErrorString() ] ;
+    }
+
+    print STDERR "Calling entry_from_group\n" ;
+    $entry = &entry_from_group($entry, $group) ;
+
+    print STDERR "Calling \$conn-update\n" ;
+    $conn->update($entry) ;
+    print STDERR "Back from \$conn-update\n" ;
+
+    if ($err = $conn->getErrorCode()) {
+        return [ -1, "update_group update ($dn): $err: " .
+            $conn->getErrorString() ] ;
+    }
+
+    print STDERR "Returning 1, $dn\n" ;
+    return [ 1, $dn ] ;
+
+}
+
 
 =head1 NOTES
 

@@ -170,6 +170,11 @@ RETURN VALUE
 
 Returns a reference to a hash containing user attributes.
 
+NOTES
+
+Could probably replace most of this function with a loop
+that looped over an array of attributes and copied them.
+
 =cut
 
 sub user_from_form ($)
@@ -188,6 +193,10 @@ sub user_from_form ($)
     # Comma-separated hosts
     for $host (split (',', $in->{'allowedHosts'})) {
         push @{$user{'allowedHosts'}}, &remove_whitespace($host) ;
+    }
+
+    for $secgroup (split (',', $in->{'secondaryGroups'})) {
+        push @{$user{'secondaryGroups'}}, &remove_whitespace($secgroup) ;
     }
 
     if ($in->{'homeDirectory'}) {
@@ -292,8 +301,9 @@ None known.
 sub user_from_entry ($)
 {
     my ($entry) = @_;
-    my (%user) ;
+    my (%user, $group, @groups) ;
 
+    $user{'dn'} = $entry->{'dn'}[0] ;
     $user{'firstName'} = $entry->{'givenName'}[0];
     $user{'surName'} = $entry->{'sn'}[0];
     $user{'fullName'} = $entry->{'cn'}[0] ;
@@ -310,6 +320,16 @@ sub user_from_entry ($)
     $user{'loginShell'} = $entry->{'loginShell'}[0];
     $user{'email'} = $entry->{'mail'}[0];
     $user{'description'} = $entry->{'description'}[0] ;
+
+    if ($user{'secondaryGroups'}) {
+        $user{'modSecondaryGroups'} = $user{'secondaryGroups'} ;
+    }
+
+    foreach $group (@{&search_groups("memberUsername", $user{'userName'})}) {
+        push @groups, $group->{'groupName'} ;
+    }
+
+    $user{'secondaryGroups'} = \@groups ;
 
     return \%user ;
 }
@@ -379,6 +399,10 @@ sub entry_from_user ($$)
     }
 
     # Add object classes
+    unless ($entry->hasValue('objectClass', 'top')) {
+        $entry->addValue('objectClass', 'top') ;
+    }
+
     unless ($entry->hasValue('objectClass', 'posixAccount')) {
         $entry->addValue("objectClass", "posixAccount") ;
     }
@@ -417,11 +441,11 @@ sub entry_from_user ($$)
         $entry->setValues('gidNumber', $user->{'groupID'}) ;
     }
     
-    unless ($entry->hasValue("gecos", "$user->{'firstName'} $user->{'surName'},"
-            . $user->{'telephoneNumber'}[0])) {
-        $entry->setValues('gecos', "$user->{'firstName'} $user->{'surName'},"
-            . $user->{'telephoneNumber'}[0]) ;
+    my $gecos = "$user->{'firstName'} $user->{'surName'}, $user->{'telephoneNumber'}[0]" ;
+    unless ($entry->hasValue("gecos", $gecos)) {
+        $entry->setValues('gecos', $gecos) ;
     }
+
 
     # Need to make sure password hash &al takes place
     unless ($entry->hasValue("userPassword", $user->{'password'})) {
@@ -553,6 +577,51 @@ sub create_home_dir ($$) {
 
 }
 
+
+
+=head2 remove_user_from_groups
+
+SYNOPSIS
+
+C<remove_user_from_groups ( I<$user> )>
+
+DESCRIPTION
+
+Removes I<$user> username from all groups.
+
+RETURN VALUE
+
+True
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+sub remove_user_from_groups ($)
+{
+
+    my ($user) = @_ ;
+
+    my (@patch, $group, $groups, $entry, $filter) ;
+
+    push @patch, [ '-', 'memberUsername', $user ] ;
+    $filter = "(&(objectClass=posixGroup)(memberUid=$user))" ;
+
+    $entry = $conn->search($config{'base'}, "subtree", $filter) ;
+
+    if ($entry) {
+        do {
+            &ldap_patch_entry($entry, 'remove-only', @patch) ;
+        } while ($entry = $conn->nextEntry()) ;
+    }
+
+    return 1;
+}
 
 =head1 NOTES
 

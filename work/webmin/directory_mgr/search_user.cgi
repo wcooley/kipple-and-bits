@@ -56,7 +56,7 @@ if ($in{'do'} eq "search") {
     } elsif (scalar @{$users} == 1) {
         &header($text{'search_user_t'}, "" );
         print "<hr noshade size=2>\n" ;
-        &html_user_form("modify", $users->[0]) ;
+        print &html_user_form("modify", $users->[0]) ;
     } else {
         &header($text{'search_user_t'}, "" );
         print "<hr noshade size=2>\n" ;
@@ -65,6 +65,11 @@ if ($in{'do'} eq "search") {
 
         for $user (@{$users}) {
             print "<!-- User ". $user->{'userName'} . " -->\n" ;
+            print "<!--\n" ;
+            foreach $key (keys(%{$user})) {
+                print "$key: $user->{$key}\n" ;
+            }
+            print "-->\n" ;
             print &html_row_user($user) ;
         }
 

@@ -40,10 +40,9 @@ Returns a refernce to an array of users.
 
 BUGS
 
-Probably should return a reference to an array, since the array will
-be quite large on installations with many users.  Does not actually
-filter on OU.  Does no actually sort entries.  Should modify filter
-string instead of skipping entries when 'hide_system_users' is set.
+Does not actually filter on OU.  Does no actually sort entries.
+Should modify filter string instead of skipping entries when
+'hide_system_users' is set.
 
 =cut
 
@@ -114,6 +113,7 @@ sub get_user_attr ($)
     my ($entry);
 
     $entry = $conn->browse ($dn);
+    $entry->{'dn'} = [$entry->getDN()] ;
     return $entry;
 }
 
@@ -200,8 +200,8 @@ sub search_users_attr ($@)
         my (%user) ;
 
         for $attr (@desired_attrs) {
-            if ($attr =~ /^dn$/i) {
-                $user{$attr} = [$entry->getDN()] ;
+            if ($attr eq "dn") {
+                $user{'dn'} = [$entry->getDN()] ;
             } else {
                 $user{$attr} = $entry->{$attr} ;
             }
@@ -230,7 +230,8 @@ I<$search_key> matching I<$search_value>.
 
 RETURN VALUE
 
-Returns an array of users or the return value of search_users_attr.
+Returns a reference to an array of users or the return value of
+search_users_attr.
 
 BUGS
 
@@ -431,6 +432,9 @@ sub update_user ($$)
 
     my ($entry);
 
+    # Make a copy of this so we don't lose it
+    $user->{'modSecondaryGroups'} = $user->{'secondaryGroups'} ;
+
     # assume the uid (or the DN) was not changed
     $entry = $conn->browse ($dn);
     if ($err = $conn->getErrorCode ()) {
@@ -556,6 +560,86 @@ sub set_passwd ($$)
 
     return [ 1, $user ] ;
 }
+
+
+=head2 function
+
+SYNOPSIS
+
+C<function ( I<param> )>
+
+DESCRIPTION
+
+description
+
+RETURN VALUE
+
+True
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+sub user_set_sec_grps ($)
+{
+
+    my ($user) = @_ ;
+    my ($found, $ret) ;
+
+    # Handle secondary groups
+    #  o Search for the groups with userName in memberUsername
+    #  o Check if user has group in secondary groups
+    #  o If not, remove user from group
+    #  o Commit group
+
+    print STDERR "Entering user_set_sec_grps\n" ;
+
+    my $groups = &search_groups('memberUsername', $user->{'userName'}) ;
+
+    if ( $groups->[0] == -1 ) {
+        print STDERR "Error returned from search_groups\n" ;
+        #&error("Error searching for $user->{'userName'}: $groups->[1]") ;
+    } else {
+        foreach $group (@{$groups}) {
+            print STDERR "Checking group $group->{'groupName'}\n" ;
+            $found = 0 ;
+            foreach $secgroup (@{$user->{'modSecondaryGroups'}}) { 
+                if ($secgroup eq $group->{'groupName'}) {
+                    $found = 1 ;
+                }
+            }
+
+            if ($found != 1) {
+                # Create a new array w/o the old user
+                @members = () ;
+                print STDERR "Adding members to group $group->{'groupName'}:" ;
+                foreach $memberUser (@{$group->{'memberUsername'}}) {
+                    if ($memberUser ne $user->{'userName'}) {
+                        push @members, $memberUser ;
+                        print STDERR " o $memberUser " ;
+                    } else {
+                        print STDERR " x $memberUser " ;
+                    }
+                }
+                $group->{'memberUsername'} = @members ;
+                print STDERR "Calling update_group\n" ;
+                $ret = &update_group($group->{'dn'}, $group) ;
+                if ( $ret->[0] == -1 ) {
+                    print STDERR "update_group error: $ret->[1]\n" ;
+                } else {
+                    print STDERR "update_group was successful\n" ;
+                }
+            }
+        }
+    }
+
+}
+
 
 =head1 NOTES
 

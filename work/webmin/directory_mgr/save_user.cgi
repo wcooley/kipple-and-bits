@@ -92,8 +92,12 @@ if ($in{'do'} eq "create") {
 		&error ($text{'error_2'});
 	}
 	&header ($text{'header_2'}, "");
+    print "<!-- Running update_user -->\n" ;
 	&update_user ($in{'dn'}, $user);
-    &html_user_form("display", $user) ;
+    print "<!-- Running user_set_sec_grps -->\n" ;
+    &user_set_sec_grps($user) ;
+    print "<!-- Running html_user_from -->\n" ;
+    print &html_user_form("display", $user) ;
 	&footer ("index.cgi", $text{'module_title'});
 	do "footer.pl";
 
@@ -128,7 +132,7 @@ if ($in{'do'} eq "create") {
 
         &header ($text{'header_6'}, "");
         print "<HR noshade size=2>\n";
-        &html_user_form("display", $user) ;
+        print &html_user_form("display", $user) ;
 
         print "<h3>\n" ;
         print &text ("delete_user_confirm", $user->{'firstName'} 
