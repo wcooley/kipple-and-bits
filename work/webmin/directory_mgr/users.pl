@@ -192,7 +192,7 @@ sub user_from_form ($)
     }
 
     if ($in{'userID'} eq '') {
-        $user{'userID'} = &find_free_uid($config{'min_uid'}) ;
+        $user{'userID'} = &find_free_userid($config{'min_uid'}) ;
     } else {
         $user{'userID'} = &remove_whitespace($in->{'userID'});
     }
@@ -287,7 +287,7 @@ sub user_defaults
 {
     my (%user) ;
 
-    $user{'userID'} = &find_free_uid($config{'min_uid'}, $config{'max_uid'}) ;
+    $user{'userID'} = &find_free_userid($config{'min_uid'}, $config{'max_uid'}) ;
     # should get these defaults fron %config or from a template
     $user{'groupID'} = $config{'gid'};
     $user{'loginShell'} = $config{'shell'};
