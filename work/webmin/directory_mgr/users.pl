@@ -24,7 +24,7 @@ managing users.
 
 SYNOPSIS
 
-new_user_ok ( I<\%user> )
+C<new_user_ok ( I<\%user> )>
 
 DESCRIPTION
 
@@ -55,7 +55,7 @@ sub new_user_ok
 
 SYNOPSIS
 
-changed_user_ok ( I<\%user> )
+C<changed_user_ok ( I<\%user> )>
 
 DESCRIPTION
 
@@ -89,7 +89,7 @@ sub changed_user_ok
 
 SYNOPSIS 
 
-user_from_form ( \%in )
+C<user_from_form ( I<\%in> )>
 
 DESCRIPTION
 
@@ -148,7 +148,7 @@ sub user_from_form
 
 SYNOPSIS
 
-user_from_entry ( I<\%entry> )
+C<user_from_entry ( I<\%entry> )>
 
 DESCRIPTION
 
@@ -232,7 +232,7 @@ sub user_from_entry
 
 SYNOPSIS
 
-user_defaults ( )
+C<user_defaults ( )>
 
 DESCRIPTION
 
@@ -261,7 +261,7 @@ sub user_defaults
 
 SYNOPSIS
 
-entry_from_user ( I<\%entry>, I<\%user> )
+C<entry_from_user ( I<\%entry>, I<\%user> )>
 
 DESCRIPTION
 
@@ -324,7 +324,7 @@ sub entry_from_user
 
 SYNOPSIS 
 
-create_home_dir ( $user, $host )
+C<create_home_dir ( I<$user>, I<$host> )>
 
 DESCRIPTION
 
