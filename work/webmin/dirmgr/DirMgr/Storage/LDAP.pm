@@ -1,10 +1,9 @@
-require Mozilla::LDAP::Conn ;
-require Mozilla::LDAP::Entry ;
 
 package DirMgr::LDAP;
 
-require strict ;
-require diagnostics ;
+use Net::LDAP;
+use strict ;
+use diagnostics ;
 
 sub connect($) {
     my ($config) = shift ;
