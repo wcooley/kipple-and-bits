@@ -1,0 +1,55 @@
+#!/bin/bash
+#
+# RPM Build Release Script
+#
+# (C) 2004 Naked Ape Consulting
+# Wil Cooley <wcooley@nakedape.cc>
+
+prog=$(basename $0)
+
+pprintf () {
+    printf "%s: " ${prog}
+    printf "$@"
+}
+
+if [ $# -ne 1 ]; then
+    printf "Usage: %s <specfile>\n" ${prog}
+    exit 1
+else
+    specfile=$1
+fi
+
+if [ ! -f ${specfile} ]; then
+    pprintf "${specfile} does not exist or is not a file!\n"
+    exit 1
+fi
+
+rpmbase=$(rpm -q --queryformat '%{NAME}' --specfile ${specfile})
+tmpfile=$(mktemp /tmp/${prog}-${rpmbase}.XXXXXX) || exit 1
+
+rpmreldir=$HOME/rpm/release/rpm/${rpmbase}
+srpmreldir=$HOME/rpm/release/srpms/${rpmbase}
+
+mkdir -p ${rpmreldir} ${srpmreldir}
+
+pprintf "Output going to %s...\n" ${tmpfile}
+pprintf "Building from %s now...\n" ${specfile}
+
+(time rpmbuild -ba ${specfile}) >${tmpfile} 2>&1
+
+if [ $? -ne 0 ]; then
+    pprintf "Build exited with error status.\n\tPlease check %s.\n" ${tmpfile}
+    exit 1
+fi
+
+srpm=$(awk '/^Wrote:.*src.rpm$/ {print $2}' ${tmpfile})
+rpms=$(awk '/^Wrote:.*(noarch|i?86|athlon)/ {print $2}' ${tmpfile})
+
+pprintf "Signing packages..."
+echo ${srpm} ${rpms} |xargs rpm --addsign
+
+mv -v ${rpms} ${rpmreldir}
+mv -v ${srpm} ${srpmreldir}
+
+# clean up
+#rm -vf ${tmpfile}
