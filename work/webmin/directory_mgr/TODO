@@ -1,3 +1,10 @@
+What works currently:
+
+    o Not much :)
+
+    o LDAP user creation, with user-private groups.
+
+
 TODO List for Directory Mgr:
 
 STYLE
@@ -5,17 +12,15 @@ STYLE
 
     o Get some real icons!
 
-    o Fix footers.
-
     o Document key data structures (user, group, etc.)
 
-    o Fix unquoted hash keys.
-
-    o Implement section headers in Webmin. DONE
-
+    o Clarify abstractions between directory-agnostic functions,
+    directory-specific functions, and presentation.
 
 OPERATIONAL
 ===========
+
+    o Group management.
 
     o Home directory creation. IN-PROGRESS
 
@@ -24,17 +29,6 @@ OPERATIONAL
     o User search.
 
     o LDAP MD5 & SHA passwords.
-
-    o Group management.
-
-    o Correctly limit 'system users/groups' by excluding them from
-    with the search filter.
-
-    o Sub-modules needs to return to main module index, instead of
-    system category.
-
-    o Clarify abstractions between directory-agnostic functions,
-    directory-specific functions, and presentation.
 
     o Samba attributes for users.
 
