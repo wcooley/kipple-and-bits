@@ -82,7 +82,13 @@ class amavis_mod(InternalModule):
         m = self.spam_tag_re.search(linemap['message'])
         if m is not None:
             spambool = m.group(1)
-            score = float(m.group(2))
+            score = m.group(2)
+
+            # White-listed messages have '-' as a score
+            if score == '-':
+                return {}
+            
+            score = float(score)
 
             if spambool == 'Yes':
                 self.spam_total += 1
@@ -181,6 +187,8 @@ class amavis_mod(InternalModule):
 
         if self.ham_total != 0:
             spam_percent = 100.0 * self.spam_total / self.total_msgs
+        else:
+            spam_percent = 100.0
 
         report = """
         <tr>
