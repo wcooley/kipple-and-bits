@@ -40,25 +40,21 @@ $user = &get_user_attr ($dn);
 
 if ($dn && $user) {
     $header = $text{'edit_user'};
-    $form_type = "update" ;
-    $new = 0;
+    $form_type = "modify" ;
 }
 else {
     $header = $text{'create_user'};
     $form_type = "create" ;
-    $new = 1;
 }
-if (length ($in{'new'}) == 0) {
-    &header ($header, "");
-}
-print "<HR noshade size=2>\n";
 
+&header ($header, "");
 
+print "<hr noshade size=2>\n";
 
-if ($new) {
-    &user_defaults;
+if ($form_type eq "create") {
+    $user = &user_defaults();
 } else {
-    &user_from_entry ($user);
+    $user = &user_from_entry ($user);
 }
 
 &html_user_form ($form_type, $user) ;

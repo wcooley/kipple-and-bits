@@ -57,24 +57,24 @@ if ($in{'do'} eq "create") {
                 &create_home_dir ($user_info{'uid'}, $home_host) ;
             }
         } else {
-	        mkdir $user_info{'homedirectory'}, 0700;
+	        mkdir $user_info{'homeDirectory'}, 0700;
 	        if ($in{'copy'}) {
-		        system "cp -rf /etc/skel/* $user_info{'homedirectory'}";
-		        system "cp -rf /etc/skel/.[^.]+ $user_info{'homedirectory'}";
+		        system "cp -rf /etc/skel/* $user_info{'homeDirectory'}";
+		        system "cp -rf /etc/skel/.[^.]+ $user_info{'homeDirectory'}";
 	        }
-	        system "chown -R $user_info{'uidNumber'}.$user_info{'gidNumber'} $user_info{'homedirectory'}";
+	        system "chown -R $user_info{'uidNumber'}.$user_info{'gidNumber'} $user_info{'homeDirectory'}";
         }
     }
 
 	&header ($text{'created_user'}, "");
 } elsif ($in{'do'} eq "modify") {
-	&user_from_form() ;
-	if (! &changed_user_ok()) {
+	$user = &user_from_form(\%in) ;
+	unless (&changed_user_ok($user)) {
 		&error ($text{'error_2'});
 	}
-
 	&header ($text{'header_2'}, "");
-	&update_user ($in{'dn'});
+	&update_user ($in{'dn'}, $user);
+    #&html_user_form("display", $user) ;
 
 } elsif ($in{'do'} eq "delete") {
 
@@ -85,7 +85,7 @@ if ($in{'do'} eq "create") {
 	}
 	if ($in{'delete_home'}) {
     	$entry = &get_user_attr ($in{'dn'});
-    	$home = $entry->{'homedirectory'}[0];
+    	$home = $entry->{'homeDirectory'}[0];
     	$owner = ((stat($home))[4]);
     	if ($owner == $entry->{'uidNumber'}[0]) {
         	system "rm -rf $home";

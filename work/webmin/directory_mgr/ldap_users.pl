@@ -53,8 +53,7 @@ sub list_users
 
     $filter = "(objectclass=posixAccount)";
     $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
-        ("uid", "uidNumber", "gidNumber", "cn", "title", "organizationname",
-        "department", "physicalofficedelyveryname"));
+        ("uid", "uidNumber", "gidNumber", "cn", "telephoneNumber" ));
 
     $i = 0;
     while ($entry) {
@@ -69,20 +68,17 @@ sub list_users
         }
 
         $user{'dn'} = $entry->getDN() ;
-        $user{'uid'} = $entry->{'uid'}[0] ;
-        $user{'uidNumber'} = $entry->{'uidNumber'}[0];
-        $user{'gidNumber'} = $entry->{'gidNumber'}[0];
-        $user{'cn'} = $entry->{'cn'}[0];
-        $user{'title'} = $entry->{'title'}[0];
-        $user{'organizationname'} = $entry->{'organizationname'}[0];
-        $user{'department'} = $entry->{'department'}[0];
-        $user{'physicaldeliveryofficename'} = $entry->{'physicaldeliveryofficename'}[0];
+        $user{'userName'} = $entry->{'uid'}[0] ;
+        $user{'userID'} = $entry->{'uidNumber'}[0];
+        $user{'groupID'} = $entry->{'gidNumber'}[0];
+        $user{'fullName'} = $entry->{'cn'}[0];
+        $user{'telephoneNumber'} = $entry->{'telephoneNumber'};
         $users[$i++] = \%user;
 
         $entry = $conn->nextEntry ();
     }
 
-    return @users;
+    return \@users;
 }
 
 =head2 get_user_attr
@@ -97,7 +93,7 @@ Retrieves a user object given a distinguished name.
 
 RETURN VALUE
 
-Returns a reference to an LDAP entry hash.
+Returns a reference to an LDAP user hash.
 
 BUGS
 
@@ -249,7 +245,7 @@ sub find_free_uid
     my $free_uid = -1 ;
 
     while ($minUid <= $maxUid) {
-        if (&is_uidNumber_free($minUid)) {
+        if ( &is_uidNumber_free($minUid)) {
             $free_uid = $minUid ;
             last ;
         }
@@ -348,16 +344,15 @@ sub create_user
     }
 
     # This should be more automatic, like in the useradmin module
-    if ($user->{'homedirectory'}) {
-        $entry{'homedirectory'} = [$user->{'homedirectory'}] ;
+    if ($user->{'homeDirectory'}) {
+        $entry{'homeDirectory'} = [$user->{'homeDirectory'}] ;
     } else {
-        $entry{'homedirectory'} = [$config{'homes'} . "/$uid"] ;
+        $entry{'homeDirectory'} = [$config{'homes'} . "/$uid"] ;
     }
     # posixAccount
     $entry->{'uid'} = [$user->{'uid'}];
     $entry->{'uidNumber'} = [$user->{'uidNumber'}];
     $entry->{'gidNumber'} = [$user->{'gidNumber'}];
-    $entry->{'homedirectory'} = [$user->{'homedirectory'}];
     $entry->{'loginshell'} = [$user->{'loginshell'}];
 
     $entry->{'sn'} = [$user->{'sn'}];
@@ -430,7 +425,7 @@ sub update_user
     if ($err = $conn->getErrorCode ()) {
         &error ("browse ($dn): $err:" . $conn->getErrorString ());
     }
-    &entry_from_user ($entry);
+    $entry = &entry_from_user ($entry, $user);
     $conn->update ($entry);
     if ($err = $conn->getErrorCode ()) {
         &error ("update ($dn): $err:" . $conn->getErrorString ());

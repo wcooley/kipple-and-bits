@@ -10,6 +10,7 @@ What works currently:
         o Auto-selecting of next UID.
         o Auto-creation of group for user.
         o User listing, sorting rows by columns.
+        o Set allowed hosts attribute for users.
         
 
 *******************************
@@ -32,10 +33,10 @@ OPERATIONAL
     @ User management:
         o User search.
         o User modification.
+        o Need checking for attempt to change uid.
         o Delete group when removing user.
         o LDAP MD5 & SHA passwords.
         o Samba attributes for users.
-        o Set allowed hosts attribute for users.
         o Home directory creation.
         o Automatic home directories like useradmin.
         o Selectable OU for users.

@@ -61,29 +61,36 @@ Returns a formatted HTML row of user information.
 
 sub html_row_user {
 	my ($user) = @_ ;
-	my ($gid) = &find_gid ($user->{'gidNumber'}) ;
+	my ($groupName) = &find_gid ($user->{'groupID'}) ;
 
 	my ($row) = "
 <tr>
-	<td>
+	<td>&nbsp;
 		<a href=\"add_user.cgi?sort_on=$sort_on&dn=$user->{'dn'}\">
-			$user->{'uid'}</a>
+			$user->{'userName'}</a>
 	</td>
 	<td>
-		$user->{'uidNumber'}
+		$user->{'userID'}&nbsp;
 	</td>
 	<td>
-		$gid
+		$groupName ($user->{'groupID'})&nbsp;
 	</td>
 	<td>
-		$user->{'cn'}
+		$user->{'fullName'}&nbsp;
 	</td>
-	<td>&nbsp;$user->{'department'}
+	<td>\n" ;
+
+    unless (scalar @{$user->{'telephoneNumber'}}) {
+        $row .= "&nbsp;" ;
+    }
+    for $telnum (@{$user->{'telephoneNumber'}}) {
+        $row .= $telnum . "<br>" ;    
+    }
+
+    $row .= "
 	</td>
 </tr>
 " ;
-
-#print "<TD>" . $user->{dn};
 
 	return $row ;
 
@@ -140,7 +147,7 @@ sub html_user_form {
         print <<EOF ;
     <form method="post" action="save_user.cgi">
     <td><input type="hidden" name="new" value="$new">
-    <td><input type="hidden" name="do" value="create">
+    <td><input type="hidden" name="do" value="$form_type">
     <td><input type="hidden" name="dn" value="$dn">
     <td><input type="hidden" name="sort_on" value="$sort_on">
 EOF
@@ -200,6 +207,8 @@ EOF
 
     if ($form_type eq "display") {
         print "    $user->{'groupID'}\n" ;
+    } elsif ($form_type eq "modify") {
+        print "    <input type=\"text\" name=\"groupID\" size=5 value=\"$user->{'groupID'}\" >\n" ;
     } else {
         if ($config{'new_group'}) {
 
@@ -298,7 +307,7 @@ EOF
     if ($form_type eq "display") {
         print "    $user->{'email'}\n" ;
     } else {
-        print "    <input name=\"mail\" size=30 value=\"$user->{'email'}\">\n";
+        print "    <input name=\"email\" size=30 value=\"$user->{'email'}\">\n";
     }
     print <<EOF ;
     </td>
@@ -372,7 +381,7 @@ EOF
 EOF
 
 # user creation options
-if ($new) {
+if ($form_type eq "create") {
     print "<TR><TD colspan=2 $tb><B>" . $text{'user_options'} . "</B>\n";
     print "</TD></TR>";
     print "<TR><TD>" . $text{'userpasswd'} . "\n";
@@ -434,7 +443,11 @@ EOF
 
     if ($form_type ne "display") {
         # Change label to  Modify or Create
-        $label = ($new) ? $text{'create'} : $text{'modify'};
+        if ($form_type eq "create") {
+            $label = $text{'create'} ;
+        } else {
+            $label = $text{'modify'} ;
+        }
 
         print <<EOF ;
     <table width=100% border=0>
@@ -445,7 +458,7 @@ EOF
     </TD>
 EOF
 
-        if (! $new) {
+        if ($form_type eq "modify") {
 	        print <<EOF ;
 	<td align="center">
 		<form method="post" action="set_passwd.cgi">

@@ -43,6 +43,7 @@ if ("$config{'directory_type'}" eq "LDAP") {
 require "users.pl" ;
 require "groups.pl" ;
 require "html.pl" ;
+require "misc.pl" ;
 
 
 =head1 NOTES

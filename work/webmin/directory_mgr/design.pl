@@ -25,7 +25,7 @@ attributes for user data:
 
 =item * cn I<(required)>
 
-=item * homedirectory I<(required)>
+=item * homeDirectory I<(required)>
 
 =item * uid I<(required)>
 
