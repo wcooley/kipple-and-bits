@@ -28,3 +28,5 @@ textdoc:
 htmldoc:
 	@echo "Generating html pod docs..."
 	-@for i in *.pl *.cgi; do echo $$i; pod2html --infile=$$i --title=$$i > doc/html/$$i.html; done
+
+# vim: noexpandtab
