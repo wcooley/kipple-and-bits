@@ -1,4 +1,5 @@
-#!/bin/bash
+#! /bin/ksh
+# or /bin/ksh
 #**********************************************************************
 #
 # File:         gwswitch
@@ -12,6 +13,15 @@
 #               Naked Ape Consulting <http://nakedape.cc>
 #
 # Version:      1.0
+#
+# Summary Changelog:
+#   o 1.0 - Initial implementation
+#   o 1.1 - Allow for checking of hosts other than the
+#           gateways themselves; use 'route' and 'netstat' instead
+#           of 'iproute' for portability.  Added a "dry-run"
+#           option.  Verify that route changing happens
+#           correctly, and if not, roll back to the previous
+#           gateway.
 #
 # $Id$
 #
@@ -33,14 +43,19 @@
 #
 #**********************************************************************
 
+VERSION=1.1
 #**********************************************************************
 # Configuration Variables
 #**********************************************************************
+netstat="/bin/netstat"
+netstat_opts=" -rn"
 logger="/usr/bin/logger"
 loglevel="daemon.warning"
 myname=$(basename $0)
-ping="/bin/ping"
 iproute="/sbin/ip route"
+route="/sbin/route"
+fping="/usr/sbin/fping"
+fping_opts=" -q -a"
 
 #**********************************************************************
 # Shell functions
@@ -48,12 +63,13 @@ iproute="/sbin/ip route"
 
 # Log a message to syslog and stderr
 do_log () {
-   ${logger} -s -p ${loglevel} -t ${myname} "$1"
+    [ "${debug}" == 0 ] && logopt="-s"
+    ${logger} ${logopt} -p ${loglevel} -t ${myname} "$1"
 }
 
 # Prints messages on stderr, if debug is set
 debug_msg() {
-    if [ "${debug}" == 1 ]; then
+    if [ "${debug}" == 0 ]; then
         printf "$@" 1>&2
     fi
 }
@@ -61,9 +77,23 @@ debug_msg() {
 # Show usage
 usage () {
     printf "Copyright (C) 2003, Naked Ape Consulting\n"
-    printf "gwswitch 1.0 - 2 March 2003\n"
-    printf "Usage: %s [[-d] -p primary_gateway -s secondary_gateway]\n" \
-        ${myname}
+    printf "gwswitch %s - 2 March 2003\n" ${VERSION}
+    printf "Usage: %s [-h|[-d] [-n] -p host [-P host]" ${myname}
+    printf " -s host [-S host]]\n"
+    printf "Options:\n"
+    printf "  -h\tHelp\n"
+    printf "  -n\tDry run (test, but don't change)\n"
+    printf "  -p\tPrimary gateway\n"
+    printf "  -P\tPrimary test address\n"
+    printf "  -s\tSecondary gateway\n"
+    printf "  -S\tSecondary test address\n"
+    printf "  -d\tPrint some debugging statements to stderr\n"
+    printf "\nThe -P and -S options allow you specify hosts in addition to\n"
+    printf "the actual gateways, to cover the case where the gateway\n"
+    printf "itself is on the local side of the WAN connection, as may\n"
+    printf "be the case with DSL that's not bridged.  Note that the\n"
+    printf "gateway itself is still tested first.\n"
+
     exit 1
 }
 
@@ -72,35 +102,64 @@ usage () {
 # not sure how to handle the case of multiple configured
 # default routes.
 current_gw() {
-    local gw="$(${iproute} list |awk '/^default/ {print $3}')"
+    local gw="$(${netstat} ${netstat_opts} |awk '/^0.0.0.0/ {print $2}')"
     
-    debug_msg "Current gateway is %s\n" "$gw"
+    debug_msg "Current gateway: %s\n" "$gw"
     printf "%s" $gw
 }
 
-# Check if a host is alive
-check_host_alive() {
-    ${ping} -c 3 -w 5 -q "$@" >/dev/null 2>&1
-    local ret=$?
-    if [ "$ret" == 0 ]; then
-        debug_msg "Host %s is alive\n" $1
-    else
-        debug_msg "Host %s is not alive\n" $1
-    fi
-    return $ret
+# This replaces the previous function.  We'll use fping so
+# we can ping a bunch of hosts.  Sets
+# {pri,sec}_{gw,test}_alive to '0' (true) or '1' (false).
+get_alive_hosts() {
+    alive_hosts=$(${fping} ${fping_opts} "$@" 2>/dev/null)
+
+    pri_gw_alive=1
+    pri_test_alive=1
+    sec_gw_alive=1
+    sec_test_alive=1
+
+    debug_msg "Tested host: %s\n" "$@"
+    debug_msg "Alive host: %s\n" $(echo "${alive_hosts}"|sed -e 's/\n/ /')
+
+    for host in ${alive_hosts}; do
+        [ "${host}" = "${pri_gw}" ] && pri_gw_alive=0
+        [ "${host}" = "${pri_test}" ] && pri_test_alive=0
+        [ "${host}" = "${sec_gw}" ] && sec_gw_alive=0
+        [ "${host}" = "${sec_test}" ] && sec_test_alive=0
+    done
 }
 
 # Set the default route
 set_default_gw() {
     local gw=$1
+    local old_gw=${curr_gw}
+    local route_del_out
+    local route_add_out
+    local ret
 
-    debug_msg "Setting default gateway to %s\n" $gw
     do_log "Setting default gateway to $gw"
 
-    if [ "${curr_gw}" = "" ]; then
-        ${iproute} add default via ${gw}
+    if [ -z "${old_gw}" ]; then
+        do_log "No current gateway."
     else
-        ${iproute} replace default via ${gw}
+        # 'route delete' is not documented in the Linux man
+        # page, but works and is consistent with BSD and
+        # SysV AFAICT
+        route_del_out=$(${route} delete default 2>&1)
+        if [ $? != 0 ]; then
+            do_log "Error deleting route: $?"
+            do_log "Error was: ${route_del_out}"
+        fi
+    fi
+
+    route_add_out=$(${route} add default gw ${gw} 2>&1)
+    ret=$?
+    if [ ${ret} != 0 ]; then
+        ${route} add default gw ${old_gw}
+        do_log "Error adding route: $ret"
+        do_log "Error was: ${route_add_out}"
+        do_log "Restoring old gateway ${old_gw}"
     fi
 }
 
@@ -110,74 +169,74 @@ set_default_gw() {
 #**********************************************************************
 
 # Process arguments
-while getopts 'p:s:hd' Opt; do
+while getopts 'p:P:s:S:hdn' Opt; do
     case "$Opt" in
         p)
-            typeset -r primary=$OPTARG
+            typeset -r pri_gw=$OPTARG
+            ;;
+        P)
+            typeset -r pri_test=$OPTARG
             ;;
         s)
-            typeset -r secondary=$OPTARG
+            typeset -r sec_gw=$OPTARG
+            ;;
+        S)
+            typeset -r sec_test=$OPTARG
             ;;
         h)
-            typeset -ri showusage=1
+            typeset -ri showusage=0
             ;;
         d)
-            typeset -ri debug=1
+            typeset -ri debug=0
+            ;;
+        n)
+            typeset -ri dryrun=0
             ;;
     esac
 done
 
-if [ "${primary}" = "" ] \
-    || [ "${secondary}" = "" ] \
-    || [ "${showusage}" == 1 ]; then
+if [ "${pri_gw}" = "" ] \
+    || [ "${sec_gw}" = "" ] \
+    || [ "${showusage}" == 0 ]; then
     usage
 fi
 
+[ "${pri_test}" = "" ] && typeset -r pri_test=${pri_gw}
+[ "${sec_test}" = "" ] && typeset -r sec_test=${sec_gw}
+
 curr_gw=$(current_gw)
 
-if [ "${curr_gw}" = "${primary}" ]; then
-    check_host_alive ${curr_gw}
-    if [ "$?" == 0 ]; then
-        # Primary is current gw, and is alive, so we can
-        # stop here.  This is first because it should be the
-        # commonest case.
+get_alive_hosts "${pri_gw}" "${sec_gw}" "${pri_test}" "${sec_test}"
+
+if [ "${pri_gw_alive}" == 0 ] && [ "${pri_test_alive}" == 0 ]; then
+    # Primary is current gw, and is alive, and primary
+    # test is alive, so we can stop here.  This is first 
+    # because it should be the commonest case.
+    if [ "${curr_gw}" = "${pri_gw}" ]; then
         exit 0
     else
-        # Primary is current, but it's down.  Oops.
-        check_host_alive ${secondary}
-        if [ "$?" == 0 ]; then
-            set_default_gw ${secondary}
-        else
-            # We've been unable to find either the primary
-            # or secondary alive, so give up and complain
-            # loudly
-            loglevel="daemon.crit"
-            do_log "Unable to find a live default route!"
+        if [ "${dryrun}" != 0 ]; then
+            set_default_gw "${pri_gw}"
+            exit 0
+        fi
+    fi
+# Primary failed; try the secondary
+elif [ "${sec_gw_alive}" == 0 ] && [ "${sec_test_alive}" == 0 ]; then
+    if [ "${curr_gw}" = "${sec_gw}" ]; then
+        exit 0
+    else
+        if [ "${dryrun}" != 0 ]; then
+            set_default_gw "${sec_gw}"
+            exit 0
         fi
     fi
 else
-# Current gateway is secondary or is not set or is not one
-# given on the command line
-    check_host_alive ${primary}
-    if [ "$?" == 0 ]; then
-        set_default_gw ${primary}
-    else
-        check_host_alive ${secondary}
-        if [ "$?" == 0 ]; then
-            # Don't change the gateway if we're already on
-            # the second
-            if [ "${curr_gw}" != "${secondary}" ]; then
-                set_default_gw ${secondary}
-            fi
-        else
-            # We've been unable to find either the primary
-            # or secondary alive, so give up and complain
-            # loudly
-            loglevel="daemon.crit"
-            do_log "Unable to find a live default route!"
-        fi
-
-    fi
+    # We've been unable to find either the primary
+    # or secondary alive, so give up and complain
+    # loudly
+    loglevel="daemon.crit"
+    do_log "Unable to find a live default route!"
+    exit 1
 fi
 
 # EOF gwswitch
