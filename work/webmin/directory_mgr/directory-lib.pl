@@ -11,6 +11,8 @@
 do '../web-lib.pl' ;
 $|=1 ;
 
+$debug=0 ;
+
 use strict ;
 no strict "vars" ;
 
