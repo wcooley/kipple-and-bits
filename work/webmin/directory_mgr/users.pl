@@ -42,7 +42,7 @@ sub new_user_ok
 	my ($user) = @_ ;
     return
         $user->{'loginshell'} &&
-		$user->{'gidnumber'} &&
+		$user->{'gidNumber'} &&
         $user->{'givenname'} &&
         $user->{'sn'} ;
 }
@@ -52,8 +52,8 @@ sub changed_user_ok
 {
     return
         $uid &&
-        $uidnumber &&
-        $gidnumber &&
+        $uidNumber &&
+        $gidNumber &&
         $homedirectory &&
         $loginshell &&
         $givenname &&
@@ -84,13 +84,13 @@ sub user_from_form
 
     # posixAccount
     $user{'uid'} = $in->{'uid'};
-    if ($in{'uidnumber'} eq '') {
-        $user{'uidnumber'} = &find_free_uid($config{'min_uid'}) ;
+    if ($in{'uidNumber'} eq '') {
+        $user{'uidNumber'} = &find_free_uid($config{'min_uid'}) ;
     } else {
-        $user{'uidnumber'} = $in->{'uidnumber'};
+        $user{'uidNumber'} = $in->{'uidNumber'};
     }
 
-    #$user{'gidnumber'} = $in->{'gidnumber'};
+    #$user{'gidNumber'} = $in->{'gidNumber'};
     $user{'gecos'} = $in->{'gecos'};
 
     if ($in->{'homedirectory'} eq "") {
@@ -126,8 +126,8 @@ sub user_from_entry
 
     # posixAccount
     $uid = $user->{'uid'}[0];
-    $uidnumber = $user->{'uidnumber'}[0];
-    $gidnumber = $user->{'gidnumber'}[0];
+    $uidNumber = $user->{'uidNumber'}[0];
+    $gidNumber = $user->{'gidNumber'}[0];
     $gecos = $user->{'gecos'}[0];
     $homedirectory = $user->{'homedirectory'}[0];
     $loginshell = $user->{'loginshell'}[0];
@@ -183,9 +183,9 @@ sub user_from_entry
 
 sub user_defaults
 {
-    $uidnumber = &find_free_uid($config{'min_uid'}) ;
+    $uidNumber = &find_free_uid($config{'min_uid'}) ;
     # should get these defaults fron %config or from a template
-    $gidnumber = $config{'gid'};
+    $gidNumber = $config{'gid'};
     $loginshell = $config{'shell'};
 }
 
@@ -196,8 +196,8 @@ sub entry_from_user
 
     # posixAccount
     $entry->{'uid'} = [$uid];
-    $entry->{'uidnumber'} = [$uidnumber];
-    $entry->{'gidnumber'} = [$gidnumber];
+    $entry->{'uidNumber'} = [$uidNumber];
+    $entry->{'gidNumber'} = [$gidNumber];
     $entry->{'gecos'} = [$gecos];
     $entry->{'homedirectory'} = [$homedirectory];
     $entry->{'loginshell'} = [$loginshell];
@@ -209,7 +209,7 @@ sub entry_from_user
     $entry->{'cn'} = [$cn];
     $entry->{'mail'} = [$mail];
 
-    if ($config{'outlook'} eq "1") {
+    if ($config{'outlook'}) {
         $entry->{'givenname'} = [$givenname];
         $entry->{'title'} = [$title];
         $entry->{'organizationname'} = [$organizationname];
@@ -261,42 +261,38 @@ sub create_home_dir {
     $loghash{'user'} = $user ;
     $loghash{'host'} = $host ;
 
-    $debug && &webmin_log ('call', 'sub', 'create_home_dir');
+    $debug && &webmin_log ('call', 'sub', 'users.pl:create_home_dir');
 
 
     # Create the remote directory, by calling itself on
     # the remote host
-    $debug && &webmin_log ('call', 'sub', 'remote_foreign_check') ;
-    eval ( &remote_foreign_check("$host", 'create_homedir') ) ;
+    $debug && &webmin_log ('call', 'sub', 'users.pl:foreign_check') ;
+    eval ( &foreign_check('create_homedir') ) ;
     if ($@) {
-        $whatfailed = &text('err_remote_foreign_check', 'create_homedir', $host) ;
+        $whatfailed = &text('err_foreign_check', 'create_homedir', $host) ;
         &error($@) ;
     }
 
 
-    $debug && &webmin_log ('call', 'sub', 'remote_foreign_require');
-    eval ( &remote_foreign_require("$host", 'create_homedir',
-        'create_home_dir.pl') ) ;
+    $debug && &webmin_log ('call', 'sub', 'users.pl:foreign_require');
+    eval ( &foreign_require('create_homedir', 'create_home_dir.pl') ) ;
     if ($@) {
-        $whatfailed = &text('err_remote_foreign_require', 'create_homedir', 
+        $whatfailed = &text('err_foreign_require', 'create_homedir', 
             'create_home_dir.pl', $host)
         &error($@) ;
     }
 
-    $debug && &webmin_log ('call', 'sub', 'remote_foreign_call') ;
+    $debug && &webmin_log ('call', 'sub', 'users.pl:foreign_call') ;
 
-    eval ( $loghash{'make_home_local'} = &remote_foreign_call("$host",
-        'create_homedir', 'make_home_local', $user) ) ;
+    eval ( $loghash{'make_home_local'} = &foreign_call( 'create_homedir', 
+        'make_home_local', $user) ) ;
     if ($@) {
-        $whatfailed = &text('err_remote_foreign_call', 'create_homedir', 
+        $whatfailed = &text('err_foreign_call', 'create_homedir', 
             'make_home_local', $host, $@)
         &error($@) ;
     }
 
-    $debug && &webmin_log ('call', 'sub', 'remote_finished') ;
-    &remote_finished() ;
-
-    &webmin_log('create', 'homedir', '', \%loghash) ;
+    &webmin_log('create', 'homedir', 'users.pl: loghash', \%loghash) ;
 
     $loghash{'make_home_local'} eq "ok" ||
         &error(&text('err_create_dir', "$loghash{'make_home_local'}")) ;
