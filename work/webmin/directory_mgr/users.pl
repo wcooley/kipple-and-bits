@@ -41,14 +41,18 @@ None known.
 
 =cut
 
-sub new_user_ok
+sub new_user_ok ($)
 {
 	my ($user) = @_ ;
-    return
-        $user->{'loginShell'} &&
-		$user->{'gidNumber'} &&
+    if ($user->{'loginShell'} &&
+		$user->{'groupID'} &&
         $user->{'givenName'} &&
-        $user->{'sn'} ;
+        $user->{'surName'})
+    {
+        return 1 ;
+    } else {
+        return 0 ;
+    }
 }
 
 =head2 changed_user_ok
@@ -72,17 +76,21 @@ None known.
 
 =cut
 
-sub changed_user_ok
+sub changed_user_ok ($)
 {
     my ($user) = @_ ;
-    return
-        $user->{'userName'} &&
+    if ($user->{'userName'} &&
         $user->{'userID'} &&
         $user->{'groupID'} &&
         $user->{'homeDirectory'} &&
         $user->{'loginShell'} &&
         $user->{'firstName'} &&
-        $user->{'surName'};
+        $user->{'surName'}) 
+    {
+        return 1 ;
+    } else {
+        return 0 ;
+    }
 }
 
 =head2 auto_home_dir
@@ -101,11 +109,11 @@ Returns a string with the home directory path.
 
 BUGS
 
-Currently ignores I<$homestyle>.
+Currently ignores I<$homestyle>.  Should be more configurable.
 
 =cut
 
-sub auto_home_dir {
+sub auto_home_dir ($:$) {
 
     my ($username, $homestyle) = @_ ;
 
@@ -129,7 +137,7 @@ Returns true if the uidNumber is free; false if it isn't.
 
 =cut
 
-sub is_uidNumber_free
+sub is_uidNumber_free ($)
 {
     my ($uidNumber) = @_;
 
@@ -159,7 +167,7 @@ Returns a reference to a hash containing user attributes.
 
 =cut
 
-sub user_from_form
+sub user_from_form ($)
 {
     my ($in) = @_;
 	my (%user) ;
@@ -229,7 +237,7 @@ None known.
 
 =cut
 
-sub user_from_entry
+sub user_from_entry ($)
 {
     my ($entry) = @_;
     my (%user) ;
@@ -307,7 +315,7 @@ BUGS
 
 =cut
 
-sub entry_from_user
+sub entry_from_user ($$)
 {
     my ($entry, $user) = @_;
 
@@ -436,8 +444,8 @@ eval() exceptions back to calling function, instead of calling
 
 =cut
 
-sub create_home_dir {
-    local ($user, $host) = @_ ;
+sub create_home_dir ($$) {
+    my ($user, $host) = @_ ;
 
     $loghash{'user'} = $user ;
     $loghash{'host'} = $host ;
