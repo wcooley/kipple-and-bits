@@ -164,6 +164,60 @@ sub html_group_options (:$)
     return 1;
 }
 
+
+=head2 html_row_group
+
+SYNOPSIS
+
+C<html_row_group ( I<\%group> )>
+
+DESCRIPTION
+
+Takes a reference to a hash containing group information and
+formats as an HTML row.
+
+RETURN VALUE
+
+Returns a formatted HTML row of group information.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+
+sub html_row_group ($)
+{
+
+    my ($group) = @_ ;
+
+    # Add a non-breaking space if groupDescription is empty
+    unless ($group->{'groupDescription'}) {
+        $desc_space = "&nbsp;" ;
+    }
+
+    my $row = "
+<tr>
+    <td>&nbsp;
+        <a href=\"edit_group.cgi?dn=$group->{'dn'}\">
+            $group->{'groupName'}</a>
+    </td>
+    <td>
+        $group->{'groupID'}
+    </td>
+    <td>
+        $group->{'groupDescription'}$desc_space
+    </td>
+
+" ;
+
+    return $row ;
+}
+
 =head2 html_row_user
 
 SYNOPSIS
