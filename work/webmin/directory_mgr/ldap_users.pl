@@ -185,14 +185,14 @@ sub search_users_attr ($@)
 
     my ($attrfilter, @desired_attrs) = @_ ;
     
-    my $filter = "(&(objectClass=*)($attrfilter))" ;
+    my $filter = "(&(objectClass=posixAccount)($attrfilter))" ;
     my (@users, $i) ;
 
     $entry = $conn->search ($config{'base'}, "subtree",
         $filter , 0, @desired_attrs) ;
 
     if ($err = $conn->getErrorCode()) {
-        return [ -1, $err, $conn->getErrorString() ] ;
+        return [ -1, "$err: " . $conn->getErrorString() ] ;
     }
 
     $i = 0 ;
@@ -211,6 +211,72 @@ sub search_users_attr ($@)
         $entry = $conn->nextEntry() ;
 
     }
+
+    return \@users ;
+
+}
+
+
+=head2 search_users 
+
+SYNOPSIS
+
+C<function ( I<$search_key>, I<$search_value> )>
+
+DESCRIPTION
+
+This function searches for users with the attribute given in the
+I<$search_key> matching I<$search_value>.
+
+RETURN VALUE
+
+Returns an array of users or the return value of search_users_attr.
+
+BUGS
+
+None known.
+
+NOTES
+
+None.
+
+=cut
+
+sub search_users ($$) {
+
+    my ($search_key, $search_string) = @_ ;
+
+    my @attrs = qw( uid uidNumber 
+        gidNumber cn dn telephoneNumber homeDirectory hosts
+        description shell sn givenName) ;
+    my (@users, $entries) ;
+
+    if ($search_key eq "userName") {
+        $search = "uid=" . $search_string ;
+    } elsif ($search_key eq "userID") {
+        $search = "uidNumber=" . $search_string ;
+    } elsif ($search_key eq "fullName") {
+        $search = "cn=" . $search_string ;
+    } elsif ($search_key eq "surName") {
+        $search = "sn=" . $search_string ;
+    } elsif ($search_key eq "firstName") {
+        $search = "givenName=" . $search_string ;
+    } elsif ($search_key eq "groupID") {
+        $search = "gidNumber=" . $search_string ;
+    } else {
+        return [ -1, &text('err_unknown_user_attr', $search_key) ] ;
+    }
+
+    $entries = &search_users_attr ($search,@attrs) ;
+
+    if ( $entries->[0] == -1 ) {
+        return $entries ;
+    } else {
+        foreach $entry (@{$entries}) {
+            push @users, &user_from_entry($entry) ;
+        }
+    }
+        
 
     return \@users ;
 
