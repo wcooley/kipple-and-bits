@@ -45,9 +45,9 @@ sub new_user_ok
 {
 	my ($user) = @_ ;
     return
-        $user->{'loginshell'} &&
+        $user->{'loginShell'} &&
 		$user->{'gidNumber'} &&
-        $user->{'givenname'} &&
+        $user->{'givenName'} &&
         $user->{'sn'} ;
 }
 
@@ -76,13 +76,13 @@ sub changed_user_ok
 {
     my ($user) = @_ ;
     return
-        $user->{'uid'} &&
-        $user->{'uidNumber'} &&
-        $user->{'gidNumber'} &&
-        $user->{'homedirectory'} &&
-        $user->{'loginshell'} &&
-        $user->{'givenname'} &&
-        $user->{'sn'};
+        $user->{'userName'} &&
+        $user->{'userID'} &&
+        $user->{'groupID'} &&
+        $user->{'homeDirectory'} &&
+        $user->{'loginShell'} &&
+        $user->{'firstName'} &&
+        $user->{'surName'};
 }
 
 =head2 auto_home_dir
@@ -133,7 +133,8 @@ sub is_uidNumber_free
 {
     my ($uidNumber) = @_;
 
-    if ( &search_users_attr ("uidNumber=$uidNumber", ("uidNumber")) ) {
+    $uids = &search_users_attr ("uidNumber=$uidNumber", ("uidNumber"))  ;
+    if (scalar @{$uids}) {
         return 0 ;
     } else {
         return 1 ;
@@ -164,8 +165,8 @@ sub user_from_form
 	my (%user) ;
 
     $user{'firstName'} = &remove_whitespace($in->{'firstName'});
+    $user{'userName'} = &remove_whitespace($in->{'userName'});
     $user{'surName'} = &remove_whitespace($in->{'surName'});
-    # Need to make this an array
 
     for $telnum (split (',', $in->{'telephoneNumber'})) {
         push @{$user{'telephoneNumber'}}, &remove_whitespace($telnum) ;
@@ -176,10 +177,10 @@ sub user_from_form
         push @{$user{'allowedHosts'}}, &remove_whitespace($host) ;
     }
 
-    if ($in->{'homedirectory'} eq "") {
-        $user{'homedirectory'} = &auto_home_dir ($user{'userName'}) ;
+    if ($in->{'homeDirectory'}) {
+        $user{'homeDirectory'} = &remove_whitespace($in->{'homeDirectory'});
     } else {
-        $user{'homedirectory'} = &remove_whitespace($in->{'homedirectory'});
+        $user{'homeDirectory'} = &auto_home_dir ($user{'userName'}) ;
     }
 
     if ($in{'userID'} eq '') {
@@ -188,7 +189,6 @@ sub user_from_form
         $user{'userID'} = &remove_whitespace($in->{'userID'});
     }
 
-    $user{'userName'} = &remove_whitespace($in->{'userName'});
 
     if ($in->{'groupID'}) {
         $user{'groupID'} = &remove_whitespace($in->{'groupID'}) ;
@@ -200,7 +200,11 @@ sub user_from_form
 
     $user{'description'} = &remove_whitespace($in->{'description'});
 
-    $user{'email'} = &remove_whitespace($in->{'email'});
+    if ( $in->{'email'} ) {
+        $user{'email'} = $user{'userName'} . '\@' .  $config{'defaultdomain'} ;
+    } else {
+        $user{'email'} = &remove_whitespace($in->{'email'});
+    }
 
 	return \%user ;
 }
@@ -231,60 +235,21 @@ sub user_from_entry
     my (%user) ;
 
     # posixAccount
-    $user{'uid'} = $entry->{'uid'}[0];
-    $user{'uidNumber'} = $entry->{'uidNumber'}[0];
-    $user{'gidNumber'} = $entry->{'gidNumber'}[0];
-    $user{'gecos'} = $entry->{'gecos'}[0];
-    $user{'homedirectory'} = $entry->{'homedirectory'}[0];
-    $user{'loginshell'} = $entry->{'loginshell'}[0];
+    $user{'firstName'} = $entry->{'givenName'}[0];
+    $user{'surName'} = $entry->{'sn'}[0];
+    # Array
+    $user{'telephoneNumber'} = $entry->{'telephoneNumber'} ;
+    # Array
+    $user{'allowedHosts'} = $entry->{'host'} ;
 
-    # Unimplemented shadow options
-    #$user{'shadowAccount'}
-    #$user{'shadowexpire'}
-    #$user{'shadowflag'}
-    #$user{'shadowinactive'}
-    #$user{'shadowlastchange'}
-    #$user{'shadowmax'}
-    #$user{'shadowwarning'}
-
-    #inetOrgPerson
-    #top
-    #kerberosSecurityObject
-    #organizationalPerson
-    #person
-    #account
-
-    $user{'cn'} = $entry->{'cn'}[0];
-    $user{'sn'} = $entry->{'sn'}[0];
-    $user{'givenname'} = $entry->{'givenname'}[0];
-    $user{'userpassword'} = $entry->{'userpassword'}[0];
-    #$user{'krbname'}
-
-    #Unimplemented OutlookExpress options
-    #$user{'co'}
-    #$user{'homephone'}
-    #$user{'homepostaladdress'}
-    #$user{'initials'}
-    #$user{'ipphone'}
-    #$user{'l'}
-    #$user{'manager'}
-    #$user{'otherfacsimiletelephonenumber'}
-    #$user{'postaladdress'}
-    #$user{'postalcode'}
-    #$user{'reports'}
-    #$user{'st'}
-    #$user{'url'}
-
-    $user{'comment'} = $entry->{'comment'}[0];
-    $user{'department'} = $entry->{'department'}[0];
-    $user{'mail'} = $entry->{'mail'}[0];
-    $user{'mobile'} = $entry->{'mobile'}[0];
-    $user{'officefax'} = $entry->{'officefax'}[0];
-    $user{'organizationname'} = $entry->{'organizationname'}[0];
-    $user{'pager'} = $entry->{'pager'}[0];
-    $user{'physicaldeliveryofficename'} = $entry->{'physicaldeliveryofficename'}[0];
-    $user{'telephonenumber'} = $entry->{'telephonenumber'}[0];
-    $user{'title'} = $entry->{'title'}[0];
+    $user{'homeDirectory'} = $entry->{'homeDirectory'}[0];
+    $user{'userID'} = $entry->{'uidNumber'}[0];
+    $user{'userName'} = $entry->{'uid'}[0];
+    $user{'groupID'} = $entry->{'gidNumber'}[0];
+    $user{'password'} = $entry->{'password'}[0];
+    $user{'loginShell'} = $entry->{'loginShell'}[0];
+    $user{'email'} = $entry->{'mail'}[0];
+    $user{'description'} = $entry->{'description'}[0] ;
 
     return \%user ;
 }
@@ -312,10 +277,14 @@ function doesn't appear to be used currently.
 
 sub user_defaults
 {
-    $uidNumber = &find_free_uid($config{'min_uid'}) ;
+    my (%user) ;
+
+    $user{'userID'} = &find_free_uid($config{'min_uid'}, $config{'max_uid'}) ;
     # should get these defaults fron %config or from a template
-    $gidNumber = $config{'gid'};
-    $loginshell = $config{'shell'};
+    $user{'groupID'} = $config{'gid'};
+    $user{'loginShell'} = $config{'shell'};
+
+    return \%user ;
 }
 
 =head2 entry_from_user
@@ -335,8 +304,6 @@ Reference to an entry hash.
 
 BUGS
 
-Doesn't work currently, or if it does, uses global variables.
-Needs to handle passed-in user hash.
 
 =cut
 
@@ -344,75 +311,94 @@ sub entry_from_user
 {
     my ($entry, $user) = @_;
 
-   # Set add object classes
-    $entry->{'objectclass'} = ["posixAccount", "person", "inetOrgPerson",
-        "organizationalPerson", "account", "top", "pilotPerson" ];
+    # Add object classes
+    unless ($entry->hasValue('objectClass', 'posixAccount')) {
+        $entry->addValue("objectClass", "posixAccount") ;
+    }
+
+    unless ($entry->hasValue('objectClass', 'inetOrgPerson')) {
+        $entry->addValue("objectClass", "inetOrgPerson") ;
+    }
+
+    unless ($entry->hasValue('objectClass', 'account')) {
+        $entry->addValue("objectClass", "account") ;
+    }
 
     # Start posixAccount attributes
-    # Create empty fields
-    if ($user->{'cn'}) {
-        $entry->{'cn'} = [$user->{'cn'}] ;
-    } else {
-        $entry->{'cn'} = ["$user->{'givenname'} $user->{'surname'}"] ;
+
+    unless ($entry->hasValue("cn", "$user->{'firstName'} $user->{'surName'}")) {
+        $entry->setValues('cn', "$user->{'firstName'} $user->{'surName'}") ;
     }
 
-    # This should be more automatic, like in the useradmin module
-    if ($user->{'homedirectory'}) {
-        $entry{'homedirectory'} = [$user->{'homedirectory'}] ;
-    } else {
-        $entry{'homedirectory'} = [$config{'homes'} . "/$uid"] ;
+    unless ($entry->hasValue("homeDirectory", $user->{'homeDirectory'})) {
+        $entry->setValues('homeDirectory', $user->{'homeDirectory'}) ;
+    }
+
+    unless ($entry->hasValue("uid", $user->{'userName'})) {
+        $entry->setValues('uid', $user->{'userName'});
+    }
+
+    unless ($entry->hasValue("uidNumber", $user->{'userID'})) {
+        $entry->setValues('uidNumber', $user->{'userID'});
+    }
+
+    unless ($entry->hasValue("gidNumber", $user->{'groupID'})) {
+        $entry->setValues('gidNumber', $user->{'groupID'}) ;
     }
     
-    if ($user->{'gecos'}) {
-        $entry{'gecos'} = [$user->{'gecos'}] ;
-    } else {
-        $entry{'gecos'} = ["$user->{'givenname'} $user->{'sn'}"] ;
+    unless ($entry->hasValue("gecos", "$user->{'firstName'} $user->{'surName'},"
+            . $user->{'telephoneNumber'}[0])) {
+        $entry->setValues('gecos', "$user->{'firstName'} $user->{'surName'},"
+            . $user->{'telephoneNumber'}[0]) ;
     }
 
-    $entry->{'uid'} = [$user->{'uid'}];
-    $entry->{'uidNumber'} = [$user->{'uidNumber'}];
-    $entry->{'gidNumber'} = [$user->{'gidNumber'}];
-    $entry->{'userpassword'} = ["*"];
-    $entry->{'loginshell'} = [$user->{'loginshell'}];
-    $entry->{'description'} = [$user->{'description'}] ;
+    # Need to make sure password hash &al takes place
+    unless ($entry->hasValue("userPassword", $user->{'password'})) {
+        if ($user->{'password'}) {
+            $entry->setValues('userPassword', $user->{'password'});
+        }
+    }
+
+    unless ($entry->hasValue("loginShell", $user->{'loginShell'})) {
+        $entry->setValues('loginShell', $user->{'loginShell'});
+    }
+
+    unless ($entry->hasValue("description", $user->{'description'})) {
+        if ($user->{'description'}) {
+            $entry->setValues('description', $user->{'description'}) ;
+        }
+    }
     # End posixAccount attributes
 
-    # Start 'person' attributes
-    $entry->{'sn'} = [$user->{'sn'}];
-    $entry->{'telephonenumber'} = [$user->{'telephonenumber'}];
-    # End 'person' attributes
-    
+    # Start account attributes
+    if ($user->{'allowedHosts'}) {
+        $entry->remove('host') ;
+        $entry->setValues('host', @{$user->{'allowedHosts'}}) ;
+    }
+    # End account attributes
+
     # Start 'inetOrgPerson' attributes
-    $entry->{'givenname'} = [$user->{'givenname'}];
-    if ($user->{'mail'}) {
-        $entry{'mail'} = [$user->{'mail'}] ;
-    } else {
-        $entry{'mail'} = [$uid . "@" . $config{'maildomain'}] ;
+    unless ($entry->hasValue('sn', $usr->{'surName'})) {
+        $entry->{'sn'} = [$user->{'surName'}];
+    }
+
+    # telephoneNumber is already an array
+    if ($user->{'telephoneNumber'}) {
+        $entry->remove('telephoneNumber') ;
+        $entry->setValues('telephoneNumber',
+            @{$user->{'telephoneNumber'}}) ;
+    }
+    
+    unless ($entry->hasValue("givenName", $user->{'firstName'})) {
+        $entry->setValues("givenName", $user->{'firstName'}) ;
+    }
+
+    unless ($entry->hasValue("mail", $user->{'email'})) {
+        if ($user->{'email'}) {
+            $entry->setValues('mail', $user->{'email'}) ;
+        }
     }
     # End 'inetOrgPergon' attributes
-
-    # Start 'organizationalPerson' attributes
-    $entry->{'title'} = [$user->{'title'}];
-    $entry->{'physicaldeliveryofficename'} = [$user->{'physicaldeliveryofficename'}];
-    # End 'organizationalPerson' attributes
-
-    # Start 'account' attributes
-    $entry->{'userid'} = [$user->{'uid'}];
-    $entry->{'organizationname'} = [$user->{'organizationname'}];
-    $entry->{'host'} = $user->{'host'} ; # 'host' should be an array already
-    # End 'account' attributes
-
-    # Start 'pilotPerson' attributes
-    # End 'pilotPerson' attributes
-
-    if ($config{'outlook'}) {
-        $entry->{'department'} = [$user->{'department'}];
-        # Pilot person?
-        $entry->{'mobile'} = [$user->{'mobile'}];
-        $entry->{'pager'} = [$user->{'pager'}];
-        $entry->{'officefax'} = [$user->{'officefax'}];
-        $entry->{'comment'} = [$user->{'comment'}];
-    }
 
     if ($config{'shadow'}) {
         $entry->addValue("objectclass", "shadowAccount") ;
@@ -424,8 +410,7 @@ sub entry_from_user
         # Need to add Kerberos attributes
     }
 
-
-    return \%entry;
+    return $entry;
 }
 
 =head2 create_home_dir
