@@ -7,6 +7,13 @@
 
 $debug = 0 ;
 
+use strict ;
+no strict "vars" ;
+
+use diagnostics ;
+$diagnostics::PRETTY =1 ;
+
+
 =head1 NAME
 
 users.pl
@@ -191,7 +198,7 @@ sub user_from_form ($)
         $user{'homeDirectory'} = &auto_home_dir ($user{'userName'}) ;
     }
 
-    if ($in{'userID'} eq '') {
+    if ($in->{'userID'} eq '') {
         $user{'userID'} = &find_free_userid($config{'min_uid'}) ;
     } else {
         $user{'userID'} = &remove_whitespace($in->{'userID'});
@@ -386,7 +393,7 @@ sub entry_from_user ($$)
     # End account attributes
 
     # Start 'inetOrgPerson' attributes
-    unless ($entry->hasValue('sn', $usr->{'surName'})) {
+    unless ($entry->hasValue('sn', $user->{'surName'})) {
         $entry->{'sn'} = [$user->{'surName'}];
     }
 
