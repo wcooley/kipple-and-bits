@@ -38,20 +38,44 @@ elsif ($sort_on eq "groupID") {
     print $text{'groupID'} . "\n";
 }
 
-print "<p>This is the list of users:<br>\n" ;
+print <<EOF ;
+    <p>This is the list of users:<br>
 
-print "<table border=1 cellspacing=0 cellpadding=2 width=100% $cb>\n";
-print "<tr $tb>\n";
-print "<td><b><a href=\"list_users.cgi?sort_on=userName\">" .
-    $text{'userName'} . "</a></b>\n";
-print "<td><b><a href=\"list_users.cgi?sort_on=userID\">" .
-    $text{'userID'} . "</a></b>\n";
-print "<td><b><a href=\"list_users.cgi?sort_on=groupID\">" .
-    $text{'groupID'} . "</a></b>\n";
-print "<td><b><a href=\"list_users.cgi?sort_on=fullName\">" .
-    $text{'fullName'} . "</a></b>\n";
-print "<td><b>" .
-    $text{'telephoneNumber'} . "</b>\n";
+    <table border=1 cellspacing=0 cellpadding=2 width=100% $cb>
+    <tr $tb>
+    <td>
+        <b>
+        <a href="list_users.cgi?sort_on=userName">
+            $text{'userName'}
+        </a>
+        </b>
+    </td>
+    <td>
+        <b>
+        <a href="list_users.cgi?sort_on=userID">
+            $text{'userID'}
+        </a>
+        </b>
+    </td>
+    <td>
+        <b>
+        <a href="list_users.cgi?sort_on=groupID">
+            $text{'groupID'}
+        </a>
+        </b>
+    </td>
+    <td>
+        <b>
+        <a href="list_users.cgi?sort_on=fullName">
+            $text{'fullName'}
+        </a>
+        </b>
+    </td>
+    <td>
+        <b>$text{'telephoneNumber'}</b>
+    </td>
+
+EOF
 # do not show DN until we can select and edit OUs
 #print "<TD><B><A href=\"edit_users.cgi?sort_on=dn\">DN</A></B>\n";
 
