@@ -14,7 +14,7 @@ require "directory-lib.pl" ;
 
 $sort_on = ($in{'sort_on'}) ? $in{'sort_on'} : "userName";
 
-&header ($text{'module_title'}, "", "intro", 1, 1);
+&header ($text{'list_users_t'}, "", "intro", 1, 1);
 print "<hr noshade size=2>\n";
 print "<p><b>$text{'index_msg_1'} ($text{'index_msg_2'})</b> -- $text{'index_msg_3'} ";
 
@@ -67,7 +67,7 @@ else {
 print "</table>\n";
 
 print "<br>\n";
-&footer ($config{'app_path'}, $text{'index'});
+&footer ($config{'app_path'}, $text{'module_title'});
 do "footer.pl";
 
 =head1 NOTES
