@@ -272,12 +272,8 @@ verify that it is not yet in use.
 
 RETURN VALUE
 
-Logic reversed: Returns false (undef) if the entry is not
-found; true (reference to entry hash) if it is found.
-
-BUGS
-
-Return value logic backwards.
+Returns true if the e-mail address is free; false if it
+isn't.
 
 =cut
 
@@ -285,13 +281,12 @@ sub is_mail_free
 {
     my ($mail) = @_;
 
-    my ($filter);
+    if ( &search_user_attr("mail=$mail", ("mail")) ) {
+        return 0 ;
+    } else {
+        return 1 ;
+    }
 
-    $filter = "(&(objectclass=posixAccount)(mail=$mail)";
-    $entry = $conn->search ($config{'base'}, "subtree", $filter, 0,
-        ("mail"));
-
-    return $entry;
 }
 
 =head2 create_user
@@ -364,6 +359,7 @@ sub create_user
     $entry->{'gidNumber'} = [$user->{'gidNumber'}];
     $entry->{'homedirectory'} = [$user->{'homedirectory'}];
     $entry->{'loginshell'} = [$user->{'loginshell'}];
+
     $entry->{'sn'} = [$user->{'sn'}];
 
     if ($config{'outlook'}) {
@@ -425,7 +421,7 @@ directly.  Does not allow for DN/uid changes.
 
 sub update_user
 {
-    my ($dn) = @_;
+    my ($dn, $user) = @_;
 
     my ($entry);
 
