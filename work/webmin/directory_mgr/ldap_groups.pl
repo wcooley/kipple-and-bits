@@ -361,6 +361,10 @@ a formatted error string.
 In the case of a system error, returns a 2-element array of -1 and
 a formatted error string.
 
+BUGS
+
+OU for groups is not configurable.
+
 =cut
 
 sub create_group {
