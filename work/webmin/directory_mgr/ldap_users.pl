@@ -319,68 +319,9 @@ sub create_user
     $entry = $conn->newEntry ();
     $dn = "uid=" . $user->{'uid'} . ",ou=People," . $config{'base'};
     $entry->setDN ($dn);
-
-    # Set add object classes
-    $entry->{'objectclass'} = ["posixAccount", "person", "inetOrgPerson",
-        "organizationalPerson", "account", "top" ];
-
-    # Create empty fields
-    if ($user->{'cn'}) {
-        $entry->{'cn'} = [$user->{'cn'}] ;
-    } else {
-        $entry->{'cn'} = ["$user->{'givenname'} $user->{'surname'}"] ;
-    }
-
-    if ($user->{'gecos'}) {
-        $entry{'gecos'} = [$user->{'gecos'}] ;
-    } else {
-        $entry{'gecos'} = ["$user->{'givenname'} $user->{'sn'}"] ;
-    }
     
-    if ($user->{'mail'}) {
-        $entry{'mail'} = [$user->{'mail'}] ;    
-    } else {
-        $entry{'mail'} = [$uid . "@" . $config{'maildomain'}] ;
-    }
-
-    # This should be more automatic, like in the useradmin module
-    if ($user->{'homeDirectory'}) {
-        $entry{'homeDirectory'} = [$user->{'homeDirectory'}] ;
-    } else {
-        $entry{'homeDirectory'} = [$config{'homes'} . "/$uid"] ;
-    }
-    # posixAccount
-    $entry->{'uid'} = [$user->{'uid'}];
-    $entry->{'uidNumber'} = [$user->{'uidNumber'}];
-    $entry->{'gidNumber'} = [$user->{'gidNumber'}];
-    $entry->{'loginshell'} = [$user->{'loginshell'}];
-
-    $entry->{'sn'} = [$user->{'sn'}];
-
-    if ($config{'outlook'}) {
-        $entry->{'givenname'} = [$user->{'givenname'}];
-        $entry->{'title'} = [$user->{'title'}];
-        $entry->{'organizationname'} = [$user->{'organizationname'}];
-        $entry->{'department'} = [$user->{'department'}];
-        $entry->{'physicaldeliveryofficename'} = [$user->{'physicaldeliveryofficename'}];
-        $entry->{'telephonenumber'} = [$user->{'telephonenumber'}];
-        $entry->{'mobile'} = [$user->{'mobile'}];
-        $entry->{'pager'} = [$user->{'pager'}];
-        $entry->{'officefax'} = [$user->{'officefax'}];
-        $entry->{'comment'} = [$user->{'comment'}];
-    }
-
-    if ($config{'shadow'}) {
-        $entry->addValue("objectclass", "shadowAccount") ;
-        # Need to add shadow attributes
-    }
-
-    if ($config{'kerberos'}) { 
-        $entry->addValue("objectclass", "kerberosSecurityObject") ;
-        # Need to add Kerberos attributes
-    }
-
-    $entry->{'userpassword'} = ["*"];
+    $entry = &entry_from_user($entry, $user) ;
+    
     $conn->add ($entry);
     if ($err = $conn->getErrorCode ()) {
         return [ -1, "user add ($dn): $err: " . $conn->getErrorString () ];
@@ -444,12 +385,9 @@ Deletes a given distinguished name from the directory.
 
 RETURN VALUE
 
-None.
-
-BUGS
-
-Doesn't return error status; instead, calls &error()
-directory.
+Returns a two-element array; in the case of success, the
+first element is 1 and the second the deleted DN.  In the
+case of failure, -1 and a formatted error string.
 
 =cut
 
@@ -459,7 +397,9 @@ sub delete_user
 
     $conn->delete ($dn);
     if ($err = $conn->getErrorCode ()) {
-        &error ("update ($dn): $err:" . $conn->getErrorString ());
+        return [ -1, "delete ($dn): $err:" . $conn->getErrorString () ] ;
+    } else {
+        return [ 1, $dn ] ;
     }
 }
 
