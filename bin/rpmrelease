@@ -35,7 +35,7 @@ mkdir -p ${rpmreldir} ${srpmreldir}
 pprintf "Output going to %s...\n" ${tmpfile}
 pprintf "Building from %s now...\n" ${specfile}
 
-(time rpmbuild -ba ${specfile}) >${tmpfile} 2>&1
+(time rpmbuild -ba ${specfile} 2>&1) |tee ${tmpfile}
 
 if [ $? -ne 0 ]; then
     pprintf "Build exited with error status.\n\tPlease check %s.\n" ${tmpfile}
