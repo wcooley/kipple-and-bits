@@ -53,7 +53,7 @@ sub new_user_ok ($)
 	my ($user) = @_ ;
     if ($user->{'loginShell'} &&
 		$user->{'groupID'} &&
-        $user->{'givenName'} &&
+        $user->{'firstName'} &&
         $user->{'surName'})
     {
         return 1 ;
@@ -149,7 +149,7 @@ sub is_uidNumber_free ($)
     my ($uidNumber) = @_;
 
     $uids = &search_users_attr ("uidNumber=$uidNumber", ("uidNumber"))  ;
-    if (scalar @{$uids}) {
+    if (scalar (@{$uids}) > 0) {
         return 0 ;
     } else {
         return 1 ;
@@ -325,6 +325,13 @@ BUGS
 sub entry_from_user ($$)
 {
     my ($entry, $user) = @_;
+
+    # DN
+    unless ($entry->hasDNValue("uid=$user->{'userName'}" .
+        ",ou=People,$config{'base'}")) {
+        $entry->setDN("uid=$user->{'userName'},ou=People," .
+            "$config{'base'}") ;
+    }
 
     # Add object classes
     unless ($entry->hasValue('objectClass', 'posixAccount')) {
