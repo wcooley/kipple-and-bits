@@ -249,9 +249,9 @@ sub user_from_entry ($)
     my ($entry) = @_;
     my (%user) ;
 
-    # posixAccount
     $user{'firstName'} = $entry->{'givenName'}[0];
     $user{'surName'} = $entry->{'sn'}[0];
+    $user{'fullName'} = $entry->{'cn'}[0] ;
     # Array
     $user{'telephoneNumber'} = $entry->{'telephoneNumber'} ;
     # Array
