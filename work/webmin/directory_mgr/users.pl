@@ -5,7 +5,7 @@
 # users.pl $Revision$ $Date$ $Author$
 #
 
-# have a lot of global variables for user attributes
+$debug = 0 ;
 
 =head1 NAME
 
@@ -84,7 +84,12 @@ sub user_from_form
 
     # posixAccount
     $user{'uid'} = $in->{'uid'};
-    $user{'uidnumber'} = $in->{'uidnumber'};
+    if ($in{'uidnumber'} eq '') {
+        $user{'uidnumber'} = &find_free_uid() ;
+    } else {
+        $user{'uidnumber'} = $in->{'uidnumber'};
+    }
+
     #$user{'gidnumber'} = $in->{'gidnumber'};
     $user{'gecos'} = $in->{'gecos'};
 
@@ -178,7 +183,7 @@ sub user_from_entry
 
 sub user_defaults
 {
-    $uidnumber = &max_uidnumber() + 1;
+    $uidnumber = &find_free_uid() ;
     # should get these defaults fron %config or from a template
     $gidnumber = $config{'gid'};
     $loginshell = $config{'shell'};
@@ -259,37 +264,37 @@ sub create_home_dir {
     $debug && &webmin_log ('call', 'sub', 'create_home_dir');
 
 
-    # localhost is special -- it creates the home directory
-    # locally, so we use 'foreign_*' subs, instead of 'remote_foreign_*'.
-    if ($host eq "localhost") {
-
-        $debug && &webmin_log ('call', 'sub', 'make_home_local') ;
-
-        $loghash{'make_home_local'} = &make_home_local($user) ;
-
-    } else {
-        # Create the remote directory, by calling itself on
-        # the remote host
-        $debug && &webmin_log ('call', 'sub', 'remote_foreign_check') ;
-        &remote_foreign_check("$host", 'create_homedir') ||
-            &error(&text('err_remote_foreign_check', 'create_homedir', $host)) ;
-
-        $debug && &webmin_log ('call', 'sub', 'remote_foreign_require');
-        &remote_foreign_require("$host", 'create_homedir',
-            'create_home_dir.pl')
-            # Jamie says this shouldn't work
-            #  ||
-            # &error(&text('err_remote_foreign_require', 'create_homedir',
-            #   'create_home_dir.pl', $host)) ;
-
-        $debug && &webmin_log ('call', 'sub', 'remote_foreign_call') ;
-        $loghash{'make_home_local'} = &remote_foreign_call("$host",
-            'create_homedir', 'make_home_local', $user) ;
-
-        $debug && &webmin_log ('call', 'sub', 'remote_finished') ;
-        &remote_finished() ;
-
+    # Create the remote directory, by calling itself on
+    # the remote host
+    $debug && &webmin_log ('call', 'sub', 'remote_foreign_check') ;
+    eval ( &remote_foreign_check("$host", 'create_homedir') ) ;
+    if ($@) {
+        $whatfailed = &text('err_remote_foreign_check', 'create_homedir', $host) ;
+        &error($@) ;
     }
+
+
+    $debug && &webmin_log ('call', 'sub', 'remote_foreign_require');
+    eval ( &remote_foreign_require("$host", 'create_homedir',
+        'create_home_dir.pl') ) ;
+    if ($@) {
+        $whatfailed = &text('err_remote_foreign_require', 'create_homedir', 
+            'create_home_dir.pl', $host)
+        &error($@) ;
+    }
+
+    $debug && &webmin_log ('call', 'sub', 'remote_foreign_call') ;
+
+    eval ( $loghash{'make_home_local'} = &remote_foreign_call("$host",
+        'create_homedir', 'make_home_local', $user) ) ;
+    if ($@) {
+        $whatfailed = &text('err_remote_foreign_call', 'create_homedir', 
+            'make_home_local', $host, $@)
+        &error($@) ;
+    }
+
+    $debug && &webmin_log ('call', 'sub', 'remote_finished') ;
+    &remote_finished() ;
 
     &webmin_log('create', 'homedir', '', \%loghash) ;
 
