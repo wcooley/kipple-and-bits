@@ -2,7 +2,28 @@
 
 =head2 Introduction
 
-You're going to find out how great this stuff is!
+Spam and viruses are recurring plagues to e-mail users everywhere.
+Businesses face considerable risks from sexual harassment lawsuits
+from pornographic spam, lost productivity from damaged workstations and
+crashed servers and ever-increasing bandwidth usage from illegitimate
+network traffic.  The problem is only getting worse.
+
+This article is a gentle introduction to a complex set of services and
+a quick-start guide based on the configurations I have used in my own
+work, where I provide this setup as a service or pre-packaged server
+to my customers.  The details of installing these software packages is
+beyond the scope of this article; all the packages contain installation
+instructions which are the authoritative sources for this information
+and cover installation in more detail than I am able to in this format.
+
+This setup uses open source software for all components except for the
+virus-scanning, which is a licensed product from Sophos Anti-Virus.
+My installations have been on Red Hat Linux and Red Hat's Enterprise
+products using SpamAssassin 2.60, Postfix 1.1.13, and C<amavisd-new>
+20030616-p5.  SpamAssassin has provided Bayesian classification since
+version 2.50; 2.60 introduced many improvements and is the recommended
+minimum.  The most current C<amavisd-new> is also recommended.  Nearly any
+later Postfix 1.1 or 2.0 may be used.
 
 =head2 Understanding the Postfix C<content_filter> Mechanism
 
@@ -12,46 +33,31 @@ filters through a well-defined interface.  Postfix passes the message
 into the content filter at the queuing stage, which in the diagrams in
 the Postfix documentation is labelled I<qmgr>, which is the name of the
 internal process that maintains queues for incoming and outgoing messages.
-The drawback of the placement of filtering at the point in the system is
-that the message has already been accepted into the system from the remote
-server, so instead of directly rejecting the message when it's initially
-delivered though an SMTP reject status code (5XX), the message is bounced.
 
-In recent Postfix snapshots there is support for filtering at SMTP level;
-however, it must be handled with care because SMTP has relatively short
-time-outs, which may not tolerate the extra time required to perform
-content checking.  Obviously, there will be scalability issues with this
-configuration.  Since it is a still experimental and somewhat dangerous,
-this article will not explore, concentrating instead on the more mature
-C<content_filter> mechanism.
+The simplest of the interfaces is a simple UNIX pipe, where Postfix
+writes to the filter's standard input and and checks the filters return
+values for pre-defined status codes.  Mail is injected back into Postfix
+using the C<sendmail> command, which is the Postfix replacement for the
+same Sendmail command.  The example in the C<FILTER_README> document that
+ships with Postfix uses C<cat> and acts as a simple pass-through filter,
+which does nothing.
 
-The simplest of the interfaces is a simple UNIX pipe, where Postfix writes
-to the filter's standard input and and checks the filters return values
-for pre-defined status codes.  Mail is injected back into Postfix using
-the C<sendmail> command, which is the Postfix replacement for the same
-command Sendmail uses.  The example in the C<FILTER_README> file that ships
-with Postfix uses C<cat> and acts as a simple pass-through filter, which
-does nothing.  You could, for example, write a filter to pass it though
-C<tac> to reverse all the lines of the message (not that you'd want to).
-
-The pipe mechanism, however, is not the best interface for complex
-mail filtering.  The best interface for our purposed uses the filter
-as an SMTP proxy; this provides a well-defined interface between
-Postfix and the filter and it allows a persistent scanning daemon,
-which can save considerable overhead required for repeated start-up
-and easily permit the filtering proxy to implement reliable delivery.
-Also, because it uses SMTP, it operates over TCP/IP, so the content
-filter can be located on a separate host than the actual Postfix
+The best interface for sophisticated mail filtering is not the pipe
+mechanism, but rather the SMTP proxy mechanism.  This provides a
+well-defined interface between Postfix and the filter and allows
+a persistent scanning daemon, which can save considerable overhead
+required for repeated start-up and easily allow the filtering proxy to
+deliver reliably.  Because the SMTP proxy mechanism operates over TCP/IP,
+the content filter can be located on a separate host than the Postfix
 service that receives the mail.
 
 The C<content_filter> requires Postfix to connect to the proxy as an
-SMTP client, which handles the message and then connects back into
-a special SMTP server listening on a non-default port which handles
-the final routing and delivery of the message.  As mentioned before,
-Postfix sends the message to the content filter at the queuing
-stage; this will be called the "sending process"; the message is
-re-injected into the Postfix system in the C<smtpd> stage, which
-will be called the "receiving process."
+SMTP client, which handles the message and then connects back into a
+special SMTP server listening on a non-default port which handles the
+final routing and delivery of the message.  As mentioned before, Postfix
+sends the message to the content filter at the queuing stage; this will be
+called the "sending process"; the message is re-injected into the Postfix
+system in the C<smtpd> stage, which will be called the "receiving process."
 
 =head2 Scanning with C<amavisd-new>
 
@@ -59,53 +65,41 @@ C<amavisd-new> operates as an SMTP proxy, designed to hook in to
 the C<content_filter> mechanism of Postfix.  (C<amavisd-new> also
 supports Sendmail through its Milter interface and in a dual-server
 configuration and Exim using it as an SMTP proxy.)  C<amavisd-new>
-is written, maintained, and supported by Mark Martinec of the
-Jozef Stefan Institue in Slovenija and is aided by an active
-user community.  It began as a fork from C<amavisd>, a daemonized
-version of the AMaViS scanner, which was one of the first open
-source mail virus scanners.  The modern C<amavisd-new> scarcely
-resemebles its predecessor and improves upon it considerably,
-while a difference of philosophies has prevented C<amavisd-new>
-from being merged back into C<amavisd> or simply taking over as the
-official scanning engine of the AMaViS project.  That should not
-sound like a euphemism for saying that either Mark or the developers
-of the original AMaViS have overbearing personalities; Mark himself
-is helpful and personable on the amavis-users mailing list, and the
-original AMaViS folks have been quite tolerant of the C<amavisd-new>
-traffic on their list, which these days accounts for at least half.
+is written, maintained, and supported by Mark Martinec of the Jozef
+Stefan Institue in Slovenija and is aided by an active user community.
+It began as a fork from C<amavisd>, a daemonized version of the AMaViS
+scanner, which was one of the first open source mail virus scanners.
+The modern C<amavisd-new> scarcely resemebles its predecessor and improves
+upon it considerably, while a difference of philosophies has prevented
+C<amavisd-new> from being merged back into C<amavisd> or simply taking
+over as the official scanning engine of the AMaViS project.  That should
+not sound like a euphemism for saying that either Mark or the developers
+of the original AMaViS have overbearing personalities; Mark himself is
+helpful and personable on the amavis-users mailing list, and the original
+AMaViS folks have been quite tolerant of the C<amavisd-new> traffic on
+their list, which these days accounts for at least half.
 
 C<amavisd-new> is written in Perl, and takes advantage of a number
-of well-written Perl modules, such as the Net::Server module,
-which it uses to implement a forked parent/child environment,
-much like the traditional Apache.  Since it is written in Perl,
-it is able to directly use the Mail::SpamAssassin modules, which
-implement the core scanning engine of SpamAssassin.
+of Perl modules, such as the Net::Server module, which it uses to
+implement a forked parent/child environment, like many other UNIX daemons.
+C<amavisd-new> directly uses Mail::SpamAssassin, the core scanning engine
+of SpamAssassin, so it does not need to use 'spamd' for performance.
 
-Mark strives make C<amavisd-new> adhere to standards and as a result
-is not widely regarded as "broken" and many systems administrators
-and developers hold it in high regard.  It is also fairly fast,
-although as a Perl application it can use a considerable amount
-of memory, so it is best limited to only a few child processes.
-It is very flexible, but can be intimidating to configure.
+Mark strives to make C<amavisd-new> adhere to standards and as a result
+is not widely regarded as "broken" and many systems administrators and
+developers hold it in high regard.  It is also fast, although as a Perl
+application it can use a considerable amount of memory, so it is best
+limited to a few child processes.  C<amavisd-new> is very flexible,
+but can be intimidating to configure.
 
-Since C<amavisd-new> operates as an SMTP proxy within Postfix, it
-is able to reliably deliver messages because it never has to store
-the messages itself; it connects to the Postfix receiving process
-as soon as the sending process connects to it, and does not send
-an acceptance response to the sending process until the receiving
-process has also accepted the message.  Should the receiving process
-fail in some way, C<amavisd-new> will return a status code indicating
-such, and Postfix will maintain the message in its queue until the
-problem is rectified.
-
-Because C<amavisd-new> runs as a daemon, it saves considerable
-overhead over a design which runs as a normal pipe-filter.
-In particular, the initialization of SpamAssassin can be quite
-slow, which is why SpamAssassin itself ships with 'spamd', which
-provides a persistent daemon to scan mail to avoid this overhead,
-with a command-line client, 'spamc', with which other mail
-filters like Procmail my communicate.  Since C<amavisd-new> uses
-Mail::SpamAssassin directly, it does not need 'spamd' to be running.
+C<amavisd-new> is able to reliably deliver messages because it never has to
+store the messages itself; as soon as the Postfix sending process connects
+to C<amavisd-new>, C<amavisd-new> connects to the Postfix receiving process
+and does not send an acceptance response to the sending process until the
+receiving process has also accepted the message.  Should the receiving
+process fail, C<amavisd-new> will return a status code to the Postfix
+sending process and Postfix will maintain the message in its queue until
+the problem is rectified.
 
 =head2 Other Components
 
@@ -113,193 +107,178 @@ Mail::SpamAssassin directly, it does not need 'spamd' to be running.
 
 Sophos Anti-Virus may be the best kept secret in the anti-virus industry.
 Sophos produces a very high quality scanning engine and provides very
-good support.  Sophos caters to the enterprise, so their products
-are built for a diversity of platforms, including OpenVMS.  Since they
-cater to the enterprise, their products will not be seen in boxes on the
-shelves of retail stores, which is part of the reason they are able to
-maintain their high quality support.  (NB: I am a Sophos reseller, so my
-opinions are biased.)  Sophos introduced a product called MailMonitor
-a couple of years ago which also acts as a virus-scanning SMTP proxy,
-and have recently acquired ActiveState, chiefly for their PureMessage
-spam-filtering product (which also uses SpamAssassin).  I have been fairly
-happy with C<amavisd-new> in these roles and have not widely deployed
-MailMonitor and PureMessage.
+good support.  Sophos caters to the enterprise, so their products are
+built for a diversity of platforms, including OpenVMS.  Sophos caters to
+the enterprise, so their products are not sold retail, which is part of
+the reason they are able to maintain the high quality of their support.
+(NB: I am a Sophos reseller, so my opinions are biased.)
 
-Most of Sophos' products ship with 'sweep', a command-line scanner, but
-the the command-line client is mostly a wrapper around SAVI, their scanning
-engine library.  SAVI can also be licensed on its own in block of 50 users
-and for customers who only want e-mail filtering or already have another
-anti-virus product, this what I usually use.  Sophos provides the C headers
-to SAVI to developers, and Vanja Hrustic used them to implement Sophie.
-Sophie is a daemonized scanner which external processes communicate with
-through a UNIX domain socket.  Because loading the virus definitions
-and initializing the scanning engine requires considerable overhead in
-program initialization, it is better to have a daemon, especially when
-using 'sweep' would require many invocations.
+Most of Sophos' products ship with 'sweep', a command-line scanner,
+but the the command-line client is mostly a wrapper around SAVI, their
+scanning engine library.  SAVI can also be licensed on its own in blocks
+of 50 users.  This is a good solution for customers who only want e-mail
+filtering or already have another anti-virus product.  Sophos provides the
+C headers to SAVI to developers, and Vanja Hrustic used them to implement
+Sophie.  Sophie is a daemonized scanner with which external processes
+communicate through a UNIX domain socket.  Because loading the virus
+definitions and initializing the scanning engine requires considerable
+overhead in program initialization, it is better to have a daemonized
+scanner, especially when using 'sweep' would require many invocations.
 
 =head3 SpamAssassin
 
 SpamAssassin itself probably needs no introduction.  It is widely regarded
 as the best open source spam-filtering engine available (and is probably
-better than most proprietary offerings also).  It includes a wide range of
+better than most proprietary offerings).  It includes a wide range of
 heuristic patterns and scores which are applied to messages, connections
 to external sources, such as DNSRBLs, Razor2 and DCC.  Later versions
 also implement Bayesian classification, which greatly improves detection
 quality.
 
 SpamAssassin operates by applying a number of heuristic tests to messages,
-and then scoring the message.  Since a number of tests are used, more
-factors are taken into consideration than a simple filter which just
-matches keywords.  This provides a more accurate test; consider, for
-example, if you were to reject anything as spam containing the word
-"viagra", you would avoid a lot of viagra-related spam, but you would
-also miss the joke forwarded to you by your buddy or the polite request
-from your wife.  Configurable thresholds allow an administrator or user to
-decide how aggressive to be when deciding whether or not a message is spam.
+and then scoring the message.  More factors are taken into consideration
+by using a battery of tests to produce more accurate results than an
+all-or-nothing keyword filter can provide.  Consider, for example,
+if anything containing the word "viagra" were rejected as spam, much
+Viagra(tm)-related spam would be discarded, but you would also miss
+the joke forwarded by your buddy or the polite request from your wife.
+Configurable thresholds allow an administrator or user to decide how
+aggressive to be when deciding whether or not a message is spam.
 
-The more tests you can add to SpamAssassin, the higher the scores will
-be for spam, so the higher you can you set the thresholds and the more
-accurate your filtering will be.  Razor2, DCC, and Pyzor are external tests
-which you will probably want to install.  All three work by computing
-checksums of messages which have been recognized as spam and comparing
-those to databases.  DCC uses a fuzzy checksum to catch more spam,
-especially messages where spammers have added random characters to parts of
-the message in an attempt to fool the other systems.  If you are able, you
-should also register and send checksums of spam not caught by these back
-to network; they operate as volunteer efforts, so your contributions help.
-I have not actually used Pyzor, because it requires a later version of
-Python than is installed on most of my servers, but the SpamAssassin
-C<INSTALL> document recommends it, so it is probably safe to use.
+The more tests SpamAssassin uses, the higher the scores will be for
+spam, so the higher the thresholds can be set and the more accurate
+filtering will be.  Razor2, DCC, and Pyzor are external tests which are
+highly recommended.  All three work by computing checksums of messages
+which have been recognized as spam and comparing those to databases on
+the Internet.  DCC uses a fuzzy checksum to detect spam, especially
+messages where spammers have added random characters to parts of the
+message in an attempt to fool the other systems.  If possible, register
+and send checksums of spam not caught by these system back to network;
+they operate as community efforts, so your contributions help.
 
-SpamAssassin will also use DNS real-time black-hole lists (DNSRBLs) and
-right-hand-side black-hole list (RHSBLs).  It assigns different scores
-based on the reputation or focus of the RBL, and as a result is safer
-than using the lists directly; for example, instead of simply blocking
-all messages originating at from a dial-up address, the RBL simply adds
-to the score, so if the message is otherwise not spam-like, it will be
-allowed through.  (I have actually seen some desperate ISPs block mail
-entirely from all addresses from particular national IPSs, which is a
+SpamAssassin will also use DNS real-time black-hole lists (DNSRBLs)
+and right-hand-side black-hole list (RHSBLs).  It assigns different
+scores based on the reputation or focus of the RBL, and as a result is
+safer than using the lists directly; for example, instead of simply
+blocking all messages originating at from a dial-up address, the RBL
+simply adds to the score, so if the message is otherwise not spam-like,
+it will be allowed through.  (I have seen desperate small ISPs block mail
+entirely from addresses owned by particular national IPSs, which is a
 very bad practice, since it alienates sizable portions of the Internet.)
-SpamAssassin is also able to apply the RBL tests to all hosts through which
-the message has passed, which is more effective than only applying it to
-the SMTP peer, as an MTA usually does.  A limited number of conservative
-RBLs on the SMTP server itself are still not a bad idea, however.
+SpamAssassin is also able to apply the RBL tests to all hosts through
+which the message has passed, which is more effective than only applying
+it to the SMTP peer, as an MTA usually does.
 
 Among the newest and most exciting features is the Bayesian classification
 and auto-learning, which allow it to learn spam and non-spam based on
-scores of messages it sees.  Bayesian classification is sophisticated
-technique to determine the likelihood of a message being spam or not,
-based on identifying tokens (words, etc.) as either being most frequently
-in spam or "ham" (non-spam).  It's a good deal more flexible than the
-basic keyword and phrase matching that SpamAssassin does without it;
-as a result it has to learn which tokens are spam tokens and which are
-ham tokens, so it must be trained, usually be feeding it messages and
-indicated which it is.  Since SpamAssassin still has a number of other
-tests it performs, it can also automatically teach the Bayesian classifier
-based on the message's score, so it continuously adapts its idea of what
-is spam or ham based on the messages it receives.
+scores of messages it sees.  Bayesian classification is a sophisticated
+technique to statistically determine the likelihood of a message being
+spam, based on identifying tokens (words, etc.) as either being most
+frequently used in spam or "ham" (non-spam).  It's a good deal more
+flexible than the basic keyword and phrase matching that SpamAssassin
+does without it; as a result it has to learn which tokens are spam tokens
+and which are ham tokens, so it must be trained, usually be feeding it
+messages and indicated which it is.  Since SpamAssassin still has a number
+of other tests it performs, it can also automatically teach the Bayesian
+classifier based on the message's score, so it continuously adapts its
+idea of what is spam or ham based on the messages it receives.
 
 =head2 Putting It All Together
 
-First, make sure you've got Postfix working as it should without any
-filtering.  Always try to proceed in small, incremental steps, testing each
-along the way.
+First, make sure Postfix is working as it should without any filtering.
+Always try to proceed in small, incremental steps, testing each along
+the way.
 
 Next, configure amavisd-new.  The configuration file defaults
-to C</etc/amavisd.conf>, but I prefer to relocate mine to
-/etc/amavis/amavisd.conf by giving it the C<-c> option at start-up.
-The C<amavisd.conf> file itself is very heavily commented, and I recommend
-that you read through the whole thing.  Note that the configuration
-file is all Perl code, so any settings must be valid Perl statements.
-(You will note, for example, the line 'use strict;' at the top and the line
-'1;' at the end.)
+to C</etc/amavisd.conf>, but I prefer to relocate it to
+C</etc/amavis/amavisd.conf> by including the C<-c> option at start-up.
+The C<amavisd.conf> file itself is very heavily commented and I recommend
+reading through the whole thing.  The configuration file is all Perl code,
+so any settings must be valid Perl statements.
 
-C<amavisd-new> provides a few utility functions that let you provide
-configuration maps in a number of different ways; the C<read_hash>
-function lets you specify a newline-separated list, which is read into
-a hash table at initialization, where the line is a key and '1' is the
-value; you will notice that this is the same format Postfix uses for
-lists in a number of places.
+C<amavisd-new> provides a few utility functions to provide
+configuration maps in a number of ways; the C<read_hash> function uses a
+newline-separated list, which is read into a hash table at initialization;
+this is the same format Postfix uses for lists in a number of places,
+so there is opportunity for sharing configuration.
 
-C<new_RE> lets you specify a list of Perl regular expressions.  Other
-variables are basic Perl arrays or hashes, often using the 'qw()' form
-for a "quoted word" array (i.e., each whitespace-separated "word" is an
-element) or 'qr()' for quoted regular expressions.
+C<new_RE> builds a list of Perl regular expressions.  Other variables are
+basic Perl arrays or hashes, often using the 'qw()' form for a "quoted
+word" array (i.e., each whitespace-separated "word" is an element) or
+'qr()' for quoted regular expressions.
 
-Here are a few changes from the defaults that should get you started.
-The first C<$mydomain> is obvious; you should set your local domain here
-(don't worry if you also host other domains):
+Here are a few changes from the defaults to get started.  The first
+C<$mydomain> is obvious; set your local domain here (don't worry if you
+also host other domains):
 
-$mydomain = 'example.com'; 
+ $mydomain = 'example.com'; 
 
-I prefer to run mine as user/group 'amavis/amavis', created with
-home directory /var/amavis:
+I prefer to run mine as user/group 'amavis/amavis', created with home
+directory C</var/amavis>:
 
-$daemon_user  = 'amavis';
-$daemon_group = 'amavis';
+ $daemon_user  = 'amavis';
+ $daemon_group = 'amavis';
 
-I like to make the directory C<amavisd-new> does most of its work
-in a tmpfs file system, but you want certain things (like the
-SpamAssassin Bayesian database) to be persistently stored, so the temporary
-directory should be a subdirectory of the home directory:
+Make the directory C<amavisd-new> does most of its work in a tmpfs file
+system, but certain things (like the SpamAssassin Bayesian database)
+need to be persistently stored, so set the temporary directory to a
+subdirectory of the home directory:
 
-$TEMPBASE = $MYHOME/tmp;
+ $TEMPBASE = $MYHOME/tmp;
 
-You will also need to mount this as a temporary filesystem; under Linux 2.4
-you can do this by adding the following to your C</etc/fstab> and running
-'mount /var/amavis/tmp':
+Under Linux 2.4 a temporary filesystem can be used by adding the following
+to C</etc/fstab> and running 'mount /var/amavis/tmp':
 
-none /var/amavis/tmp tmpfs mode=770,uid=amavis,gid=wheel 0 0
+ none /var/amavis/tmp tmpfs mode=770,uid=amavis,gid=wheel 0 0
 
-Note the mode, uid and gid settings to change the default permissions on
-the mounted filesystem; I use the 'wheel' group because it use it in other
-places to give administrative users extra access and control access to
+The mode, uid and gid settings change the default permissions on the
+mounted filesystem; I use the 'wheel' group because I use it in other
+places to give administrative users extra access and to control access to
 'su' and 'sudo'.
 
 The C<FILTER_README> from Postfix and the C<README.postfix> from
-C<amavisd-new> differ on which ports to use; the former uses 10025 and
-10026, while the latter uses 10024 and 10025.  It doesn't matter which you
-choose, as long as you use the pair consistently.  If you want to change
-to the (10025,10026) pair (which will be used in these examples), use:
+C<amavisd-new> differ on which ports to use; the former uses 10025
+and 10026, while the latter uses 10024 and 10025.  It doesn't matter
+which, provided that the pair is used consistently.  To change to the
+(10025,10026) pair (which will be used in these examples), use:
 
-$inet_socket_port = 10025;
-$forward_method = 'smtp:127.0.0.1:10026';
-$notify_method = $forward_method;
+ $inet_socket_port = 10025;
+ $forward_method = 'smtp:127.0.0.1:10026';
+ $notify_method = $forward_method;
 
-To configure the domains local to the mail system, you may use the
-C<read_hash> function as described above:
+To configure the domains local to the mail system, use the C<read_hash>
+function as described above:
 
-read_hash(\%local_domains, '/etc/postfix/local_domains');
+ read_hash(\%local_domains, '/etc/postfix/local_domains');
 
-If you're keeping your Postfix local domains in a flat file, this will
-let you maintain one list shared between both systems.
+If Postfix local domains are stored in a flat file, this will allow
+sharing of the configuration between both systems.
 
 The C<read_hash> function is also useful for maintaining white and black
-lists; I find the newline-separated list a little easier to maintain than
-having it within the C<amavisd.conf> file, particularly if these will be
-maintained by a junior administrator.
+lists; the newline-separated list might be easier to maintain than having
+it within C<amavisd.conf>, particularly if these lists will be maintained
+by a junior administrator.
 
-read_hash(\%whitelist_sender, '/etc/amavis/whitelist_sender');
+ read_hash(\%whitelist_sender, '/etc/amavis/whitelist_sender');
 
-You might also want to keep a blacklist of known bad senders; however,
+You may also want to keep a blacklist of known bad senders; however,
 it might be more trouble than its worth, because spammers rarely use
 the same address for long and the sender is usually faked, and because
 SpamAssassin provides superior detection with less fuss.
 
-read_hash(\%blacklist_sender, '/etc/amavis/blacklist_sender');
+ read_hash(\%blacklist_sender, '/etc/amavis/blacklist_sender');
 
 To avoid sending bogus virus bounces from viruses like Klez that are
 known to fake the sender's address, there is a regular expression map;
-I recommend that you maintain this list very carefully, because new
+I recommend that this list be maintained very carefully, because new
 viruses which do this come out frequently and bounces are nearly as much
-of a problem as the viruses themselves (especially who do not run Outlook
-which are rarely vulenerable in the first place).  This is done using the
-'new_RE' function mentioned above:
+of a problem as the viruses themselves (especially to those who do not
+run Outlook).  This is done using the 'new_RE' function mentioned above:
 
-$viruses_that_fake_sender_re = new_RE(
-  qr'nimda|hybris|klez|bugbear|yaha|braid|sobig|fizzer|palyh|peido|holar'i,
-  qr'tanatos|lentin|bridex|mimail|trojan\.dropper'i,
-);
+ $viruses_that_fake_sender_re = new_RE(
+   qr'nimda|hybris|klez|bugbear|yaha|braid|sobig|fizzer|palyh|peido|holar'i,
+   qr'tanatos|lentin|bridex|mimail|trojan\.dropper'i,
+ );
 
 You might consider, instead, changing the action C<amavisd-new> takes to
 simply discard virus messages.  Doing so might not alert a sender that
@@ -308,25 +287,24 @@ boss sends an infected Word document to a colleague and wonders why she
 gets no response), so use it with caution.  You can do this by using
 'D_DISCARD' instead of 'D_BOUNCE' in C<$final_virus_destiny>:
 
-$final_virus_destiny = D_DISCARD;
+ $final_virus_destiny = D_DISCARD;
 
-Even if you do not use anti-virus software, you can reduce the chance
-a virus will infect your users simply by having C<amavisd-new> filter
-dangerous attachment types which generally should not be passed through
-e-mail.  Microsoft has a Knowledge Base article which lists these, and
-this setting is based on that list (see References).  I get an occasional
-complaint about the ban on TNEF attachments; if you have Outlook users
-who like to send these, you might want to remove 'tnef' from below.
+Even if anti-virus software is not used, the chance a virus will infect
+your users can be reduced by having C<amavisd-new> filter dangerous
+attachment types which generally should not be passed through e-mail.
+Microsoft has a Knowledge Base article which lists these, and this setting
+is based on that list (see References).  If you have Outlook users who
+like to send TNEF attachments, remove 'tnef' from below.
 
-$banned_filename_re = new_RE(
-   qr'\.[a-zA-Z][a-zA-Z0-9]{0,3}\.(vbs|pif|scr|bat|com|exe|dll)$'i,
-  qr'.\.(ade|adp|bas|bat|chm|cmd|com|cpl|crt|exe|hlp|hta|inf|ins|isp|js|
-         jse|lnk|mdb|mde|msc|msi|msp|mst|pcd|pif|reg|scr|sct|shs|shb|vb|
-         vbe|vbs|wsc|wsf|wsh)$'ix,
-  qr'^\.(exe|lha|tnef)$'i,
-  qr'^application/x-msdownload$'i,
-  qr'^message/partial$'i, qr'^message/external-body$'i,
-);
+ $banned_filename_re = new_RE(
+    qr'\.[a-zA-Z][a-zA-Z0-9]{0,3}\.(vbs|pif|scr|bat|com|exe|dll)$'i,
+   qr'.\.(ade|adp|bas|bat|chm|cmd|com|cpl|crt|exe|hlp|hta|inf|ins|isp|js|
+          jse|lnk|mdb|mde|msc|msi|msp|mst|pcd|pif|reg|scr|sct|shs|shb|vb|
+          vbe|vbs|wsc|wsf|wsh)$'ix,
+   qr'^\.(exe|lha|tnef)$'i,
+   qr'^application/x-msdownload$'i,
+   qr'^message/partial$'i, qr'^message/external-body$'i,
+ );
 
 Controlling who gets scanned for what may be either the simplest or
 the most complex configuration setting, depending on your site.  Most
@@ -343,107 +321,106 @@ document in the C<amavisd-new> distribution is the authoritative text on
 configuring these; the scope of these are outside of this document.
 
 Roughly speaking, the 'lovers' maps will allow users to receive all
-messages, even if it is found to be spam or found to contain a virus, while
+messages, even if it is found to be spam or to contain a virus, while
 it will notify administrators and recipients (if configured to do so).
 The 'bypass' maps bypass scanning for the selected type altogether; I
-recommend you use this only for viruses.  For spam, I recommend that if
-you do not filter for all users, you should not use the 'bypass' maps but
+recommend this only for viruses.  For spam, avoid the 'bypass' maps but
 set impossibly high values for tag and kill levels (such as '999')--this
 will let SpamAssassin scan the message and the autolearning feature will
-feed Bayesian classifier, making it more accurate.
+feed Bayesian classifier, making it more accurate.  It will increase
+load on your server, so use with care on older systems or in high-volume
+environments.
 
-The C<tag>, C<tag2> and C<kill> levels let you control the filtering that
-is applied to spam based on the score supplied by SpamAssassin.  C<tag>
-just adds 'X-Spam-Status' and 'X-Spam-Level' headers, so most users will
-not notice them.  If you want to see the score for all messages, use a
-very low C<tag> level, such as '-999'.  C<tag2> level adds 'X-Spam-Flag:
-YES' and prepends to the subject '***SPAM***'; I do not usually use
-this, because I have enough confidence in SpamAssassin that I just let
-it quarantine the messages.  C<kill> does just that--quarantines the
-message and sends a report to the administrator.  The default C<kill>
-level is 6.3, which is not bad; to start out, consider raising it 8 or
-10 just to be safe.  To set these levels globally, use the following:
+The C<tag>, C<tag2> and C<kill> levels control the filtering that is
+applied to spam based on the score supplied by SpamAssassin.  C<tag>
+just adds 'X-Spam-Status' and 'X-Spam-Level' headers, so most users
+will not notice them.  To see the score for all messages, use a very low
+C<tag> level, such as '-999'.  C<tag2> level adds 'X-Spam-Flag: YES' and
+prepends to the subject '***SPAM***'; I do not usually use this, because
+I have enough confidence in SpamAssassin that I just let it quarantine
+the messages.  C<kill> does just that--quarantines the message and sends
+a report to the administrator.  The default C<kill> level is 6.3, which
+is not bad; to start out, consider raising it 8 or 10 just to be safe.
+To set these levels globally, use the following:
 
-$sa_tag_level_deflt  = -999;
-$sa_tag2_level_deflt = 6.3;
-$sa_kill_level_deflt = $sa_tag2_level_deflt;
+ $sa_tag_level_deflt  = -999;
+ $sa_tag2_level_deflt = 6.3;
+ $sa_kill_level_deflt = $sa_tag2_level_deflt;
 
-For initial testing, you might want to disable external tests in
-SpamAssassin.  This will disable DNSRBL, DCC, Razor2 and Pyzor tests.
-You will certainly want to use these, but turn them off initially until
-you're confident that the rest of the system is working:
+For initial testing, disable external tests in SpamAssassin.  This will
+disable DNSRBL, DCC, Razor2 and Pyzor tests.  You will certainly want to
+use these, but turn them off initially until you are confident that the
+rest of the system is working:
 
-$sa_local_tests_only = 1;
+ $sa_local_tests_only = 1;
 
 To configure virus-scanning, the '@av_scanners' array lists a number
 of configurations for well-known virus scanners.  As the comment in
 the default configuration file preceeding this array states, leaving
 in scanners which use internal subroutines such as '\&ask_daemon' will
 aversely affect performance; command-line scanners which are not found at
-initialization time will not be used, but I prefer to keep them commented
-out altogether.
+initialization time will not be used, but commenting them out does not hurt
+and might marginally improve start-up time. 
 
-Since we're using Sophie, a daemon wrapped around Sophos Anti-Virus'
-scanning engine, uncomment that section:
+Uncomment the Sophie section:
 
  ['Sophie',
    \&ask_daemon, ["{}/\n", '/var/run/sophie'],
    qr/(?x)^ 0+ ( : | [\000\r\n]* $)/,  qr/(?x)^ 1 ( : | [\000\r\n]* $)/,
    qr/(?x)^ [-+]? \d+ : (.*?) [\000\r\n]* $/ ],
 
-When you built Sophie, you might have given its C<configure> script
-the C<--with-socketfile> option to place it somewhere other than
-C</var/run/sophie>.  If you did, you should change the second line above
-to match that.  You should also have built it with C<--with-user=amavis>
-and C<--with-group=amavis>; if you did not, add the C<amavis> user to
-whatever group you provided.  If you do not, C<amavisd-new> will not be
-able to communicate with Sophie.
+When Sophie was built, the C<configure> script option C<--with-socketfile>
+allows it to be placed somewhere other than C</var/run/sophie>.  If so,
+change the second line above to match that.  If Sophie was not built
+with C<--with-user=amavis> and C<--with-group=amavis>; add the C<amavis>
+user to whatever group was provided.  If you do not, C<amavisd-new>
+will not be able to communicate with Sophie.
 
-To use the Bayesian classifier in SpamAssassin, the following variables for
-SpamAssassin should be set in the C</etc/mail/spamassassin/local.cf>:
+To use the Bayesian classifier in SpamAssassin, set the following variables
+for SpamAssassin in the C</etc/mail/spamassassin/local.cf>:
 
-use_bayes 1
-auto_learn 1
+ use_bayes 1
+ auto_learn 1
 
-Once you're confident of the rest of the system working, you might want to
-make it auto-learn faster; to do so add:
+Once you're confident of the rest of the system working, consider making
+it auto-learn faster by reducing the threshold for spam; to do so add:
 
-auto_learn_threshold_spam 8
+ auto_learn_threshold_spam 8
 
 By default, this is set to 12, which will make it learn fairly slowly.
-The Bayesian classifier will not begin to contribute to the score
-of messages until there are at least 200 spam and non-spam messages.
-I recommend monitoring your spam alerts to determine an appropriate value
-for the spam threshold, although I would not use much below 8.
+The Bayesian classifier will not begin to contribute to the score of
+messages until there are at least 200 each of spam and non-spam messages.
+Monitor spam alerts to determine an appropriate value for the spam
+threshold, although a score below 8 is not recommended.
 
 To view the number of spam and non-spam messages, issue the command
 'sa-learn --dump magic' as the 'amavis' user:
 
-$ sudo su - amavis
-$ sa-learn --dump magic
-0.000          0          2          0  non-token data: bayes db version
-0.000          0       3012          0  non-token data: nspam
-0.000          0       4218          0  non-token data: nham
-...
+ $ sudo su - amavis
+ $ sa-learn --dump magic
+ 0.000          0          2          0  non-token data: bayes db version
+ 0.000          0       3012          0  non-token data: nspam
+ 0.000          0       4218          0  non-token data: nham
+ ...
 
 Configuring Postfix requires adding the following to
 C</etc/postfix/master.cf> and issuing the command 'postfix reload':
 
-smtp-amavis unix -      -       y/n     -       2  smtp
-    -o smtp_data_done_timeout=1200
-    -o disable_dns_lookups=yes
+ smtp-amavis unix -      -       y/n     -       2  smtp
+     -o smtp_data_done_timeout=1200
+     -o disable_dns_lookups=yes
                                                                                 
-127.0.0.1:10026 inet n  -       y/n     -       -  smtpd
-    -o content_filter=
-    -o local_recipient_maps=
-    -o relay_recipient_maps=
-    -o smtpd_restriction_classes=
-    -o smtpd_client_restrictions=
-    -o smtpd_helo_restrictions=
-    -o smtpd_sender_restrictions=
-    -o smtpd_recipient_restrictions=permit_mynetworks,reject
-    -o mynetworks=127.0.0.0/8
-    -o strict_rfc821_envelopes=yes
+ 127.0.0.1:10026 inet n  -       y/n     -       -  smtpd
+     -o content_filter=
+     -o local_recipient_maps=
+     -o relay_recipient_maps=
+     -o smtpd_restriction_classes=
+     -o smtpd_client_restrictions=
+     -o smtpd_helo_restrictions=
+     -o smtpd_sender_restrictions=
+     -o smtpd_recipient_restrictions=permit_mynetworks,reject
+     -o mynetworks=127.0.0.0/8
+     -o strict_rfc821_envelopes=yes
 
 Note that the 'content_filter' in the second section is empty; since this
 is the receiving process, it should not pass the incoming message to the
@@ -452,56 +429,59 @@ global content_filter, otherwise there would be a mail loop.
 At this point, C<amavisd-new> and Postfix are configured to receive
 messages, and C<amavisd-new> is configured to inject them back into
 Postfix, but Postfix is not sending any mail into C<amavisd-new> yet,
-so there is an opportunity to test before going live.  You should telnet
-to port 10025 on localhost and send a test message through C<amavisd-new>
-by manually entering SMTP commands.  You might want to send, for example,
-an EICAR virus-testing pattern or sample spam and non-spam messages.
-You should also telnet to port 10026 on localhost to verify that Postifx
-is listening and accepting messages.
+so there is an opportunity to test before going live.  Telnet to port
+10025 on localhost and send a test message through C<amavisd-new> using
+SMTP commands.  You might want to send, for example, an EICAR virus-testing
+pattern or sample spam and non-spam messages.  Also telnet to port 10026
+on localhost to verify that Postifx is listening and accepting messages.
 
-Finally, to make Postfix send all incoming messages through C<amavisd-new>,
+Finally, to make Postfix send incoming messages through C<amavisd-new>,
 add the following to C</etc/postfix/main.cf> and issue the command
 'postfix reload':
 
-content_filter = smtp-amavis:[127.0.0.1]:10025
+ content_filter = smtp-amavis:[127.0.0.1]:10025
 
-You are now running live with a powerful virus and spam filter on
-your e-mail.  If you run into trouble, just comment the preceeding line
-out and reload Postfix.  If you are having trouble, start add C<debug>
-to the command-line options to start C<amavisd-new> and it will log
-verbosely and not detach from your terminal.  If you need help, re-read
-the documentation, capture a log of the problem you are seeing, and join
-the amavis-user mailing list (see References).
+If you run into trouble, comment the preceeding line out and reload
+Postfix.  If you are having trouble, add C<debug> to the command-line
+options to start C<amavisd-new> and it will log verbosely and not detach
+from the terminal.  If you need help, re-read the documentation, capture a
+log of the problem, and join the amavis-user mailing list (see References).
 
 =head2 Conclusion
 
-This is great stuff!
+If you have followed these instructions through, your e-mail server is now
+running live with a high-performance and accurate virus and spam filter
+on your e-mail.  You should have a basic understanding of the workings of
+the system, which will be of tremendous use in the event of difficulties.
+As with any system that can cause loss of data, monitor the spam and
+virus reports closely to ensure that the scanning is not too aggressive.
+
+While spam and e-mail viruses are becoming increasing problems for users
+and businesses everywhere, the configuration described herein can help
+provide a good layer of protection to your organization and your users
+at a minimal cost.
 
 =head2 References
 
-=item Postfix web site
-    http://www.postfix.org
+=item Postfix web site -- http://www.postfix.org
 
-=item amavisd-new web site
-    http://www.ijs.si/software/amavisd/
+=item amavisd-new web site -- http://www.ijs.si/software/amavisd/
 
-=item AMaViS web site
-    http://www.amavis.org/
+=item AMaViS web site -- http://www.amavis.org/
 
-=item amavis-user mailing list
-    http://sourceforge.net/mail/?group_id=6006
+=item amavis-user mailing list -- http://sourceforge.net/mail/?group_id=6006
 
-=item Sophie web site
-    http://www.vanja.com/tools/sophie/
+=item Paul Graham's "A Plan for Spam", the paper which introduced Bayesian classification for spam -- http://www.paulgraham.com/spam.html
 
-=item Sophos Anti-Virus web site
-    http://www.sophos.com
+=item Microsoft Knowledge Base article listing dangerous file extentions -- http://support.microsoft.com/default.aspx?scid=kb;EN-US;q262631
 
-=item SpamAssassin web site
-    http://www.spamassassin.org
+=item Naked Ape Consulting's Mail Defender -- http://nakedape.cc/r/mdsam
 
-=item Microsoft Knowledge Base article listing dangerous file extentions:
-    http://support.microsoft.com/default.aspx?scid=kb;EN-US;q262631
+=item Sophie web site -- http://www.vanja.com/tools/sophie/
+
+=item Sophos Anti-Virus web site -- http://www.sophos.com
+
+=item SpamAssassin web site -- http://www.spamassassin.org
 
 =cut
 
