@@ -1,0 +1,57 @@
+=head1 Defending E-mail Users from Spam and Viruses
+
+=head2 Introduction
+
+=head2 Understanding the Postfix C<content_filter> Mechanism
+
+The Postfix mail transfer agent (MTA) provides C<content_filter>, a
+flexible mechanism designed to allow the integration of arbitrary mail
+filters through a well-defined interface.  Postfix passes the message
+into the content filter at the queuing stage, which in the diagrams in
+the Postfix documentation is labelled I<qmgr>, which is the name of the
+internal process that maintains queues for incoming and outgoing messages.
+The drawback of the placement of filtering at the point in the system is
+that the message has already been accepted into the system from the remote
+server, so instead of directly rejecting the message when it's initially
+delivered though an SMTP reject status code (5XX), the message is bounced.
+
+In recent Postfix snapshots there is support for filtering at SMTP level;
+however, it must be handled with care because SMTP has relatively short
+time-outs, which may not tolerate the extra time required to perform
+content checking.  Obviously, there will be scalability issues with this
+configuration.  Since it is a still experimental and somewhat dangerous,
+this article will not explore, concentrating instead on the more mature
+C<content_filter> mechanism.
+
+The simplest of the interfaces is a simple UNIX pipe, where Postfix writes
+to the filter's standard input and and checks the filters return values
+for pre-defined status codes.  Mail is injected back into Postfix using
+the C<sendmail> command, which is the Postfix replacement for the same
+command Sendmail uses.  The example in the C<FILTER_README> file that ships
+with Postfix uses C<cat> and acts as a simple pass-through filter, which
+does nothing.  You could, for example, write a filter to pass it though
+C<tac> to reverse al the lines of the message (not that you'd want to).
+
+The pipe mechanism, however, is not the best interface for anything as
+complicated as mail filtering.  The best interface uses the filter as an
+SMTP proxy.
+
+=head2 Scanning with C<amavisd-new>
+
+=head2 Other Components
+
+=head3 Sophos SAVI and Sophie
+
+=head3 SpamAssassin
+
+=head2 Putting It All Together
+
+=head2 Understanding Logging
+
+=head2 Debugging
+
+=head2 Conclusion
+
+=cut
+
+vim: ft=pod
