@@ -44,7 +44,7 @@ $user = &user_defaults();
 # Display HTML
 &header ($text{'create_user'}, "");
 print "<hr noshade size=2>\n";
-&html_user_form ("create", $user) ;
+print &html_user_form ("create", $user) ;
 
 print "<BR>\n";
 &footer ($config{'app_path'}, "$text{'index_t'}");

@@ -69,7 +69,7 @@ EOF
     &header ($text{'edit_user'}, "");
 
     print "<hr noshade size=2>\n";
-    &html_user_form ("modify", $user) ;
+    print &html_user_form ("modify", $user) ;
 
 } 
 
