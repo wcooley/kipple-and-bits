@@ -1,7 +1,7 @@
 enable_user_mgmt=Enable Management of Users,1,1-Yes,0-No
 enable_group_mgmt=Enable Management of Groups,1,1-Yes,0-No
-enable_host_mgmt=Enable Management of Hosts (broken),1,1-Yes,0-No
-enable_alias_mgmt=Enable Management of Aliases (broken),1,1-Yes,0-No
+enable_host_mgmt=Enable Management of Hosts (unimplemented),1,1-Yes,0-No
+enable_alias_mgmt=Enable Management of Aliases (unimplemented),1,1-Yes,0-No
 app_path=App Path (change if you clone),0,20
 directory_type=Directory Type,4,LDAP-LDAP
 
@@ -27,3 +27,6 @@ sect3=Group Options,11
 hide_system_groups=Hide system groups (GID < minimum GID)?,1,1-Yes,0-No
 min_gid=Minimum GID,0,5
 max_gid=Maximum GID,0,5
+
+sect4=Miscellaneous Options,11
+html_table_options=HTML Table Options,0,40
