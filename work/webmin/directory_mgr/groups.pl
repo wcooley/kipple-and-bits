@@ -1,12 +1,6 @@
 #!/usr/bin/perl
 
-#
-# LDAP Users Admin
 # groups.pl $Revision$ $Date$ $Author$
-# by Fernando Lozano <fernando@lozano.eti.br> under the GNU GPL (www.gnu.org)
-#
-
-# have a lot of global variables for user attributes
 
 
 sub new_group_ok
@@ -62,5 +56,52 @@ sub entry_from_group
     return $entry;
 }
 
+sub group_from_form {
+	my ($in) = @_ ;
+	my (%group) ;
+
+	if ($config{'new_group'}) {
+		$group{'groupName'} = $in->{'uid'} ;
+		if ($in->{'gid_from'} != "automatic") {
+			$group{'gidNumber'} = $in->{'input_gid'} ;
+		}
+		if ($in->{'uidnumber'}) {
+			$group{'memberUid'} = $uidnumber ;
+		}
+		if ($in->{'groupDescription'}) {
+			$group{'description'} = $in->{'groupDescription'} ;
+		} else {
+			$group{'description'} = &text('group_desc',
+				$group{'groupName'}) ;
+		}
+		if ($in->{'systemUser'}) {
+			$group{'systemUser'} = 1 ;
+		}
+	}
+
+	return \%group ;
+}
+
+
+=head1 NOTES
+
+None at the moment.
+
+=head1 CREDITS
+
+This module begun by Fernando Lozano <fernando@lozano.etc.br>
+in his I<ldap-users> module.  Incorporated into I<directory_mgr>
+by Wil Cooley <wcooley@nakedape.cc>.  All bug reports should go to
+Wil Cooley.
+
+=cut
+
+=head1 LICENSE
+
+This file is copyright Fernando Lozano <frenando@lozano.etc.br>
+and Wil Cooley <wcooley@nakedape.cc>, under the GNU General Public
+License <http://www.gnu.org/licenses/gpl.txt>.
+
+=cut
 
 1;
