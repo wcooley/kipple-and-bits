@@ -2,6 +2,17 @@
 #
 # This document is not actual Perl code, just POD markup ;)
 
+=head1 NAME
+
+design.pl
+
+=head1 DESCRIPTION
+
+This document contains descriptions of the objects and
+data strucures used in I<Directory_Mgr>.  It's not actual
+Perl code, just POD documentation.
+
+
 =head1 Data Structures
 
 =head2 User Objects
@@ -178,6 +189,17 @@ hash, except special handling is required for automatic group ID
 creation, such as for user-private-groups.
 
 =back
+
+=head1 CREDITS
+
+This module begun by Wil Cooley <wcooley@nakedape.cc>.  All bug
+reports should go to Wil Cooley.
+
+=head1 LICENSE
+
+This file is copyright Wil Cooley <wcooley@nakedape.cc>, under the
+GNU General Public License <http://www.gnu.org/licenses/gpl.txt>
+or the file B<LICENSE> included with this program.
 
 =cut
 
