@@ -87,7 +87,12 @@ sub user_from_form
     $user{'uidnumber'} = $in->{'uidnumber'};
     #$user{'gidnumber'} = $in->{'gidnumber'};
     $user{'gecos'} = $in->{'gecos'};
-    $user{'homedirectory'} = $in->{'homedirectory'};
+
+    if ($in->{'homedirectory'} eq "") {
+        $user{'homedirectory'} = $config{'homes'} .  $user{'uid'} ;
+    } else {
+        $user{'homedirectory'} = $in->{'homedirectory'};
+    }
     $user{'loginshell'} = $in->{'loginshell'};
 
     # address book data
@@ -221,9 +226,86 @@ sub entry_from_user
     return $entry;
 }
 
+=head2 create_home_dir
+
+SYNOPSIS 
+
+create_home_dir ( $user, $host )
+
+DESCRIPTION
+
+Creates a home directory for $user on (possibly remote) $host.
+Remote hosts have to have the 'create_homedir' module installed.
+
+RETURN VALUE
+
+Returns true. ;(
+
+BUGS
+
+Should return something more intresting than true.  Should eval()
+remote_foreign_* calls and check exceptions.
+
+=cut
+
+
+# Creates a home directory
+sub create_home_dir {
+    local ($user, $host) = @_ ;
+
+    $loghash{'user'} = $user ;
+    $loghash{'host'} = $host ;
+
+    $debug && &webmin_log ('call', 'sub', 'create_home_dir');
+
+
+    # localhost is special -- it creates the home directory
+    # locally, so we use 'foreign_*' subs, instead of 'remote_foreign_*'.
+    if ($host eq "localhost") {
+
+        $debug && &webmin_log ('call', 'sub', 'make_home_local') ;
+
+        $loghash{'make_home_local'} = &make_home_local($user) ;
+
+    } else {
+        # Create the remote directory, by calling itself on
+        # the remote host
+        $debug && &webmin_log ('call', 'sub', 'remote_foreign_check') ;
+        &remote_foreign_check("$host", 'create_homedir') ||
+            &error(&text('err_remote_foreign_check', 'create_homedir', $host)) ;
+
+        $debug && &webmin_log ('call', 'sub', 'remote_foreign_require');
+        &remote_foreign_require("$host", 'create_homedir',
+            'create_home_dir.pl')
+            # Jamie says this shouldn't work
+            #  ||
+            # &error(&text('err_remote_foreign_require', 'create_homedir',
+            #   'create_home_dir.pl', $host)) ;
+
+        $debug && &webmin_log ('call', 'sub', 'remote_foreign_call') ;
+        $loghash{'make_home_local'} = &remote_foreign_call("$host",
+            'create_homedir', 'make_home_local', $user) ;
+
+        $debug && &webmin_log ('call', 'sub', 'remote_finished') ;
+        &remote_finished() ;
+
+    }
+
+    &webmin_log('create', 'homedir', '', \%loghash) ;
+
+    $loghash{'make_home_local'} eq "ok" ||
+        &error(&text('err_create_dir', "$loghash{'make_home_local'}")) ;
+
+    return 1;
+
+}
+
+
 =head1 NOTES
 
 None at the moment.
+
+=cut
 
 =head1 CREDITS
 
@@ -240,6 +322,7 @@ This file is copyright Fernando Lozano <frenando@lozano.etc.br>
 and Wil Cooley <wcooley@nakedape.cc>, under the GNU General Public
 License <http://www.gnu.org/licenses/gpl.txt>.
 
+=cut
 
 
 1;
