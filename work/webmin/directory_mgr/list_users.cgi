@@ -19,27 +19,27 @@ print "<HR noshade size=2>\n";
 print "<P><B>$text{'index_msg_1'} ($text{'index_msg_2'})</B> -- $text{'index_msg_3'} ";
 
 @all_users = &list_users ("");
-if ($sort_on eq "uidnumber") {
+if ($sort_on eq "uidNumber") {
     @users = sort {$a->{$sort_on} <=> $b->{$sort_on}} @all_users;
-    print $text{uidnumber} . "\n";
+    print $text{'uidNumber'} . "\n";
 }
 elsif ($sort_on eq "uid") {
     @users = sort {$a->{$sort_on} cmp $b->{$sort_on}} @all_users;
-    print $text{uid} . "\n";
+    print $text{'uid'} . "\n";
 }
 elsif ($sort_on eq "cn") {
     @users = sort {$a->{$sort_on} cmp $b->{$sort_on}} @all_users;
-    print $text{cn} . "\n";
+    print $text{'cn'} . "\n";
 }
-elsif ($sort_on eq "gidnumber") {
-    @users = sort {($a->{$sort_on} . $a->{cn}) cmp
-        ($b->{$sort_on} . $b->{cn})} @all_users;
-    print $text{gidnumber} . "\n";
+elsif ($sort_on eq "gidNumber") {
+    @users = sort {($a->{$sort_on} . $a->{'cn'}) cmp
+        ($b->{$sort_on} . $b->{'cn'})} @all_users;
+    print $text{'gidNumber'} . "\n";
 }
 else {
-    @users = sort {($a->{department} . $a->{cn}) cmp
-       ($b->{department} . $b->{cn})} @all_users;
-    print $text{department} . "\n";
+    @users = sort {($a->{'department'} . $a->{'cn'}) cmp
+       ($b->{'department'} . $b->{'cn'})} @all_users;
+    print $text{'department'} . "\n";
 }
 
 print "<p>This is the list of users:<br>\n" ;
@@ -47,15 +47,15 @@ print "<p>This is the list of users:<br>\n" ;
 print "<TABLE border width=100% $cb>\n";
 print "<TR $tb>\n";
 print "<TD><B><A href=\"edit_users.cgi?sort_on=uid\">" .
-    $text{uid} . "</A></B>\n";
-print "<TD><B><A href=\"edit_users.cgi?sort_on=uidnumber\">" .
-    $text{uidnumber} . "</A></B>\n";
-print "<TD><B><A href=\"edit_users.cgi?sort_on=gidnumber\">" .
-    $text{gidnumber} . "</A></B>\n";
+    $text{'uid'} . "</A></B>\n";
+print "<TD><B><A href=\"edit_users.cgi?sort_on=uidNumber\">" .
+    $text{'uidNumber'} . "</A></B>\n";
+print "<TD><B><A href=\"edit_users.cgi?sort_on=gidNumber\">" .
+    $text{'gidNumber'} . "</A></B>\n";
 print "<TD><B><A href=\"edit_users.cgi?sort_on=cn\">" .
-    $text{cn} . "</A></B>\n";
+    $text{'cn'} . "</A></B>\n";
 print "<TD><B><A href=\"edit_users.cgi?sort_on=department\">" .
-    $text{department} . "</A></B>\n";
+    $text{'department'} . "</A></B>\n";
 # do not show DN until we can select and edit OUs
 #print "<TD><B><A href=\"edit_users.cgi?sort_on=dn\">DN</A></B>\n";
 
@@ -71,7 +71,7 @@ else {
 print "</TABLE>\n";
 
 print "<BR>\n";
-&footer ("/", "index");
+&footer ($config{'app_path'}, $text{'index'});
 do "footer.pl";
 
 =head1 NOTES
