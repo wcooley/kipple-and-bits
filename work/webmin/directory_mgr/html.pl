@@ -177,7 +177,7 @@ EOF
     if ($form_type eq "display") {
         print "    $user->{'userName'}\n" ;
     } elsif ($form_type eq "modify") {
-        print "    $user->{'userName'}\n" ;
+        print "    <input type=\"hidden\" name=\"userName\" value=\"$user->{'userName'}\">\n" ;
     } elsif ($form_type eq "create") {
         print "    <input name=\"userName\" size=16 value=\"$user->{'userName'}\">\n" ;
     }
@@ -195,7 +195,7 @@ EOF
     if ($form_type eq "display") {
         print "    $user->{'userID'}\n" ;
     } elsif ($form_type eq "modify") {
-        print "    $user->{'userID'}\n" ;
+        print "    <input name=\"userID\" type=\"hidden\" value=\"$user->{'userID'}\">\n" ;
     } elsif ($form_type eq "create") {
         print "    <input name=\"userID\" size=5 value=\"$user->{'userID'}\">\n" ;
     }
@@ -216,8 +216,7 @@ EOF
     if ($form_type eq "display") {
         print "    $user->{'groupID'}\n" ;
     } elsif ($form_type eq "modify") {
-        print "    $user->{'groupID'}\n" ;
-        #print "    <input type=\"text\" name=\"groupID\" size=5 value=\"$user->{'groupID'}\" >\n" ;
+        print "    <input type=\"hidden\" name=\"groupID\" value=\"$user->{'groupID'}\" >\n" ;
     } else {
 
             print <<EOF ;
