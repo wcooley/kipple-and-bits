@@ -27,12 +27,63 @@ require "directory-lib.pl" ;
 
 %access=&get_module_acl;
 
+&check_setup();
+&connect();
+&ReadParse();
+
+$sort_on = ($in{'sort_on'}) ? $in{'sort_on'} : 'groupName' ;
+
+$all_groups = &list_groups() ;
+
+if ($sort_on eq "groupID") {
+    @groups = sort {$a->{$sort_on} <=> $b->{$sort_on}} @{$all_groups} ;
+} elsif ($sort_on eq "groupName") {
+    @groups = sort {$a->{$sort_on} cmp $b->{$sort_on}} @{$all_groups} ;
+}
 
 &header($text{'index_t'}, "" );
-# uses the index_title entry from ./lang/en or appropriate
+print "<hr noshade size=2>\n" ;
 
-## Insert Output code here
-print "<hr>\n<h2>This feature is not here yet.</h2>\n<hr>" ;
+#print "<b>Found " . $#groups . "</b>\n" ;
+print "<i><b>Search found " . scalar(@{$all_groups}) . " groups</b></i><br>\n" ;
+
+print <<EOF ;
+
+    <b>This is the list of groups:</b>
+
+    <table border=1 cellspacing=0 cellpadding=2 width=100% $cb>
+    <tr $tr>
+    <td>
+        <b>
+        <a href="list_groups.cgi?sort_on=groupName">
+            $text{'groupName'}
+        </a>
+        </b>
+    </td>
+    <td>
+        <b>
+        <a href="list_groups.cgi?sort_on=groupID">
+            $text{'groupID'}
+        </a>
+        </b>
+    </td>
+    <td>
+        <b>$text{'description'}</b>
+    </td>
+
+EOF
+
+if ($#groups < 0) {
+    print "<tr><td colspan=3>" 
+        . $text{'err_no_groups_found'}
+        . "</td></tr>\n" ;
+} else {
+    foreach $group (@groups) {
+        print &html_row_group($group) ;
+    }
+}
+
+print "</table>\n" ;
 
 &footer($config{'app_path'}, $text{'index'});
 do "footer.pl" ;
