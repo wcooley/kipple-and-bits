@@ -294,10 +294,11 @@ if ($opts{'h'} or not ($opts{'w'} or $opts{'m'} or $ARGV[0])) {
     print "  -m Module - Work for listed module\n";
     print "  -w specfile - Write out a template spec file named specfile.spec\n";
     print "$::NAME is a tool to automate building packages from CPAN modules.\n";
-    print "(C) 2004 Naked Ape Consulting.\n";
+    print "(C) 2005 Naked Ape Consulting.\n";
     exit 0;
 }
 
+# The -m is /really/ required... (I kept forgetting it anyway)
 $opts{'m'} = $ARGV[0] unless (defined $opts{'m'});
 
 print "Searching for $opts{'m'}\n" if $opts{'v'};
@@ -365,7 +366,11 @@ Written by:
 %setup -q -n %{package_name}-%{version}
                                                                                 
 %build
-%{__perl} Makefile.PL INSTALLDIRS="vendor"
+%if %exclude_man_pages
+%{__perl} Makefile.PL DESTDIR=%{buildroot} INSTALLDIRS="vendor" INSTALLMAN1DIR=none INSTALLMAN3DIR=none </dev/null
+%else
+%{__perl} Makefile.PL DESTDIR=%{buildroot} INSTALLDIRS="vendor" </dev/null
+%endif
 
 %{__make}
 
@@ -378,7 +383,6 @@ Written by:
 %install
 %{__rm} -rf %{buildroot}
                                                                                 
-export PERL_INSTALL_ROOT=%{buildroot}
 %{makeinstall}
                                                                                 
 [ -x /usr/lib/rpm/brp-compress ] && /usr/lib/rpm/brp-compress
@@ -389,9 +393,6 @@ find %{buildroot}%{_prefix} -name .packlist    \
     -o -name \*.bs                          \
     | xargs -r %{__rm} -f
 
-%if %exclude_man_pages
-%{__rm} -rf %{buildroot}%{_mandir}
-%endif
 
 # Prune empty directories
 find %{buildroot}%{_prefix} -empty -maxdepth 1 -type d | xargs -r rmdir
@@ -429,7 +430,7 @@ find . -name \*.bak | xargs -tr rm -f
 %doc README C*
                                                                                 
 %changelog
-* [% rpm.change_log_date %] [% rpm.packager %] [% pkg.version %]-[% rpm.package_release %].[% rpm.vendor_tag %]
+* [% rpm.change_log_date %] [% rpm.packager %] [% pkg.version %]-[% rpm.package_release %].[% rpm.vendor_tag %].0.0
 - Inital package creation with [% rpm.genscript %] [% rpm.genscriptver %].
 
 # [% rpm.editor_settings %]
