@@ -68,10 +68,11 @@ if [[ $? -gt 0 ]]; then
     fi
 fi
 
-mv -iv ${rpms} ${rpmreldir}
-mv -iv ${tmpfile} ${rpmreldir}/buildlog-${rpmbase}-${rpmverrel}.log
-chmod 0444 ${rpmreldir}/buildlog-${rpmbase}-${rpmverrel}.log
-mv -iv ${srpm} ${srpmreldir}
+mv -iv "${rpms}" "${rpmreldir}"
+mv -iv "${tmpfile}" "${rpmreldir}/buildlog-${rpmbase}-${rpmverrel}.log"
+chmod 0444 "${rpmreldir}/buildlog-${rpmbase}-${rpmverrel}.log"
+cp -av "${specfile}" "${rpmreldir}"
+mv -iv "${srpm}" "${srpmreldir}"
 
 for rpm in ${rpms}; do
     echo " RPM: " ${rpmreldir}/$(basename $rpm)
