@@ -4,6 +4,8 @@
 #
 # Written by Wil Cooley <wcooley@nakedape.cc>
 #
+# Requires simaplib.py from mail-utils
+#
 
 import os, os.path
 from tempfile import mktemp
@@ -29,7 +31,7 @@ if __name__ == '__main__':
 
     os.system('sa-learn --spam --mbox %s' % mbox)
 
-#    os.unlink(mbox)
-#    conn.expunge()
+    os.unlink(mbox)
+    conn.expunge()
 
     print "Fed %d messages into Bayes" % cnt
