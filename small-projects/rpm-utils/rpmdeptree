@@ -1,0 +1,22 @@
+#################
+#!/bin/bash
+#
+# rpmdeptree - Script to generate a list of dependencies for requested
+# packages.  (Pass -a for all.)
+#
+# Written by Wil Cooley <wcooley <at> nakeedape.cc>
+
+for rpm in $(rpm -q $@ |sort); do
+    printf 'Package: %-67s {{{\n' ${rpm}
+    for prov in $(rpm -q --provides ${rpm}|cut -f1 -d' '|sort|uniq); do
+        printf '  Provides: %s\n' ${prov}
+        rpm -q --whatrequires --queryformat \
+            '    Req by: %-20{NAME} %{SUMMARY}\n' ${prov}| \
+            awk '!/no package requires/ { print }
+                /no package requires/ { print "    Req by: (none)" }'|sort
+    done
+    printf "}}}\n\n"
+done
+
+printf "# %s:foldmethod=marker\n" "vim"
+#################
