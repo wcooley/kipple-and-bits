@@ -28,10 +28,6 @@ to <outfile>.
 Template variables are variables surrounded on both sides with '\@\@'; e.g., 
 \@\@HOSTNAME\@\@.
 
-Bugs:
- o Probably doesn't handle stray or unterminated \@\@ very well.
- o Should be able to set delimiters.
-
 EOF
     exit 1;
 }
@@ -44,7 +40,7 @@ else {
     open(TEMPLATE, $template) || die "Couldn't open $template!";
 }
 
-if ($outfile) {
+if ($outfile and $outfile ne '-') {
     open(OUTFILE, ">>$outfile") || die "Couldn't open $outfile!";
 }
 else {
