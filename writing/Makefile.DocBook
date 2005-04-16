@@ -16,9 +16,11 @@ all: $(PREV_FMT)
 
 xhtml:
 	$(XMLTO) -vv -o $(DOCNAME) $@ $(SOURCE)
+	cp stylesheet.css $(DOCNAME)
 
 xhtml-nochunks:
 	$(XMLTO) -v -o $(DOCNAME) $@ $(SOURCE)
+	cp stylesheet.css $(DOCNAME)
 
 test:
 	xmllint --noout --valid $(SOURCE)
