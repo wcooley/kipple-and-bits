@@ -47,12 +47,11 @@
     <section id="source">
         <title>Source</title>
 
-        <para>The home of this document is at <ulink
-        url="http://nakedape.cc/info/Defending-Email-HOWTO/"
-        >http://nakedape.cc/info/Defending-Email-HOWTO/</ulink>.  The source
-        may be checked out from our public Subversion repository at <ulink
-        url="https://haus.nakedape.cc/svn/public/trunk/writing/Defending-Email-HOWTO/"
-        >https://haus.nakedape.cc/svn/public/trunk/writing/Defending-Email-HOWTO/</ulink>.</para>
+        <para>The home of this document is at <ulink url="&multipage_url;"
+        >&multipage_url;</ulink>.  A single-page version is at <ulink
+        url="&singlepage_url;">&singlepage_url;</ulink>. The source may
+        be checked out from our public Subversion repository at <ulink
+        url="&svn_url;" >&svn_url;</ulink>.</para>
 
     </section>
 </section>
