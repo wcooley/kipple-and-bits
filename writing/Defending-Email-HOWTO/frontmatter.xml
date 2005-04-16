@@ -48,11 +48,11 @@
         <title>Source</title>
 
         <para>The home of this document is at <ulink
-        url=""
-        ></ulink>.  The source
+        url="http://nakedape.cc/info/Defending-Email-HOWTO/"
+        >http://nakedape.cc/info/Defending-Email-HOWTO/</ulink>.  The source
         may be checked out from our public Subversion repository at <ulink
-        url=""
-        ></ulink>.</para>
+        url="https://haus.nakedape.cc/svn/public/trunk/writing/Defending-Email-HOWTO/"
+        >https://haus.nakedape.cc/svn/public/trunk/writing/Defending-Email-HOWTO/</ulink>.</para>
 
     </section>
 </section>
