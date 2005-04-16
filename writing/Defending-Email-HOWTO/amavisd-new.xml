@@ -1,0 +1,50 @@
+<section id="amavisd-new">
+    <title>Scanning with <literal>amavisd-new</literal></title>
+
+    <para><literal>amavisd-new</literal> operates as an SMTP proxy, designed
+    to hook in to the <literal>content_filter</literal> mechanism of Postfix.
+    (<literal>amavisd-new</literal> also supports Sendmail through its Milter
+    interface and in a dual-server configuration and Exim using it as an
+    SMTP proxy.)  <literal>amavisd-new</literal> is written, maintained,
+    and supported by Mark Martinec of the Jozef Stefan Institue in Slovenija
+    and is aided by an active user community.  It began as a fork from
+    <literal>amavisd</literal>, a daemonized version of the AMaViS scanner,
+    which was one of the first open source mail virus scanners.  The modern
+    <literal>amavisd-new</literal> scarcely resemebles its predecessor and
+    improves upon it considerably, while a difference of philosophies has
+    prevented <literal>amavisd-new</literal> from being merged back into
+    <literal>amavisd</literal> or simply taking over as the official scanning
+    engine of the AMaViS project.  That should not sound like a euphemism
+    for saying that either Mark or the developers of the original AMaViS have
+    overbearing personalities; Mark himself is helpful and personable on the
+    amavis-users mailing list, and the original AMaViS folks have been quite
+    tolerant of the <literal>amavisd-new</literal> traffic on their list,
+    which these days accounts for at least half.  </para>
+
+    <para><literal>amavisd-new</literal> is written in Perl, and takes
+    advantage of a number of Perl modules, such as the Net::Server module,
+    which it uses to implement a robust forked parent/child environment,
+    and Mail::SpamAssassin, the core scanning engine of SpamAssassin, so it
+    does not need to use 'spamd'.</para>
+
+    <para>Mark strives to make <literal>amavisd-new</literal> adhere to
+    standards and as the result is a well-regarded and standards-friendly
+    system.  It is also fast, although as a Perl application it can use a
+    considerable amount of memory, so it is best limited to a few child
+    processes.  As <literal>amavisd-new</literal> is very flexible, the
+    myriad of options makes it intimidating to configure.</para>
+
+    <para><literal>amavisd-new</literal> is able to reliably deliver
+    messages because it never has to store the messages itself; as soon as
+    the Postfix sending process connects to <literal>amavisd-new</literal>,
+    <literal>amavisd-new</literal> connects to the Postfix receiving process
+    and does not send an acceptance response to the sending process until the
+    receiving process has also accepted the message.  Should the receiving
+    process fail, <literal>amavisd-new</literal> will return a status code
+    to the Postfix sending process and Postfix will maintain the message in
+    its queue until the problem is rectified.</para>
+
+</section>
+
+<!-- vim:ft=docbkxml
+-->

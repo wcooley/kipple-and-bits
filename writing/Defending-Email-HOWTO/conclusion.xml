@@ -1,0 +1,20 @@
+<section id="conclusion">
+    <title>Conclusion</title>
+
+    <para>If you have followed these instructions through, your e-mail
+    server is now running live with a high-performance and accurate virus
+    and spam filter on your e-mail.  You should have a basic understanding
+    of the workings of the system, which will be of tremendous use in the
+    event of difficulties.  As with any system that can cause loss of data,
+    monitor the spam and virus reports closely to ensure that the scanning
+    is not too aggressive.  </para>
+
+    <para>While spam and e-mail viruses are becoming increasing problems for
+    users and businesses everywhere, the configuration described herein can
+    help provide a good layer of protection to your organization and your
+    users at a minimal cost.</para>
+
+</section>
+
+<!-- vim:ft=docbkxml
+-->

@@ -1,0 +1,43 @@
+<section id="postfix">
+
+    <title>Understanding the Postfix <literal>content_filter</literal>
+    Mechanism</title>
+
+    <para>The Postfix mail transfer agent (MTA) provides
+    <literal>content_filter</literal>, a flexible mechanism designed to
+    allow the integration of arbitrary mail filters through a well-defined
+    interface.  Postfix passes the message into the content filter at the
+    queuing stage, which in the diagrams in the Postfix documentation is
+    labelled <literal>qmgr</literal>, which is the name of the internal
+    process that maintains queues for incoming and outgoing messages.</para>
+
+    <para>The simplest of the <literal>content_filter</literal> interfaces
+    is a UNIX pipe, where Postfix writes to the filter's standard input
+    and checks the filter's return value for pre-defined status codes.
+    Mail is injected back into Postfix using the <literal>sendmail</literal>
+    command, which is the Postfix replacement for the same Sendmail command.
+    The example in the <literal>FILTER_README</literal> document that ships
+    with Postfix uses <literal>cat</literal> and acts as a simple pass-through
+    filter.</para>
+
+    <para>The best interface for sophisticated mail filtering is not the
+    pipe mechanism, but rather the SMTP proxy mechanism.  This provides
+    a well-defined interface between Postfix and the filter and allows
+    a persistent scanning daemon, which reduces overhead and allows the
+    filtering proxy to deliver reliably.  Because the SMTP proxy mechanism
+    operates over TCP/IP, the content filter can be located on a separate
+    host than the Postfix service that receives the mail.</para>
+
+    <para>The <literal>content_filter</literal> requires Postfix to connect
+    to the proxy as an SMTP client, which handles the message and then
+    connects back into a special SMTP server which handles the final routing
+    and delivery of the message.  As mentioned before, Postfix sends the
+    message to the content filter at the queuing stage; this will be called
+    the "sending process"; the message is re-injected into the Postfix
+    system in the <literal>smtpd</literal> stage, which will be called the
+    "receiving process."</para>
+
+</section>
+
+<!-- vim:ft=docbkxml
+-->

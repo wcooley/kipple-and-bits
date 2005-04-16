@@ -1,0 +1,41 @@
+<section id="references">
+    <title>References</title>
+
+    <itemizedlist>
+
+        <listitem><para>Postfix web site --
+        http://www.postfix.org</para></listitem>
+
+        <listitem><para>amavisd-new web site --
+        http://www.ijs.si/software/amavisd/</para></listitem>
+
+        <listitem><para>AMaViS web site --
+        http://www.amavis.org/</para></listitem>
+
+        <listitem><para>amavis-user mailing list --
+        http://sourceforge.net/mail/?group_id=6006</para></listitem>
+
+        <listitem><para>Paul Graham's "A Plan for Spam", the
+        paper which introduced Bayesian classification for spam --
+        http://www.paulgraham.com/spam.html</para></listitem>
+
+        <listitem><para>Microsoft Knowledge Base
+        article listing dangerous file extentions --
+        http://support.microsoft.com/default.aspx?scid=kb;EN-US;q262631</para></listitem>
+
+        <listitem><para>Naked Ape Consulting's Mail Defender --
+        http://nakedape.cc/r/mdsam</para></listitem>
+
+        <listitem><para>Sophie web site --
+        http://www.vanja.com/tools/sophie/</para></listitem>
+
+        <listitem><para>Sophos Anti-Virus web site --
+        http://www.sophos.com</para></listitem>
+
+        <listitem><para>SpamAssassin web site --
+        http://www.spamassassin.org</para></listitem>
+
+    </itemizedlist>
+</section>
+<!-- vim:ft=docbkxml
+-->

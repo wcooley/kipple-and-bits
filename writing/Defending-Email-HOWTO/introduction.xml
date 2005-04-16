@@ -1,0 +1,32 @@
+<section id="introduction">
+    <title>Introduction</title>
+
+    <para>Spam and viruses are recurring plagues to e-mail users everywhere.
+    Businesses face considerable risks from sexual harassment lawsuits
+    from pornographic spam, lost productivity from damaged workstations and
+    crashed servers and ever-increasing bandwidth usage from illegitimate
+    network traffic.  The problem is only getting worse.</para>
+
+    <para>This article is a gentle introduction to a complex set of services
+    and a quick-start guide based on the configurations I have used in my
+    own work, where I provide this setup as a service or pre-packaged server
+    to my customers.  The details of installing these software packages is
+    beyond the scope of this article; all the packages contain installation
+    instructions which are the authoritative sources for this information
+    and cover installation in more detail than I am able to in this format.
+    </para>
+
+    <para>This setup uses open source software for all components except
+    for the virus-scanning, which is a licensed product from Sophos
+    Anti-Virus.  My installations have been on Red Hat Linux and Red
+    Hat's Enterprise products using SpamAssassin 2.60, Postfix 1.1.13,
+    and <literal>amavisd-new</literal> 20030616-p5.  SpamAssassin has
+    provided Bayesian classification since version 2.50; 2.60 introduced
+    many improvements and is the recommended minimum.  The most current
+    <literal>amavisd-new</literal> is also recommended.  Nearly any later
+    Postfix 1.1 or 2.0 may be used.</para>
+
+</section>
+
+<!-- vim:ft=docbkxml
+-->

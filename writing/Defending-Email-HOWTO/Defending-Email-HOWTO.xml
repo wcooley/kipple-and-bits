@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"/usr/share/sgml/docbook/xml-dtd-4.2-1.0-22.1/docbookx.dtd" [
+<!ENTITY userprompt "<prompt>$ </prompt>">
+<!ENTITY rootprompt "<prompt># </prompt>">
+<!ENTITY articleinfo        SYSTEM "articleinfo.xml">
+<!ENTITY frontmatter        SYSTEM "frontmatter.xml">
+<!ENTITY amavisd-new        SYSTEM "amavisd-new.xml">
+<!ENTITY conclusion         SYSTEM "conclusion.xml">
+<!ENTITY configuration      SYSTEM "configuration.xml">
+<!ENTITY introduction       SYSTEM "introduction.xml">
+<!ENTITY other-components   SYSTEM "other-components.xml">
+<!ENTITY postfix            SYSTEM "postfix.xml">
+<!ENTITY references         SYSTEM "references.xml">
+]>
+
+<article>
+    &articleinfo;
+    &frontmatter;
+    &introduction;
+    &postfix;
+    &amavisd-new;
+    &other-components;
+    &configuration;
+    &conclusion;
+    &references;
+</article>
+
+<!-- vim:ft=docbkxml
+-->

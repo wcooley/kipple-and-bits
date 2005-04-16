@@ -1,0 +1,61 @@
+<section id="intro">
+    <title>Introduction</title>
+
+    <section id="copyright">
+        <title>Copyrights and License</title>
+
+        <para>(c) 2005 Naked Ape Consulting, Ltd.</para>
+
+        <para>This section was copied from the HOWTO-HOWTO:</para>
+
+        <para>This manual may be reproduced in whole or in part,
+        without fee, subject to the following restrictions: </para>
+
+        <para>
+            <itemizedlist>
+
+            <listitem><para>The copyright notice above and this
+            permission notice must be preserved complete on all
+            complete or partial copies.</para></listitem>
+
+            <listitem><para>Any translation or derived work
+            must be approved by the author in writing before
+            distribution.</para></listitem>
+
+            <listitem><para>If you distribute this work in part,
+            instructions for obtaining the complete version of this
+            manual must be included, and a means for obtaining a
+            complete version provided.</para></listitem>
+
+            <listitem><para>Small portions may be reproduced as
+            illustrations for reviews or quotes in other works
+            without this permission notice if proper citation is
+            given. Exceptions to these rules may be granted for
+            academic purposes: Write to the author and ask. These
+            restrictions are here to protect us as authors, not to
+            restrict you as learners and educators. Any source code
+            (aside from the SGML this document was written in) in
+            this document is placed under the GNU General Public
+            License, available via anonymous FTP from the GNU
+            archive.</para></listitem>
+
+            </itemizedlist>
+        </para>
+    </section>
+
+
+    <section id="source">
+        <title>Source</title>
+
+        <para>The home of this document is at <ulink
+        url=""
+        ></ulink>.  The source
+        may be checked out from our public Subversion repository at <ulink
+        url=""
+        ></ulink>.</para>
+
+    </section>
+</section>
+
+<!-- vim:ft=docbkxml
+-->
