@@ -5,16 +5,17 @@
 
 SOURCE		= $(DOCNAME).xml
 
-PUB_TARGET	= nakedape.cc:nakedape.cc/docs/info
+PUB_TARGET	= ulke.nakedape.cc:/var/www/vhosts/nakedape.cc/docs/info
 PUB_FMTS	= xhtml xhtml-nochunks
-PREV_FMT	= xhtml
-XMLTO		= /usr/bin/xmlto
-XSL			= chunk.xsl
+PREV_FMT	= xhtml-nochunks
+#XMLTO		= /usr/bin/xmlto 
+XMLTO		= /usr/bin/xmlto --skip-validation -m ../wrc_param.xsl
+XSL		= chunk.xsl
 
 all: $(PREV_FMT)
 
 xhtml:
-	$(XMLTO) -v -o $(DOCNAME) $@ $(SOURCE)
+	$(XMLTO) -vv -o $(DOCNAME) $@ $(SOURCE)
 
 xhtml-nochunks:
 	$(XMLTO) -v -o $(DOCNAME) $@ $(SOURCE)
@@ -22,8 +23,10 @@ xhtml-nochunks:
 test:
 	xmllint --noout --valid $(SOURCE)
 
-publish:  xhtml xhtml-nochunks
-	rsync -e ssh -Cuavzr $(DOCNAME) $(PUBLISH_TARGET)/
+publish:  $(PUB_FMTS) push
+
+push:
+	rsync -e ssh -Cuavzr $(DOCNAME) $(PUB_TARGET)/
 
 clean:
 	-rm $(DOCNAME)/*
