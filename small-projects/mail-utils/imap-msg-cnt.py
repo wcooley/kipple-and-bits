@@ -75,17 +75,20 @@ if __name__ == "__main__":
     M.login(username, password)
 
     for folder in M.list()[1]:
-        (x,x,f) = string.split(folder)
-        f = f.strip('"')
+        f = string.split(folder, None, 2)[2].strip('"')
         flist.append(f)  
 
     for f in flist:
-        (x,n) = M.select(f)
-        n = int(n[0])
-        folder_cnt += 1
-        message_cnt += n
-        if not t:
-            print "%-45s: %d" % (f, n)
+        try:
+            n = int(M.select(f)[1][0])
+            folder_cnt += 1
+            message_cnt += n
+            if not t:
+                print "%-45s: %d" % (f, n)
+#        except: raise
+        except M.readonly:
+            print "%-45s: unavailable" % f 
+
 
     M.close()
 
