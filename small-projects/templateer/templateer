@@ -9,17 +9,34 @@
 # Copyright (C) 2004 Naked Ape Consulting, Ltd.
 #
 
+use warnings;
 use strict;
-my $template = $ARGV[0];
-my $outfile = $ARGV[1];
+
+my $query_only;
+my $help_only;
+
+my $template;
+my $outfile;
+my $key;
 my %kwsubs;
 my $kwre;
 my @template;
 my $needinput = 0;
 
-if ((scalar(@ARGV) != 2) and (scalar(@ARGV) != 1)) {
+if ($ARGV[0] and $ARGV[0] eq "-l") {
+    $query_only = 1;
+    shift @ARGV;
+}
+
+$help_only = 1 if($ARGV[0] eq "-h" or $ARGV[0] eq "--help");
+
+$template = $ARGV[0];
+$outfile = $ARGV[1] unless ($query_only);
+
+if ((scalar(@ARGV) != 2) and (scalar(@ARGV) != 1) or $help_only) {
     print <<EOF;
 Usage: templateer <template-file> <output-file>
+       templateer -l <template-file>
 
 templateer reads in <template-file>, extracts template variables, prompts
 for values for the template variables, and writes the filled-in template
@@ -27,6 +44,9 @@ to <outfile>.
 
 Template variables are variables surrounded on both sides with '\@\@'; e.g., 
 \@\@HOSTNAME\@\@.
+
+If given '-l', it lists template variables defined in <template-file>
+and exits.
 
 EOF
     exit 1;
@@ -54,7 +74,6 @@ print STDERR "Reading template $template...\n";
 # Extract the keywords to be substituted
 while (<TEMPLATE>) {
     push @template, $_;
-    my $key;
 
     while (m/[^\\]?@@([^@]+)@@/go) {
         $key = $1;
@@ -72,11 +91,20 @@ while (<TEMPLATE>) {
     }
 }
 
+# "query only" mode allows you to list defined template variables
+if ($query_only) {
+    print "The template ${template} defines the following variables:\n";
+    foreach $key (keys %kwsubs) {
+        print "$key\n";
+    }
+    exit;
+}
+
 print STDERR "Kindly provide the values for the following template values:\n"
     if $needinput;
 
 # Get the info from the user
-foreach my $key (keys %kwsubs) {
+foreach $key (keys %kwsubs) {
     unless ($kwsubs{$key}) {
         print STDERR "$key = ";
         chomp ($kwsubs{$key} = <STDIN>);
@@ -89,14 +117,14 @@ foreach my $l (@template) {
     $l =~ s/([^\\]?)\\\@/$1\@/g;    # \@ => @
 
     if ($l =~ /\@\@(${kwre})\@\@/i) {
-        foreach my $key (keys %kwsubs) {
+        foreach $key (keys %kwsubs) {
             $l =~ s/\@\@$key\@\@/$kwsubs{$key}/g;
         }
     } 
     print OUTFILE $l;
 }
 
-foreach my $key (keys %kwsubs) {
+foreach $key (keys %kwsubs) {
     print STDERR "$key => $kwsubs{$key}\n";
 }
 
