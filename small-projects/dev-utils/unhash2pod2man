@@ -1,0 +1,180 @@
+#!/bin/bash
+#
+# poddate: 2005-05-06
+#
+#: =head1 NAME 
+#:
+#: B<unhash2pod2man> - Generate manual pages from shell scripts
+#:
+#: =head1 SYNOPSIS
+#:
+#: B<unhash2pod2man script | groff -mandoc -Tascii | less>
+#:
+#: B<unhash2pod2man script E<gt> script.1>
+#:
+#: =head1 DESCRIPTION
+#:
+#: B<unhash2pod2man> is a means to document scripts, configuration files,
+#: or shell libraries by embedding Perl POD documentation in special
+#: comments which start at the beginning of a line with '#:'.  Any file 
+#: type that recognizes '#' as a comment character can be used.
+#: L<pod2man(1)> itself imposes some requirements of sections and 
+#: structure; see L<pod2man(1)> for more information.
+#:
+#: To understand how it works, write a small POD document called, for
+#: example, C<testpod.pod>, containing something like this:
+#:
+#:      =pod
+#:
+#:      =head1 NAME
+#:
+#:          testpod - POD doc just for testing.
+#:
+#:      =head1 DESCRIPTION
+#:
+#:          B<testpod> is a POD document just for testing.
+#:
+#:      =cut
+#:
+#: Now edit this file and prepend a '#:' to every line beginning with
+#: I<=pod> and ending with I<=cut>.  You now have a Hash-POD document 
+#: which may be fed to B<unhash2pod2man> and used as a shell script.
+#:
+#: The following directives can be used to change the output L<pod2man(1)>
+#: generates, simply by placing these in I<regular> comments at the 
+#: beginning of the line.  (NB: Do not use the '#:' comment for these!)
+#:
+#: =over 4
+#:
+#: =item podsection
+#:
+#: Supplies the argument for I<--section> of L<pod2man(1)>, which is 
+#: the man page section.  Defaults to '1'.
+#:
+#: =item podname
+#:
+#: Supplies the argument for I<--name> of L<pod2man(1)>.  Generally 
+#: should be the name of the script or library itself and thus 
+#: defaults to the name of the input file.
+#:
+#: =item podrelease
+#:
+#: Supplies the argument for I<--release> and I<--center>.  Defaults to
+#: "Local Scripts" which is probably adequate most of the time.
+#:
+#: =item poddate
+#:
+#: Supplies the argument for I<--date>.  This is the only parameter that
+#: really should be set.  For want of a better default, default is
+#: 1970-01-01.
+#:
+#: =back
+#:
+#: =head1 EXAMPLES
+#:
+#: Read this script itself for an example.
+#:
+#: =head1 BUGS
+#:
+#: Currently uses the same value for I<--release> and I<--center>.  I 
+#: am not clear on the difference and couldn't be bothered to figure it 
+#: out.
+#:
+#: Editing with Vim can be kinda tedious, as you need to manually insert
+#: C<#:> at the beginning of every line and folding does not work well.
+#:
+#: Should probably be more flexible than just using L<pod2man(1)>, like
+#: using L<pod2html(1)> or other I<pod2*> scripts.
+#:
+#: Should include a template file for people who are not familiar with 
+#: POD or man pages to get them started.
+#:
+#: Should be more flexible in I/O--read from stdin, write to a file, etc.
+#:
+#: Should try a little harder to find a date, such as file timestamp,
+#: 'Date:' in regular comments, etc.
+#:
+#: =head1 SEE ALSO
+#:
+#: L<perlpod(1)>, L<pod2man(1)>, L<groff(1)>
+#:
+#: =head1 AUTHOR
+#:
+#: Wil Cooley <wcooley@nakedape.cc>
+#:
+#: =head1 COPYRIGHT AND LICENSE
+#:
+#: Copyright 2005 by Wil Cooley
+#:
+#: Copyright 2005 by Naked Ape Consulting, Ltd.
+#:
+#: This script is free software; you may redistribute and modify it under
+#: the terms of the GNU General Public License v2.
+#:
+#: =cut
+
+progname=$(basename $0)
+input=$1
+
+
+function getpodinfo {
+    local param=$1
+    local input=$2
+    sed -rne "
+        /^#[[:space:]]+${param}:/ { 
+            s/^#[[:space:]]+${param}: (.+)/\1/; p
+        }
+    " ${input} | head -n 1
+}
+
+function usage {
+    printf "Usage: %s <inputscript>\n\n" ${progname}
+    printf "Extracts special comments from shell scripts in Perl\n"
+    printf "POD format and processes them through pod2man(1).\n\n"
+    printf "To view the embedded POD document in this script, use the"
+    printf "following:\n\n"
+    printf "\t%s %s | groff -mandoc -Tascii | less\n\n" ${progname} $0
+}
+
+if [ -z "${input}" ]; then
+    usage
+    exit 1
+fi
+
+# Extract meta-information from the script
+podsection=$(getpodinfo "podsection" ${input})
+podsection=${podsection:=1}
+
+podname=$(getpodinfo "podname" ${input})
+podname=${podname:=${input}}
+
+podrelease=$(getpodinfo "podrelease" ${input})
+podrelease=${podrelease:=Local Scripts}
+
+poddate=$(getpodinfo "poddate" ${input})
+poddate=${poddate:=1970-01-01}
+
+podtmp=$(mktemp /tmp/${podname}.pod-XXXXXX)
+
+if [ $? -ne 0 ]; then
+    printf "%s: Unable to create temp file, exiting." ${progname}
+    exit 1
+fi
+
+if [ -z "$DEBUG" ]; then
+    trap "rm -f ${podtmp}" EXIT
+else
+    echo podsection: $podsection >/dev/stderr
+    echo podname: $podname >/dev/stderr
+    echo podrelease: $podrelease >/dev/stderr
+    echo poddate: $poddate >/dev/stderr
+fi
+
+sed -n -r -e '/^#:/ { s/^#:[[:space:]]{,2}//; p }' $1 > ${podtmp}
+
+pod2man --section="${podsection}" \
+    --release="${podrelease}" \
+    --center="${podrelease}" \
+    --date="${poddate}" \
+    --name="${podname}" \
+    ${podtmp}
