@@ -14,24 +14,31 @@ use strict;
 
 my $query_only;
 my $help_only;
-
-my $template;
-my $outfile;
-my $key;
-my %kwsubs;
-my $kwre;
-my @template;
 my $needinput = 0;
+
+my ($template, $outfile, $outfile_tmp);
+my ($key, $kwre);
+my %kwsubs;
+my @template;
 
 if ($ARGV[0] and $ARGV[0] eq "-l") {
     $query_only = 1;
     shift @ARGV;
 }
 
-$help_only = 1 if($ARGV[0] eq "-h" or $ARGV[0] eq "--help");
+$help_only = 1 if($ARGV[0] and ($ARGV[0] eq "-h" or $ARGV[0] eq "--help"));
 
 $template = $ARGV[0];
-$outfile = $ARGV[1] unless ($query_only);
+
+unless ($query_only) {
+    $outfile = $ARGV[1];
+
+    if ($template eq $outfile) {
+        print "In one-file mode\n";
+        $outfile_tmp = $outfile;
+        $outfile .= $$;
+    }
+}
 
 if ((scalar(@ARGV) != 2) and (scalar(@ARGV) != 1) or $help_only) {
     print <<EOF;
@@ -39,8 +46,9 @@ Usage: templateer <template-file> <output-file>
        templateer -l <template-file>
 
 templateer reads in <template-file>, extracts template variables, prompts
-for values for the template variables, and writes the filled-in template
-to <outfile>.
+for values for the template variables, and appends the filled-in template
+to <outfile>.  However, if <template-file> and <output-file> are the same,
+the output file over-writes the template file.
 
 Template variables are variables surrounded on both sides with '\@\@'; e.g., 
 \@\@HOSTNAME\@\@.
@@ -130,3 +138,9 @@ foreach $key (keys %kwsubs) {
 
 close(TEMPLATE);
 close(OUTFILE);
+
+if ($outfile_tmp) {
+    unlink($outfile_tmp);
+    rename $outfile, $outfile_tmp;
+}
+

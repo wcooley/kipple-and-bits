@@ -26,9 +26,15 @@ read from stdin and write to stdout.  However, if it is to read the template
 from standard input, it *must* be provided all values by the environment,
 because, well, how else would you read in the input?
 
-The output file will be appended to instead of overwritten; this just seemed
-far more common a desired behavior.  If you really want to overwrite the
-destination file, you can write to stdout and redirect that.
+If both input and output files are the same, it will operate in "one-file"
+mode.  The output will be written to a temporary file and renamed over the
+previous file.  This lets you just copy template files and overwrite them,
+which may be easier in some circumstances.
+
+Except in one-file mode, the output file will be appended to instead of
+overwritten; this just seemed far more common a desired behavior.  If you
+really want to overwrite the destination file, you can write to stdout and
+redirect that.
 
 Here's how you might use it.  Like most people who host web sites with
 Apache, you've probably got a whole lot of sites that are pretty much the
