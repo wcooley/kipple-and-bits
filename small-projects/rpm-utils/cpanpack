@@ -371,7 +371,7 @@ Written by:
 %{__perl} Makefile.PL DESTDIR=%{buildroot} INSTALLDIRS="vendor" </dev/null
 %endif
 
-%{__make}
+%{__make} %{_smp_mflags}
 
 %if %{maketest}
 %{__make} test
