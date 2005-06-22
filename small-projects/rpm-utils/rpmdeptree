@@ -4,6 +4,8 @@
 # rpmdeptree - Script to generate a list of dependencies for requested
 # packages.  (Pass -a for all.)
 #
+# Includes Vim fold-markers to make output more easily browsed with Vim.
+#
 # Written by Wil Cooley <wcooley <at> nakeedape.cc>
 
 for rpm in $(rpm -q $@ |sort); do

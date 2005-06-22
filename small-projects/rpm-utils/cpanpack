@@ -21,8 +21,8 @@ my $config = {
     source_dir => "/home/wcooley/rpm/SOURCES",
 };
 
-$config->{vendor_tag} = chomp($config->{vendor_tag});
-$config->{packager} = chomp($config->{packager});
+chomp($config->{vendor_tag});
+chomp($config->{packager});
 
 #
 package CPANPack::Package;
@@ -343,7 +343,7 @@ __DATA__
                                                                                 
 Name:           perl-[% pkg.package_name %]
 Version:        [% pkg.version %]
-Release:        [% rpm.package_release %].0.0.%{dist_tag}.%{vendor_tag}
+Release:        [% rpm.package_release %].0.%{dist_tag}.%{vendor_tag}
 License:        [% pkg.license %]
 Group:          Development/Languages
 Source0:        [% pkg.package_file %]
@@ -429,7 +429,7 @@ find . -name \*.bak | xargs -tr rm -f
 %doc README C*
                                                                                 
 %changelog
-* [% rpm.change_log_date %] [% rpm.packager %] [% pkg.version %]-[% rpm.package_release %].0.0.[% rpm.vendor_tag %]
+* [% rpm.change_log_date %] [% rpm.packager %] [% pkg.version %]-[% rpm.package_release %].0.[% rpm.vendor_tag %]
 - Inital package creation with [% rpm.genscript %] [% rpm.genscriptver %].
 
 # [% rpm.editor_settings %]
