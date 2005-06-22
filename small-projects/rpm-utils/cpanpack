@@ -14,14 +14,15 @@ $::VERSION = "1.0";
 
 my $config = {
     specoutput => \*STDOUT,
-    vendor_tag => "nac",
-    vendor => "Naked Ape Consulting <http://nakedape.cc>",
-    packager => "Wil Cooley <wcooley\@nakedape.cc>",
+    vendor_tag => qx/rpm --eval %{vendor_tag}/,
+    packager => qx/rpm --eval %{packager}/,
     default_release => "1",
     spec_dir => "/home/wcooley/rpm/SPECS",
     source_dir => "/home/wcooley/rpm/SOURCES",
 };
 
+$config->{vendor_tag} = chomp($config->{vendor_tag});
+$config->{packager} = chomp($config->{packager});
 
 #
 package CPANPack::Package;
@@ -169,7 +170,6 @@ INIT {
         cpan_package
         package_release     
         vendor_tag   
-        vendor      
         packager            
         spec_dir
         source_dir
@@ -323,7 +323,6 @@ else {
 }
 
 $rpm->packager($config->{packager});
-$rpm->vendor($config->{vendor});
 $rpm->package_release($config->{default_release});
 $rpm->vendor_tag($config->{vendor_tag});
 #    $rpm->specout($config->{specoutput});
@@ -344,7 +343,7 @@ __DATA__
                                                                                 
 Name:           perl-[% pkg.package_name %]
 Version:        [% pkg.version %]
-Release:        [% rpm.package_release %].[% rpm.vendor_tag %].0.0
+Release:        [% rpm.package_release %].0.0.%{dist_tag}.%{vendor_tag}
 License:        [% pkg.license %]
 Group:          Development/Languages
 Source0:        [% pkg.package_file %]
@@ -430,7 +429,7 @@ find . -name \*.bak | xargs -tr rm -f
 %doc README C*
                                                                                 
 %changelog
-* [% rpm.change_log_date %] [% rpm.packager %] [% pkg.version %]-[% rpm.package_release %].[% rpm.vendor_tag %].0.0
+* [% rpm.change_log_date %] [% rpm.packager %] [% pkg.version %]-[% rpm.package_release %].0.0.[% rpm.vendor_tag %]
 - Inital package creation with [% rpm.genscript %] [% rpm.genscriptver %].
 
 # [% rpm.editor_settings %]
