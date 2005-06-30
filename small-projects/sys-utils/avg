@@ -11,7 +11,7 @@ BEGIN {
     cnt = 0
 }
 
-/^\d+$/ { 
+/^[[:digit:]]+$/ { 
     cnt=cnt+1
     tot=tot+$1
 }
