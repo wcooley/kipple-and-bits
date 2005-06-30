@@ -1,0 +1,25 @@
+#!/usr/bin/awk
+#
+# avg - Reads a list of numbers from stdin and computes their average
+#
+# Written by Wil Cooley <wcooley@nakedape.cc>
+# 29 June 2005
+#
+
+BEGIN {
+    tot = 0
+    cnt = 0
+}
+
+/^\d+$/ { 
+    cnt=cnt+1
+    tot=tot+$1
+}
+
+END {
+    print "Total:", tot
+    print "Count:", cnt
+    print "Average:", tot/cnt
+}
+    
+    
