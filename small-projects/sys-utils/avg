@@ -1,4 +1,4 @@
-#!/usr/bin/awk
+#!/usr/bin/awk -f
 #
 # avg - Reads a list of numbers from stdin and computes their average
 #
@@ -19,7 +19,13 @@ BEGIN {
 END {
     print "Total:", tot
     print "Count:", cnt
-    print "Average:", tot/cnt
+
+    if (cnt > 0) {
+        print "Average:", tot/cnt
+    }
+    else {
+        print "Average: 0"
+    }
 }
     
     
