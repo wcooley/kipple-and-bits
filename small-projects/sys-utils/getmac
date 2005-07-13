@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# Quick script to fetch a MAC address from the ARP table
+#
+# Written by W. Reilly Cooley <wcooley@nakedape.cc>
+#
+
+if [ $# -ne 1 ]; then
+	cat <<EOF
+Usage: $(basename $0) <hostname>
+Description: Fetches a MAC address from the ARP table
+EOF
+	exit 1
+fi
+
+ping -c 1 $1 >/dev/null 2>&1
+
+arp -a $1 | awk "/$1/ { print \$4}"
