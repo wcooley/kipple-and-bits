@@ -1,0 +1,50 @@
+#!/bin/bash
+#
+# Written by Wil Cooley  <wcooley@nakedape.cc>
+# Began X, Y 200Z
+#
+# progname - description
+
+prog=$(basename $0)
+ver=1.0
+author="Wil Cooley <wcooley@nakedape.cc>"
+copyright=$'Copyright (C) 2005 Naked Ape Consulting, Ltd.
+Copyright (C) 2005 Wil Cooley
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+'
+
+version() {
+    printf "%s, version %s\n" "${prog}" "${ver}"
+    printf "Written by %s\n" "${author}"
+    echo -e "${copyright}"
+}
+usage() {
+    cat <<EOF 
+Usage: ${prog} ...
+
+${prog} is ...
+
+EOF
+    version
+}
+
+if [ $# -lt 2 ]; then
+    if [ $# -eq 1 ]; then
+        case "$1" in
+            -V|--vers*)
+                version
+                exit 0
+                ;;
+            -H|-h|--help)
+                usage
+                exit 0
+                ;;
+        esac
+    else
+        usage
+        exit 1
+    fi
+fi
+
+# EOF - services
