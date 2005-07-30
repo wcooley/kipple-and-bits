@@ -382,6 +382,7 @@ Written by:
 %install
 %{__rm} -rf %{buildroot}
                                                                                 
+export PERL_INSTALL_ROOT=%{buildroot}
 %{makeinstall}
                                                                                 
 [ -x /usr/lib/rpm/brp-compress ] && /usr/lib/rpm/brp-compress
