@@ -27,7 +27,7 @@ fi
 # If you query a spec file that makes multiple packages, you get several
 # values back.  Do a little array fiddling to get the first one
 rpmbase=($(rpm -q --queryformat '%{NAME}\n' --specfile ${specfile}))[0]
-rpmverrel=$(rpm -q --queryformat '%{VERSION}-%{RELEASE}\n' --specfile ${specfile})
+rpmverrel=$(rpm -q --queryformat '%{VERSION}-%{RELEASE}\n' --specfile ${specfile}|head -n 1)
 tmpfile=$(mktemp /tmp/${prog}-${rpmbase}.XXXXXX) || exit 1
 
 rpmreldir=$HOME/rpm/release/rpm/${rpmbase}
@@ -48,7 +48,7 @@ if [ $? -ne 0 ]; then
 fi
 
 srpm=$(awk '/^Wrote:.*src.rpm$/ {print $2}' ${tmpfile})
-rpms=$(awk '/^Wrote:.*(noarch|i?86|athlon)/ {print $2}' ${tmpfile})
+rpms="$(awk '/^Wrote:.*(noarch|i?86|athlon)/ {print $2}' ${tmpfile})"
 
 if [ $(echo $srpm|wc -c) -lt 5 ]; then
     printf "Error in build.  Inspect build log at ${tmpfile}.\n"
@@ -68,7 +68,7 @@ if [[ $? -gt 0 ]]; then
     fi
 fi
 
-mv -iv "${rpms}" "${rpmreldir}"
+mv -iv ${rpms} "${rpmreldir}"
 mv -iv "${tmpfile}" "${rpmreldir}/buildlog-${rpmbase}-${rpmverrel}.log"
 chmod 0444 "${rpmreldir}/buildlog-${rpmbase}-${rpmverrel}.log"
 cp -av "${specfile}" "${rpmreldir}"
