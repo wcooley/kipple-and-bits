@@ -1,0 +1,37 @@
+    <articleinfo>
+        <title>CfEngine Intro</title>
+
+        <author>
+            <firstname>Wil</firstname>
+            <surname>Cooley</surname>
+            <affiliation>
+                <orgname>Naked Ape Consulting</orgname>
+                <address><email>wcooley&#64;nakedape.cc</email></address>
+            </affiliation>
+        </author>
+        <authorinitials>WRC</authorinitials>
+
+        <pubdate>2005-09-19</pubdate>
+
+        <revhistory>
+            <revision>
+                <revnumber>1.0</revnumber>
+                <date>2005-09-19</date>
+                <authorinitials>WRC</authorinitials>
+
+                <revremark><emphasis>DRAFT</emphasis>Initial
+                draft.<emphasis>DRAFT</emphasis></revremark>
+
+            </revision>
+
+        </revhistory>
+
+        <abstract>
+
+            <para>This document presents an introduction to using
+            cfengine.</para>
+
+        </abstract>
+    </articleinfo>
+<!-- vim:ft=docbkxml
+-->

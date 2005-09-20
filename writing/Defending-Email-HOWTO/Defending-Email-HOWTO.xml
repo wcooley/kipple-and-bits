@@ -5,8 +5,10 @@
 <!ENTITY userprompt "<prompt>$ </prompt>">
 <!ENTITY rootprompt "<prompt># </prompt>">
 <!ENTITY multipage_url "http://nakedape.cc/info/Defending-Email-HOWTO/">
-<!ENTITY singlepage_url "http://nakedape.cc/info/Defending-Email-HOWTO/Defending-Email-HOWTO.html">
-<!ENTITY svn_url "https://haus.nakedape.cc/svn/public/trunk/writing/Defending-Email-HOWTO/">
+<!ENTITY singlepage_url 
+    "http://nakedape.cc/info/Defending-Email-HOWTO/Defending-Email-HOWTO.html">
+<!ENTITY svn_url 
+    "https://haus.nakedape.cc/svn/public/trunk/writing/Defending-Email-HOWTO/">
 <!ENTITY articleinfo        SYSTEM "articleinfo.xml">
 <!ENTITY frontmatter        SYSTEM "frontmatter.xml">
 <!ENTITY amavisd-new        SYSTEM "amavisd-new.xml">
