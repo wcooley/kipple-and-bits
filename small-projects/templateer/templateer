@@ -9,138 +9,381 @@
 # Copyright (C) 2004 Naked Ape Consulting, Ltd.
 #
 
-use warnings;
 use strict;
+use warnings;
+use Carp;
+use English qw( -no_match_vars );
+use Getopt::Long qw/VersionMessage :config default no_ignore_case/;
+use Pod::Usage;
 
-my $query_only;
-my $help_only;
-my $needinput = 0;
+our $VERSION = '1.000_00';
 
-my ($template, $outfile, $outfile_tmp);
-my ($key, $kwre);
-my %kwsubs;
-my @template;
+my %flags;
+my %instance_data;
+my $instance_text;
 
-if ($ARGV[0] and $ARGV[0] eq "-l") {
-    $query_only = 1;
-    shift @ARGV;
-}
+GetOptions(
+    'append|a'      =>  sub { $flags{append} = 1                    },
+    'overwrite|o'   =>  sub { $flags{append} = 0                    },
 
-$help_only = 1 if($ARGV[0] and ($ARGV[0] eq "-h" or $ARGV[0] eq "--help"));
+    'list|l'        =>  sub { $flags{list_only} = 1                 },
 
-$template = $ARGV[0];
+    'verbose|v'     =>  sub { $flags{verbose} = 1                   },
+    'quiet|q'       =>  sub { $flags{verbose} = 0                   },
 
-unless ($query_only) {
-    $outfile = $ARGV[1];
+    'ask|prompt|p'  =>  sub { $flags{prompt} = 1                    },
 
-    if ($template eq $outfile) {
-        print "In one-file mode\n";
-        $outfile_tmp = $outfile;
-        $outfile .= $$;
-    }
-}
+    'help|h'        =>  sub { pod2usage(0);                         },
+    'version|V'     =>  sub { VersionMessage(0); },
+) or pod2usage(2);
 
-if ((scalar(@ARGV) != 2) and (scalar(@ARGV) != 1) or $help_only) {
-    print <<EOF;
-Usage: templateer <template-file> <output-file>
-       templateer -l <template-file>
+my $template    = $ARGV[0];
+my $outfile     = $ARGV[1] unless ($flags{list_only});
 
-templateer reads in <template-file>, extracts template variables, prompts
-for values for the template variables, and appends the filled-in template
-to <outfile>.  However, if <template-file> and <output-file> are the same,
-the output file over-writes the template file.
+my $template_text = read_template($template);
+my @keywords = find_keywords_in($template_text);
 
-Template variables are variables surrounded on both sides with '\@\@'; e.g., 
-\@\@HOSTNAME\@\@.
-
-If given '-l', it lists template variables defined in <template-file>
-and exits.
-
-EOF
-    exit 1;
-}
-
-if ($template eq "-") {
-    *TEMPLATE = *STDIN;
-    $template = "stdin";
-}
-else {
-    open(TEMPLATE, $template) || die "Couldn't open $template!";
-}
-
-if ($outfile and $outfile ne '-') {
-    open(OUTFILE, ">>$outfile") || die "Couldn't open $outfile!";
-}
-else {
-    *OUTFILE = *STDOUT;
-    $outfile = "stdout";
-}
-
-
-print STDERR "Reading template $template...\n";
-
-# Extract the keywords to be substituted
-while (<TEMPLATE>) {
-    push @template, $_;
-
-    while (m/[^\\]?@@([^@]+)@@/go) {
-        $key = $1;
-
-        if ($ENV{$key}) {
-            $kwsubs{$key} = $ENV{$key};
-        } 
-        elsif ($template eq "stdin") {
-            die "Error: Not all keys provided by environment in pipe mode!\n";
-        }
-        else {
-            $kwsubs{$key} = '';
-            $needinput = 1;
-        }
-    }
-}
-
-# "query only" mode allows you to list defined template variables
-if ($query_only) {
+# "list only" mode allows you to just list defined template variables
+if ($flags{list_only}) {
     print "The template ${template} defines the following variables:\n";
-    foreach $key (keys %kwsubs) {
-        print "$key\n";
-    }
-    exit;
+    show_keywords(\@keywords);
+    exit 0;
 }
 
-print STDERR "Kindly provide the values for the following template values:\n"
-    if $needinput;
+@keywords = fill_keywords_from_env(\@keywords, \%instance_data);
 
-# Get the info from the user
-foreach $key (keys %kwsubs) {
-    unless ($kwsubs{$key}) {
-        print STDERR "$key = ";
-        chomp ($kwsubs{$key} = <STDIN>);
-    }
-    $kwre .= ($kwre) ? "|$key" : $key ;
+prompt_user_for_keys(\@keywords, \%instance_data)
+    if (@keywords);
+
+$instance_text = fill_template_text($template_text, \%instance_data);
+
+show_instance_data(\%instance_data);
+
+if ($flags{prompt}) {
+    exit 0 unless prompt_for_ok();
 }
 
-print STDERR "Writing to $outfile...\n";
-foreach my $l (@template) { 
-    $l =~ s/([^\\]?)\\\@/$1\@/g;    # \@ => @
+write_instance_file($outfile, $instance_text);
 
-    if ($l =~ /\@\@(${kwre})\@\@/i) {
-        foreach $key (keys %kwsubs) {
-            $l =~ s/\@\@$key\@\@/$kwsubs{$key}/g;
+
+
+#######################################
+# Subroutines
+#######################################
+
+#
+# show_keywords - Print a line-separated list of keywords found in template.
+#
+# Parameters:
+#   o Reference to an array of keywords.
+#
+# Returns nothing.
+#
+sub show_keywords {
+    my ($keywords_ref) = @_;
+    for my $key (sort @{$keywords_ref}) {
+        print $key, "\n";
+    }
+}
+
+#
+# show_instance_data - Print line-separated list of key/data pairs.
+#
+# Parameters:
+#   o Reference to an instance data hash
+#
+# Returns nothing.
+#
+sub show_instance_data {
+    my ($instance_data_ref) = @_;
+
+    for my $key (keys %{$instance_data_ref}) {
+        print {*STDERR} "$key => $instance_data_ref->{$key}\n";
+    }
+}
+
+#
+# fill_keywords_from_env - Fill in data from the environment.
+#
+# Parameters:
+#   o Reference to an array of keywords
+#   o Reference to a hash to contain instance data
+#
+# Returns:
+#   o Array of keywords not found in hash
+#
+sub fill_keywords_from_env {
+    my ($keywords_ref, $instance_data_ref) = @_;
+    my @unset_keywords;
+
+    for my $key (@{$keywords_ref}) {
+        if (exists $ENV{"TPL_" . $key}) {
+            $instance_data_ref->{$key} = $ENV{"TPL_" . $key};
+        } 
+        else {
+            push @unset_keywords, $key;
         }
-    } 
-    print OUTFILE $l;
+    }
+
+    return @unset_keywords;
 }
 
-foreach $key (keys %kwsubs) {
-    print STDERR "$key => $kwsubs{$key}\n";
+# fill_template_text - Fill in template text with template variables and
+#                       unquote '@'.
+#
+# Parameters:
+#   o Template text
+#   o References to instance data
+#
+# Returns:
+#   o Filled-in template text (instance)
+#
+sub fill_template_text {
+    my ($instance_text, $instance_data_ref) = @_;
+
+    # Unquote '@'
+    $instance_text =~ s/([^\\]?)\\\@/$1\@/gxms;
+
+    for my $key (reverse sort keys %{$instance_data_ref}) {
+        $instance_text =~  s{\@\@$key\@\@}
+                            {$instance_data_ref->{$key}}gxms;
+    }
+
+    return $instance_text;
 }
 
-close(TEMPLATE);
-close(OUTFILE);
+# find_keywords_in - Extract the keywords to be substituted from text.
+#
+# Parameters:
+#   o Template text
+#
+# Returns:
+#   o Array of keywords that have been found in text.
+#
+sub find_keywords_in {
+    my ($template_text) = @_;
 
-if ($outfile_tmp) {
-    unlink($outfile_tmp);
-    rename $outfile, $outfile_tmp;
+    my @keywords =
+        ($template_text =~ m{
+            [^\\]?          (?# Anything other than a backslash )
+            @@              (?# Opening '@@' )
+            ([^@]+)         (?# Anything other than multiple @ )
+            @@              (?# Closing '@@' )
+        }gcxms);
+
+    return @keywords;
 }
 
+# read_template - Read in the template file and return contents.
+#
+# Parameters:
+#   o Template file name
+#
+# Returns:
+#   o Content of template file as single string
+#
+sub read_template {
+    my ($template) = @_;
+    my ($template_fh, $template_text);
+
+    if ($template and ($template ne '-')) {
+        open $template_fh, '<', $template 
+            or croak "Couldn't open '$template': $OS_ERROR";
+    }
+    else {
+        $template_fh = \*STDIN;
+        $template = "stdin";
+    }
+
+    print {*STDERR} "Reading template $template...\n"
+        if ($flags{verbose});
+
+    $template_text = do { local $RS; <$template_fh>; };
+
+    close $template_fh
+        or croak "Error reading from '$template': $OS_ERROR";
+
+    return $template_text;
+}
+
+#
+# write_instance_file - Writes text to a file.
+#
+# Parameters:
+#   o Output file name
+#   o Text to be written
+#
+# Returns nothing
+#
+sub write_instance_file {
+    my ($outfile, $text) = @_;
+    my $output_fh;
+
+    my $mode = ($flags{append}) ?   '>>'    # Append
+                                :   '>'     # Overwrite
+                                ;
+
+    if ($outfile and ($outfile ne '-')) {
+        open($output_fh, $mode, $outfile) 
+            or croak "Couldn't open '$outfile': $OS_ERROR";
+    }
+    else {
+        $output_fh = \*STDOUT;
+        $outfile = "stdout";
+    }
+
+    print {*STDERR} "Writing to $outfile...\n" 
+        if ($flags{verbose});
+    
+    print $output_fh $instance_text
+        or croak "Error writing to '$outfile': $OS_ERROR";
+    close $output_fh
+        or croak "Error closing '$outfile': $OS_ERROR";
+}
+
+#
+# prompt_for_ok - Prompts the user for acceptance.
+#
+# Parameters: None
+#
+# Returns:
+#   1 if given acceptable input
+#   undef otherwise
+#
+sub prompt_for_ok {
+    print {*STDERR}  "Okay? (Y/n)";
+    chomp (my $response = <STDIN>);
+    if ($response =~ m/ (?: ^$ | \A [Yy]* \z )/xms) {
+        return 1;
+    }
+    else {
+        return;
+    }
+}
+
+#
+# prompt_user_for_keys - Prompts user for key data.
+#
+# Parameters:
+#   o Reference to an array of keywords
+#   o Reference to a hash to store responses
+#
+# Returns nothing
+#
+sub prompt_user_for_keys {
+    my ($keywords_ref, $instance_data_ref) = @_;
+
+    print {*STDERR}   "Kindly provide the values for "
+                    . "the following template variables:\n"
+                    ;
+   
+    # Get the info from the user
+    for my $key (@{$keywords_ref}) {
+        print {*STDERR} "$key = ";
+        chomp (my $inval = <STDIN>);
+        $instance_data_ref->{$key} = $inval;
+    }
+}
+
+
+__END__
+
+=head1 NAME
+
+templateer - Very simple templating utility.
+
+=head1 SYNOPSIS
+
+templateer [options] <template_file> <output_file>
+
+Options:
+
+    -l --list           List template variables in template
+
+    -a --append         Append to output file
+    -o --overwrite      Overwrite output file
+    
+    -v --verbose        Be verbose
+    -q --quiet          Be not verbose
+
+    -p --ask, --prompt  Prompt for confirmation before writing output
+
+    -h --help           Get help
+    -V --version        Display version
+
+
+
+=head1 DESCRIPTION
+
+B<templateer> is a quick and easy templating script which has proven to
+be tremendously useful to me.  It reads a template file, extracts a list of
+template variables, finds values for the variables and then writes the fill-in
+instance file.  It will first check the environment for variables with the
+name given in the template with 'TPL_' prepended (to avoid clashes with other
+environment variables).  If not found in the environment, the user will be
+prompted (on stderr, so stdout is left virginal for the template instance).
+
+Template variables are just strings delineated with '@@' on each end and
+on one line.  There are no plans to do much more than that; it is not a
+replacement for a full-blown templating system like Template Toolkit, just
+a limited-use, quick and easy templating script.  (The only improvement I'm
+currently considering is to allow the delimiter to be set, to be useful in
+those rare cases where '@@' is required otherwise.  I will probably fix it
+if I run into one of those cases.  I have not yet.)
+
+The file name '-' can also be used for either template or instance file
+(or both), in which case it has the usual meaning --- read from stdin and
+write to stdout.  However, if it is to read the template from standard input,
+it *must* be provided all values by the environment, because, well, how else
+would you read in the input?
+
+B<templateer> works even if input and output files are the same; the input
+file is fully read before the output is written.
+
+Here's how you might use it.  Like most people who host web sites with
+Apache, you've probably got a whole lot of sites that are pretty much the
+same configuration (and for various reasons you're not using mod_vhost_alias)
+and you add enough new sites that creating the configuration is tedious and
+probably somewhat error-prone.  So you make a template file, 'vhost.tpl',
+like this:
+
+<VirtualHost @@VIP_ADDR@@:80>
+    ServerName @@DOMAIN@@
+    ServerAlias *.@@DOMAIN@@
+    DocumentRoot /var/www/vhosts/@@DOMAIN@@/htdocs/
+    CustomLog /var/www/vhosts/@@DOMAIN@@/logs/access_log combined
+    ErrorLog /var/www/vhosts/@@DOMAIN@@/logs/error_log
+</VirtualHost>
+
+Now you can use this template in several ways with B<templateer>.  For
+occasional use, you can just run it and add its output to your httpd.conf
+file:
+
+$ templateer vhost.tpl httpd.conf
+Reading template vhost.tpl...
+Kindly provide the values for the following template values:
+DOMAIN = example.com
+VIP_ADDR = 10.0.0.1
+Writing to httpd.conf...
+DOMAIN => example.com
+VIP_ADDR => 10.0.0.1
+
+If you had a lot of hosts to add and you could put the names into a file and
+then use a shell loop to run B<templateer> for each one, putting (for
+example) each configuration into a separate file in conf.d:
+
+$ export VIP_ADDR=10.0.0.1
+
+$ for vhost in $(cat new_vhosts); do \
+    DOMAIN=$vhost templateer vhost.tpl conf.d/${vhost}.conf \
+done
+
+Notice that shells let you set variables for each process if you start the
+command line with the VAR=val and that the variable only lasts as long as
+the process lasts.
+
+=head1 AUTHOR
+
+    Wil Cooley <wcooley@nakedape.cc>
+
+=cut
