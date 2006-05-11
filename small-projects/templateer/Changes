@@ -1,0 +1,4 @@
+Revision history for Perl extension Text::Templateer.
+
+1.000_00    Wed May  10 22:18 2006
+ - Initial implementation as a module.

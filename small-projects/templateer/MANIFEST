@@ -1,0 +1,10 @@
+bin/templateer
+Changes
+lib/Text/Templateer.pm
+Makefile
+Makefile.PL
+MANIFEST
+MANIFEST.SKIP
+README
+t/Text-Templateer.t
+test-data/foo.tpl
