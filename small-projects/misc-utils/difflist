@@ -1,0 +1,55 @@
+#!/usr/bin/python
+#
+# difflist - Given two lists, find the differences.  Lists are expected 
+#            to be one item per line and are returned in sorted order.
+#
+# Written by Wil Cooley <wcooley@nakedape.cc>
+#
+
+import sys, os.path
+from sets import Set
+
+USAGE = """\
+Usage: %s listfile1 listfile2
+
+Finds the differences in the newline-separated lists in each file
+This actually works with sets (unique items) and not lists, so if
+an item is repeated in one set, the repetition will not be reported
+""" % os.path.basename(sys.argv[0])
+
+if __name__ == '__main__':
+    if len(sys.argv) != 3:
+        print USAGE
+        sys.exit(1)
+
+    try:
+        from pprint import pprint
+
+        set1 = Set(open(sys.argv[1]).readlines())
+        set2 = Set(open(sys.argv[2]).readlines())
+
+        set1diff2 = set1 - set2
+        set2diff1 = set2 - set1
+
+        s1d2list = list(set1diff2)
+        s1d2list.sort()
+
+        s2d1list = list(set2diff1)
+        s2d1list.sort()
+
+        print "%d items in %s but not in %s:" % (len(set1diff2), sys.argv[1], 
+                sys.argv[2])
+        for item in s1d2list: print item,
+
+        print
+        print "%d items in %s but not in %s:" % (len(set2diff1), sys.argv[2], 
+                sys.argv[1])
+
+        for item in s2d1list: print item,
+
+    # Handle CTRL-C quietly
+    except(KeyboardInterrupt):
+        sys.exit(0)
+
+    
+
