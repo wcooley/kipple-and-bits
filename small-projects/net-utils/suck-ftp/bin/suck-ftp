@@ -1,0 +1,138 @@
+#!/usr/bin/perl
+#
+# suck-ftp - Script to retrieve files from an FTP server and then deletes them from
+#            the server.
+#
+# Written by Wil Cooley
+
+
+use strict;
+use warnings;
+use AppConfig       qw( :argcount );;
+use Cwd;
+use English         qw( -no_match_vars );
+use File::Basename  qw( basename );
+use Net::FTP::Simple;
+
+our $VERSION    = 0.0001;
+our $NAME       = basename($PROGRAM_NAME, qw( .pl .work .pl.work ));
+
+my $config = setup_config();
+
+my $cwd_saved;
+
+if ( $config->output_dir() ) {
+
+    $cwd_saved = getcwd();
+
+    print "Changing to output directory '", $config->output_dir(), "'.\n"
+        if ($config->verbose());
+
+    chdir $config->output_dir()
+        or die "Error changing to '", $config->output_dir(), "'";
+
+}
+
+if ( $config->verbose() ) {
+    print "Logging in to FTP server '", $config->server(), "' as user '",
+        $config->username(), "'.\n";
+    print "Retreiving files from directory '", $config->remove_dir(), "'\n";
+}
+
+my @received_files = Net::FTP::Simple->retrieve_files({
+        username    => $config->username(),
+        password    => $config->password(),
+        server      => $config->server(),
+        remote_dir  => $config->remote_dir(),
+        debug_ftp   => $config->debug_ftp(),
+        delete_after=> $config->delete_remote(),
+        file_filter => qr/./,
+    });
+
+if ($cwd_saved) {
+
+    print "Restoring working directory '$cwd_saved'.\n"
+        if ($config->verbose());
+
+    chdir $cwd_saved
+        or warn "Error changing to directory '$cwd_saved'";
+}
+
+if ( $config->verbose() ) {
+    print "The following files were retrieved and deleted:\n",
+        join("\n", @received_files), "\n";
+}
+
+#######################################################################
+#
+# Subroutines
+#
+#######################################################################
+
+sub setup_config {
+    my @ARGV_saved  = @ARGV;
+    my $config = AppConfig->new(
+        {
+            CASE            => 1,
+        },
+        qw(
+            config_file|config|c=s
+
+            debug_ftp!
+            verbose|v!
+            delete_remote|n!
+
+            username=s
+            password=s
+            server=s
+            remote_dir=s
+
+            output_dir=s
+        )
+    );
+
+    # Parse the command-line options
+    $config->getopt();
+
+    if ( $config->config_file() ) {
+        if ( -r $config->config_file() ) {
+            $config->file( $config->config_file() );
+            $config->getopt( \@ARGV_saved );
+        }
+        else {
+            die "Unable to open config file '", $config->config_file(), "'.\n";
+        }
+    }
+
+    return $config;
+
+}
+
+__END__
+
+=head1 NAME
+
+suck-ftp - Retrieve and delete files via FTP.
+
+=head1 SYNOPSIS
+
+suck-ftp [options]
+
+ Options:
+    --config <file> | -c <file>  Read settings from <file>
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--config <file> >
+
+Use configuration file <file>
+
+=back
+
+=head1 DESCRIPTION
+
+foo
+
+=cut
