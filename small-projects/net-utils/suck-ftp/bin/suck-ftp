@@ -8,7 +8,7 @@
 
 use strict;
 use warnings;
-use AppConfig       qw( :argcount );;
+use AppConfig       qw( :argcount );
 use Cwd;
 use English         qw( -no_match_vars );
 use File::Basename  qw( basename );
