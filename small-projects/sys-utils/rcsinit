@@ -1,0 +1,36 @@
+#!/bin/ksh
+#
+# rcsinit - Quick script to automate adding files to RCS
+#
+# Written by Wil Cooley <wcooley@nakedape.cc>
+#
+
+prog=${0##*/}
+
+usage() {
+    printf "Usage: %s <file>\n" ${prog}
+    printf "Checks file into RCS.\n"
+    exit
+}
+
+if [[ -z "$1" ]]; then
+    usage
+else
+    TARGET_FILE=$1
+    BASE_DIR=$(dirname "$TARGET_FILE")
+    RCS_DIR="${BASE_DIR}/RCS"
+fi
+
+if [[ ! -d "$RCS_DIR" ]]; then
+    mkdir -p "$RCS_DIR"
+elif [[ -e "${RCS_DIR}/${TARGET_FILE},v" ]]; then
+    printf "${TARGET_FILE} appears to already be under RCS control\n"
+    exit
+fi
+
+if [[ -n "${SUDO_USER}" ]]; then
+    CI_ARGS="${CI_ARGS} -w${SUDO_USER}"
+fi
+
+ci -q -u $CI_ARGS -t-"$TARGET_FILE" $TARGET_FILE
+
