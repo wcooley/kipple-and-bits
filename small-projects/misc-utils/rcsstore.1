@@ -1,0 +1,119 @@
+.\" $Id$
+.TH RCSSTORE 1 2007-02-22
+.SH NAME
+rcsstore - Store historical data using RCS.
+.SH SYNOPSIS
+.B outputter | rcsstore 
+.I outputfile
+
+.B rcsstore
+.I outputfile
+.B < inputfile
+.SH DESCRIPTION
+.B rcsstore
+stores data using RCS.  This allows you to maintain long-term historical data
+using less space than storing each sample separately and allows you to easily
+retrieve and compare the data from particular dates.
+
+.B rcsstore
+.P
+reads from standard input and stores in the given
+.IR outputfile .
+It can be given an existing file as input using shell I/O redirection or
+generated output from a pipe.
+
+.P
+Consider it a passive alternative to managing files with RCS directly or to
+tracking system configuration data in separate files and rotating them.
+
+.SH WARNING
+
+.P
+If you are monitoring live files with this, you should
+.B NOT
+store the RCS file in the same directory, as the working copy will be removed!
+
+.SH EXAMPLES
+
+.P
+Running this command periodically (such as with 
+.BR cron (8))
+will track changes to
+.IR /etc/passwd ,
+allowing you to determine when particular users were added or removed:
+
+.B "  rcsstore /var/lib/rcsstore/passwd,v < /etc/passwd"
+
+.P
+You can then use the RCS command
+.BR rcsdiff (1)
+to compare the changes between to versions:
+
+.B "  rcsdiff -u -r1.1 -r1.2 /var/lib/rcsstore/passwd,v"
+
+.P
+This command will allow you to monitor disk space utilization:
+
+.B "  df -k | rcsstore /var/lib/rcsstore/df"
+
+Note that the
+.I ",v"
+is optional.
+
+.P
+Unfortunately, the RCS commands are fairly primitive and, among other
+shortcomings, the
+.BR rcsdiff (1)
+command does not allow you to select revisions by date, so you have to go
+through
+.BR rlog (1)
+first to determine the date.  However, you can get tricky: Since CVS uses RCS
+files for storage, you can use the CVS r* commands directly.  All you have to
+do is create a
+.I CVSROOT
+directory in the same directory as your rcsstore files:
+
+.B "  mkdir /var/lib/rcsstore/CVSROOT"
+
+Then you use this directory as CVSROOT:
+
+.B "  export CVSROOT=/var/lib/rcsstore"
+
+.TP
+Now you can use:
+
+.I cvs rlog
+
+.I cvs rannotate
+
+.I cvs rdiff
+
+.P
+If you wanted to get really crazy and depending upon the sensitivity of the
+data being store, ViewVC or another web-based CVS viewer could be used to view
+the data.
+
+.SH TODO
+
+Possibly: Manipulate the RCS files directly and elimintate the dependency
+on RCS; that would be a much bigger, more complicated program.
+
+Possibly: Implement wrappers to allow inquiries based on date and annotations,
+eliminating the need for CVS to do this.
+
+.SH AUTHOR
+Wil Cooley <wcooley@nakedape.cc>
+
+.SH COPYRIGHT
+rcsstore is Copyright
+.if n (C)
+.if t \(co
+2007 by Wil Cooley.
+
+.SH "SEE ALSO"
+
+.BR rcsintro (1)
+.BR rcsdiff (1)
+.BR rlog (1)
+.BR co (1)
+.BR cvs (1)

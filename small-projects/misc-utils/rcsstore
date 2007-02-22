@@ -1,0 +1,76 @@
+#!/bin/bash
+#
+# rcsstore - RCS-based storage of data from standard input.
+#            Useful, for example, for recording output of system commands such
+#            as 'df'.
+#
+# Written by Wil Cooley <wcooley@nakedape.cc>
+# Copyright (C) 2007 by Wil Cooley.
+#
+# $Id$
+#
+me=${0##*/}
+VERSION=0.1
+
+rcs_init() {
+    local working_file="$1"
+
+    # Abort if the ,v file exists
+    if [[ -e "${working_file},v" ]]; then 
+        return; 
+    fi
+
+    # Need at least an empty file or ci complains
+    touch "$working_file"
+
+    if [[ ! -e "${working_file},v" ]]; then
+        ci -u -q -i -m'Initial check-in' -t-"$me storage" "$working_file"
+    fi
+}
+
+usage() {
+    cat <<EOF
+outputter | $me <working_file>
+$me <working_file> < /input/file
+
+Reads standard input and stores it in <working_file> in RCS format, generating
+    a log message even when there are no changes.
+
+Useful for storing the varying output of commands to record their changes
+over time, with automatic timestamps and differential compression (well, at
+least as much as RCS provides).
+
+EOF
+}
+
+if [[ $# -ne 1 || $1 = "-h" || $1 = "--help" ]]; then
+    usage
+    exit
+fi
+
+if [[ $1 = "-V" || $1 = "--version" ]]; then
+    printf "$me $VERSION\n"
+    exit
+fi
+
+# RCS ,v file w/o ,v
+working_file=${1%%,v}
+rcsdir=$(dirname "$working_file")
+
+rcs_init "$working_file"
+
+cd "$rcsdir" || {
+    printf "$me: Error changing to '$rcsdir'\n" >/dev/stderr
+    exit 1
+}
+
+co -q -l "$working_file" || {
+    printf "$me: Error checking out '$working_file'\n" >/dev/stderr
+    exit 1
+}
+
+# Write stdin over the working file
+cat > "$working_file"
+
+ci -f -q -m"$me $(date -u +'%Y-%m-%dT%TZ')" "$working_file"
+
