@@ -5,18 +5,32 @@
 #
 # Written by Wil Cooley
 
+use strict;
+use warnings;
+use English         qw( -no_match_vars );
+use File::Basename  qw( basename );
+
+package main;
+
+our $VERSION    = 0.0001;
+our $NAME       = basename($PROGRAM_NAME, qw( .pl .work .pl.work ));
+
+if ($PROGRAM_NAME eq ($ENV{PAR_ARGV_0} || __FILE__)) {
+    bin::suckFtp::main(@ARGV);
+}
+
+package bin::suckFtp;
 
 use strict;
 use warnings;
 use AppConfig       qw( :argcount );
 use Cwd;
 use English         qw( -no_match_vars );
-use File::Basename  qw( basename );
 use Net::FTP::Simple;
+use Pod::Usage;
 
-our $VERSION    = 0.0001;
-our $NAME       = basename($PROGRAM_NAME, qw( .pl .work .pl.work ));
 
+sub main {
 my $config = setup_config();
 
 my $cwd_saved;
@@ -36,7 +50,7 @@ if ( $config->output_dir() ) {
 if ( $config->verbose() ) {
     print "Logging in to FTP server '", $config->server(), "' as user '",
         $config->username(), "'.\n";
-    print "Retreiving files from directory '", $config->remove_dir(), "'\n";
+    print "Retreiving files from directory '", $config->remote_dir(), "'\n";
 }
 
 my @received_files = Net::FTP::Simple->retrieve_files({
@@ -63,6 +77,10 @@ if ( $config->verbose() ) {
         join("\n", @received_files), "\n";
 }
 
+}
+
+
+
 #######################################################################
 #
 # Subroutines
@@ -78,21 +96,38 @@ sub setup_config {
         qw(
             config_file|config|c=s
 
+            show_help|help|h!
+            show_manual|man!
+            show_version|version|V!
             debug_ftp!
             verbose|v!
-            delete_remote|n!
+            delete_remote|delete-remote!
 
             username=s
             password=s
             server=s
-            remote_dir=s
-
-            output_dir=s
+            remote_dir|remote-dir=s
+            output_dir|output-dir=s
         )
     );
 
     # Parse the command-line options
     $config->getopt();
+
+    pod2usage({
+            -verbose    => 0,
+            -exitval    => 0,
+        }) if $config->show_help();
+
+    pod2usage({
+            -verbose    => 2,
+            -exitval    => 0,
+        }) if $config->show_manual();
+
+    if ( $config->show_version() ) {
+        print "$NAME version $VERSION\n";
+        exit 0;
+    }
 
     if ( $config->config_file() ) {
         if ( -r $config->config_file() ) {
@@ -108,6 +143,7 @@ sub setup_config {
 
 }
 
+1;
 __END__
 
 =head1 NAME
@@ -119,20 +155,91 @@ suck-ftp - Retrieve and delete files via FTP.
 suck-ftp [options]
 
  Options:
-    --config <file> | -c <file>  Read settings from <file>
+    --config <file> | -c <file>     Read settings from <file>.
+    --version       | -V            Show version.
+    --help          | -h            Display usage statement.
+    --man                           Display full program manual.
+    --verbose       | -v            Be verbose.
+
+ FTP Retrieval Options:
+    --username
+    --password
+    --server
+    --remote-dir
+    --output-dir
+    --(no)delete-remote
 
 =head1 OPTIONS
 
 =over 8
 
-=item B<--config <file> >
+=item B< --config <file>>
 
-Use configuration file <file>
+Use configuration file <file>.  Command-line options can override parameters
+in the configuration file.
+
+=item B<--version>
+
+Output version.
+
+Not allowed in configuration file.
+
+=item B<--help>
+
+Output usage statement.
+
+Not allowed in configuration file.
+
+=item B<--man>
+
+Output program manual.
+
+Not allowed in configuration file.
+
+=item B<--username>
+
+FTP login username.
+
+Allowed in configuration file.
+
+=item B<--password>
+
+FTP login password.
+
+Allowed in configuration file.
+
+=item B<--server>
+
+FTP server.
+
+Allowed in configuration file.
+
+=item B<--remote-dir>
+
+FTP remote directory to download from.
+
+Allowed in configuration file as I<remote_dir>.
+
+=item B<--output-dir>
+
+Local destination for retrieved files.
+
+Allowed in configuration file as I<output_dir>.
+
+=item B<--(no)delete-remote>
+
+Flag indicating whether or not to delete the remote files after downloading.
+Viz., C<--nodelete-remote> disables deletion and C<--delete-remote> enables it.
+The default it to not delete.
+
+Allowed in configuration file as I<delete_remote> or one of several negations:
+I<nodelete_remote>, I<delete_remote = no>, I<delete_remote no>.
 
 =back
 
 =head1 DESCRIPTION
 
-foo
+C<suck-ftp> downloads all files from a directory on an FTP server and
+deletes them.
 
 =cut
