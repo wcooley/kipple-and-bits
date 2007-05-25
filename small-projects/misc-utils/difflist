@@ -37,12 +37,12 @@ if __name__ == '__main__':
         s2d1list = list(set2diff1)
         s2d1list.sort()
 
-        print "%d items in %s but not in %s:" % (len(set1diff2), sys.argv[1], 
+        print "DIFFLIST: %d items in %s but not in %s:" % (len(set1diff2), sys.argv[1], 
                 sys.argv[2])
         for item in s1d2list: print item,
 
         print
-        print "%d items in %s but not in %s:" % (len(set2diff1), sys.argv[2], 
+        print "DIFFLIST: %d items in %s but not in %s:" % (len(set2diff1), sys.argv[2], 
                 sys.argv[1])
 
         for item in s2d1list: print item,
