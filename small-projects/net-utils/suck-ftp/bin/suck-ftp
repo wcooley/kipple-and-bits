@@ -3,7 +3,8 @@
 # suck-ftp - Script to retrieve files from an FTP server and then deletes them from
 #            the server.
 #
-# Written by Wil Cooley
+# Written by Wil Cooley <wcooley@nakedape.cc>
+#
 
 use strict;
 use warnings;
@@ -21,61 +22,60 @@ if ($PROGRAM_NAME eq ($ENV{PAR_ARGV_0} || __FILE__)) {
 
 package bin::suckFtp;
 
-use strict;
-use warnings;
 use AppConfig       qw( :argcount );
 use Cwd;
-use English         qw( -no_match_vars );
 use Net::FTP::Simple;
 use Pod::Usage;
 
 
 sub main {
-my $config = setup_config();
+    my $config = setup_config();
 
-my $cwd_saved;
+    my $cwd_saved;
 
-if ( $config->output_dir() ) {
+    if ( $config->output_dir() ) {
 
-    $cwd_saved = getcwd();
+        $cwd_saved = getcwd();
 
-    print "Changing to output directory '", $config->output_dir(), "'.\n"
-        if ($config->verbose());
+        print "INFO: Changing to output directory '", 
+                $config->output_dir(), "'.\n"
+            if ($config->verbose());
 
-    chdir $config->output_dir()
-        or die "Error changing to '", $config->output_dir(), "'";
+        chdir $config->output_dir()
+            or die "ERROR: Error changing to '", $config->output_dir(), "'";
 
-}
+    }
 
-if ( $config->verbose() ) {
-    print "Logging in to FTP server '", $config->server(), "' as user '",
-        $config->username(), "'.\n";
-    print "Retreiving files from directory '", $config->remote_dir(), "'\n";
-}
+    if ( $config->verbose() ) {
+        print "INFO: Logging in to FTP server '", 
+            $config->server(), "' as user '",
+            $config->username(), "'.\n";
+        print "INFO: Retreiving files from directory '",
+            $config->remote_dir(), "'\n";
+    }
 
-my @received_files = Net::FTP::Simple->retrieve_files({
-        username    => $config->username(),
-        password    => $config->password(),
-        server      => $config->server(),
-        remote_dir  => $config->remote_dir(),
-        debug_ftp   => $config->debug_ftp(),
-        delete_after=> $config->delete_remote(),
-        file_filter => qr/./,
-    });
+    my @received_files = Net::FTP::Simple->retrieve_files({
+            username    => $config->username(),
+            password    => $config->password(),
+            server      => $config->server(),
+            remote_dir  => $config->remote_dir(),
+            debug_ftp   => $config->debug_ftp(),
+            delete_after=> $config->delete_remote(),
+            file_filter => qr/./,
+        });
 
-if ($cwd_saved) {
+    if ($cwd_saved) {
+        print "INFO: Restoring working directory '$cwd_saved'.\n"
+            if ($config->verbose());
+        chdir $cwd_saved
+            or warn "WARN: Error changing to directory '$cwd_saved'";
+    }
 
-    print "Restoring working directory '$cwd_saved'.\n"
-        if ($config->verbose());
-
-    chdir $cwd_saved
-        or warn "Error changing to directory '$cwd_saved'";
-}
-
-if ( $config->verbose() ) {
-    print "The following files were retrieved and deleted:\n",
-        join("\n", @received_files), "\n";
-}
+    if ( $config->verbose() ) {
+        print "INFO: The following files were retrieved and deleted:\n",
+            "INFO: FILE ",
+            join("\nINFO: FILE ", @received_files), "\n";
+    }
 
 }
 
@@ -87,8 +87,18 @@ if ( $config->verbose() ) {
 #
 #######################################################################
 
+#
+# Process command line and configuration file options.  May be called with
+# arguments for testing; defaults to @ARGV.
+#
+# getopt here gets called twice--once to get the config file and then again
+# after the config file has been processed so that command-line options
+# override config file options.
+#
 sub setup_config {
-    my @ARGV_saved  = @ARGV;
+    my @args        = @_ ? @_ : @ARGV;
+    my @args_saved  = @args;
+
     my $config = AppConfig->new(
         {
             CASE            => 1,
@@ -129,13 +139,14 @@ sub setup_config {
         exit 0;
     }
 
+    # Parse the options from the config file and command-line options
     if ( $config->config_file() ) {
         if ( -r $config->config_file() ) {
             $config->file( $config->config_file() );
-            $config->getopt( \@ARGV_saved );
+            $config->getopt( \@args_saved );
         }
         else {
-            die "Unable to open config file '", $config->config_file(), "'.\n";
+            die "ERROR: Unable to open config file '", $config->config_file(), "'.\n";
         }
     }
 
@@ -154,6 +165,8 @@ suck-ftp - Retrieve and delete files via FTP.
 
 suck-ftp [options]
 
+Retrieve and delete files via FTP.
+
  Options:
     --config <file> | -c <file>     Read settings from <file>.
     --version       | -V            Show version.
@@ -167,7 +180,7 @@ suck-ftp [options]
     --server
     --remote-dir
     --output-dir
-    --(no)delete-remote
+    --(no)delete-remote             Delete is default.
 
 =head1 OPTIONS
 
