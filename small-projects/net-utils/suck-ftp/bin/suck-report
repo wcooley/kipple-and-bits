@@ -1,0 +1,181 @@
+#!/usr/bin/perl
+#
+# suck-report - Generate report of files transferred with suck-ftp
+#
+# Written by Wil Cooley
+#
+package suckReport;
+
+use strict;
+use warnings;
+use AppConfig;
+use English         qw( -no_match_vars );
+use File::Basename  qw( basename fileparse );
+use Pod::Usage;
+
+our %table_format_for = ( 
+    suffixes => "%-7s %-s\n",
+);
+
+
+our $VERSION        = 0.0001;
+our $NAME           = basename($PROGRAM_NAME, qw( .pl .work .pl.work));
+
+######################################################
+# Mainline if run as a script
+######################################################
+
+if ($PROGRAM_NAME eq ($ENV{PAR_ARGV_0} || __FILE__)) {
+    my $config = setup_config();
+
+    my $rep_data_ref = {};
+
+    while (<>) {
+        process_line($rep_data_ref, $_);
+    }
+
+    my $report = format_report($rep_data_ref);
+
+    print $report;
+}
+
+######################################################
+# Subroutines
+######################################################
+
+sub format_report {
+    my ($rep_data_ref) = @_;
+
+    my $suffix_report = format_report_suffix($rep_data_ref);
+
+    return $suffix_report;
+
+}
+
+sub format_report_suffix {
+    my ($rep_data_ref) = @_;
+    my $report;
+
+    my $suffixes_ref = $rep_data_ref->{ suffixes };
+
+    # Sort first on count, then on name
+    my @sorted_keys = sort { $suffixes_ref->{$a} <=> $suffixes_ref->{$b} ||
+                             $a cmp $b
+                           } keys %{ $suffixes_ref };
+
+
+    $report = sprintf($table_format_for{ suffixes }, 'Suffix', 'Count')
+            . "======  =====\n";
+
+    for my $suffix (@sorted_keys) {
+        $report .=  sprintf($table_format_for{ suffixes }, 
+                            $suffix || '(none)', 
+                            $suffixes_ref->{ $suffix });
+    }
+
+    return $report;
+}
+
+sub process_line {
+    my ($rep_data_ref, $line) = @_;
+
+    return if ( $line =~ qr/\A \s* \z/xms );
+
+    chomp($line);
+
+    if ( $line =~ qr/\A INFO: [ ] FILE [ ] (.*)\z/xms ) {
+        my $fname = $1;
+        my @fileparse  = fileparse($fname, qr/\.[^.]*$/);
+
+        my ($basename, $path, $suffix) = fileparse($fname, qr/\.[^.]*$/);
+
+        $rep_data_ref->{ suffixes }{ $suffix }++;
+        $rep_data_ref->{ basenames }{ $basename }++;
+        $rep_data_ref->{ paths }{ $path }++;
+
+        push @{ $rep_data_ref->{ files } }, $fname;
+    }
+#   TODO Add other line formats
+#    elsif ( $line =~ qr// ) {
+#    }
+
+    else {
+        print "Line: '$line' did not match\n";
+    }
+}
+#
+# Process command-line options.
+#
+
+sub setup_config {
+
+    my @args        = @_ ? @_ : @ARGV;
+
+    my $config = AppConfig->new(
+        {
+            CASE            => 1,
+        },
+        qw(
+            show_help|help|h!
+            show_manual|man!
+            show_version|version|V!
+        )
+    );
+
+    $config->getopt();
+
+    pod2usage({
+            -verbose    => 0,
+            -exitval    => 0,
+        }) if $config->show_help();
+
+    pod2usage({
+            -verbose    => 2,
+            -exitval    => 0,
+        }) if $config->show_manual();
+
+    if ( $config->show_version() ) {
+        print "$NAME version $VERSION\n";
+        exit 0;
+    }
+
+    return $config;
+}
+
+1;
+__END__
+
+=head1 NAME
+
+suck-report - Generate a report from output of I<suck-ftp>.
+
+=head1 SYNOPSIS
+
+suck-report [options]
+
+Generate report of files retrieved by I<suck-ftp>.
+
+  Options:
+    --help      | -h    Show help.
+    --version   | -V    Show version.
+    --man               Show manual.
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--help>
+
+Show help.
+
+=item B<--man>
+
+Show manual.
+
+=item B<--version>
+
+Show version.
+
+=back
+
+=cut
