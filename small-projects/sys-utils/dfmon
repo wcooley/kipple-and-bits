@@ -1,0 +1,136 @@
+#!/usr/bin/perl
+#
+# dfmon - Script to monitor disk sizes
+#
+# Written by Wil Cooley <wcooley@nakedape.cc>
+#
+# 2 Aug 2007
+#
+# $Id$
+#
+
+use strict;
+use warnings;
+use Carp;
+use English qw(no_match_vars);
+
+
+# Package variable that holds the parsed output of 'df -kP'
+my $df_table;
+
+my @errors;
+my $fs_table = read_config();
+
+read_df();
+use Data::Dumper;
+print Dumper($df_table);
+
+#=begin comment
+for my $fs_entry (@{ $fs_table }) {
+
+    my $current_fs = get_current_fs( $fs_entry->{'mountpoint'} );
+
+    my $check_result = check_filesystem( $fs_entry, $current_fs );
+
+    if ( $check_result->{'status'} != 'OK' ) {
+        push @errors, $check_result;
+    }
+
+}
+
+report_errors(\@errors);
+
+
+#######################################################################
+
+
+sub check_filesystem {
+    my ($fsmon_entry, $current_fs) = @_;
+
+    if ( exists $fsmon_entry->{'threshold_size'} ) {
+    }
+
+    if ( exists $fsmon_entry->{'threshold_percent'} ) {
+    }
+}
+
+=begin comment
+
+
+The returned configuration table is an array ref of hash refs with the
+following items:
+    o mountpoint        - The name of the filesystem
+    o threshold_size    - Used or free space in kilobytes.  Negative numbers
+                          indicate a free-space threshold; positive a 
+                          used-space threshold.
+    o threshold_percent - Percent of used or free space.  As with size,
+                          negative indicates free space; positived used space.
+    o alert_recipients  - Array ref of e-mail addresses to be notified when
+                          either threshold is crossed.
+
+=end comment
+=cut
+
+
+sub read_config {
+    my ($config_file) = @_;
+
+
+    # Dummy test data for now
+    my $config = {
+        (
+            mountpoint          => '/var',
+            threshold_size      => '-724552',
+            threshold_percent   => '-63',
+            alert_recipients    => qw( cooleyw@odscompanies.com ),
+        ),
+    };
+
+    return $config;
+}
+
+sub get_current_fs {
+    my ($fs_to_find) = @_;
+
+    read_df();
+
+    for my $df_entry ( @{ $df_table } ) {
+
+        if ( $df_entry->{'mountpoint'} eq $fs_to_find ) {
+            return $df_entry;
+        }
+
+    }
+
+    return;
+
+}
+
+sub read_df {
+    my @dfbuf = qx{ /bin/df -kP };
+
+    return if (defined $df_table);
+
+    # Remove the header
+    shift @dfbuf;
+
+    for my $line (@dfbuf) {
+        chomp $line;
+
+        my %df_entry;
+        @df_entry{  'device', 'total_space', 'space_used', 'available',
+                    'percent_used', 'mountpoint' }
+            = split ' ', $line, 6;
+
+        push @{ $df_table }, \%df_entry;
+    }
+}
+
+sub _slurp_file {
+    my ($input_file) = @_;
+
+    open my $inputfh, '<', $input_file
+        or croak "Unable to open '$input_file': $OS_ERROR";
+
+    return do { local $/; <$inputfh> }
+}
