@@ -1,0 +1,91 @@
+#!/bin/bash
+#
+# cfwarn - Insert a disclaimer about being managed by cfengine. The line is
+# inserted as the second line in case the file is a script and the first line
+# is a shebang.
+#
+# Written by Wil Cooley <cooleyw@odscompanies.com>
+#
+# Began 1 Nov 2007
+#
+# $Id$
+
+VERSION=1.0
+PROGNAME=$(basename $0)
+comment="#"
+
+usage() {
+    cat <<EOF
+Usage: $PROGNAME [ -c <comment> ] <file>...
+
+Description: Inserts a warning disclaimer that a file is managed by cfengine.
+If file is not writable and managed by RCS, file is checked out before and
+committed afterwards.
+
+Options:
+    -c  <comment>   Specify string to use to precede the disclaimer. The default is '$comment'.
+
+    -h              Help.
+    -V              Version.
+EOF
+}
+
+if [[ $# -lt 1 || "$1" = "--help" ]]; then
+    usage
+    exit 1
+fi
+
+while getopts "hVc:" Opt; do
+    case "$Opt" in
+        c)
+            comment="$OPTARG"
+            ;;
+        h)
+            usage
+            exit
+            ;;
+        V)
+            printf "%s %s\n" "$PROGNAME" "$VERSION"
+            exit
+            ;;
+        ?)
+            printf "Unrecognized parameter: %s\n" $1 1>&2
+            badparam=1
+            ;;
+    esac
+done
+
+shift $(($OPTIND-1))
+
+if [[ -n "$badparam" ]]; then
+    usage
+    exit 1
+fi
+
+
+if [[ -n "$SUDO_USER" ]]; then
+    user="$SUDO_USER"
+else
+    user="$LOGNAME"
+fi
+
+for file_to_edit in $@; do
+
+    if [[ ! -w "$file_to_edit" ]]; then
+        if [[ -e "RCS/${file_to_edit},v" || -e "${file_to_edit},v" ]]; then
+            co -q -l "$file_to_edit"
+            needs_rcs_checkin=1
+        else
+            printf "$file_to_edit is not writable and not managed by RCS!\n" 1>&2
+            continue
+        fi
+    fi
+
+    sed -i.bak -e "1a$comment !!! MANAGED BY CFENGINE - EDIT ONLY THROUGH REPOSITORY !!!\
+" "$file_to_edit"
+
+    if [[ -n "$needs_rcs_checkin" ]]; then
+        ci -q -m"cfengine disclaimer added by $PROGNAME" -w"$user" -u "$file_to_edit"
+    fi
+
+done
