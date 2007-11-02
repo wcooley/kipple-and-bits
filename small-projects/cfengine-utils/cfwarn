@@ -1,8 +1,13 @@
 #!/bin/bash
 #
-# cfwarn - Insert a disclaimer about being managed by cfengine. The line is
-# inserted as the second line in case the file is a script and the first line
-# is a shebang.
+# cfwarn - Insert a disclaimer about being managed by cfengine. 
+#
+# FIXME: This used to be true, but it was really only good for shell scripts
+# and sometimes bad for other files. Make it detect files that start with #!
+# and append, otherwise insert.
+#
+# The line is inserted as the second line in case the file is a script and the
+# first line is a shebang.
 #
 # Written by Wil Cooley <cooleyw@odscompanies.com>
 #
@@ -81,7 +86,7 @@ for file_to_edit in $@; do
         fi
     fi
 
-    sed -i.bak -e "1a$comment !!! MANAGED BY CFENGINE - EDIT ONLY THROUGH REPOSITORY !!!\
+    sed -i -e "1i$comment !!! MANAGED BY CFENGINE - EDIT ONLY THROUGH REPOSITORY !!!\
 " "$file_to_edit"
 
     if [[ -n "$needs_rcs_checkin" ]]; then
