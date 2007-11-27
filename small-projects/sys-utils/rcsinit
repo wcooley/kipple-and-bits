@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 #
 # rcsinit - Quick script to automate adding files to RCS
 #
