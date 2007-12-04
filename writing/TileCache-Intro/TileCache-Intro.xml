@@ -15,7 +15,6 @@
 <!ENTITY appendix-a         SYSTEM "appendix-a.xml">
 <!ENTITY articleinfo        SYSTEM "articleinfo.xml">
 <!ENTITY frontmatter        SYSTEM "frontmatter.xml">
-<!ENTITY intro              SYSTEM "intro.xml">
 <!ENTITY install            SYSTEM "install.xml">
 ]>
 
