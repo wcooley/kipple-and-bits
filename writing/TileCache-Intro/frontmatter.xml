@@ -5,7 +5,7 @@
         <title>Copyrights and License</title>
 
         <para>Copyright (c) 2007 Wil Cooley</para>
-
+        <!--
         <para>This section was copied from the HOWTO-HOWTO:</para>
 
         <para>This manual may be reproduced in whole or in part,
@@ -41,8 +41,10 @@
 
             </itemizedlist>
         </para>
+        -->
     </section>
 
+    <!--
     <section id="credits">
         <title>Credits &amp; Contributors</title>
 
@@ -51,11 +53,11 @@
 
         <itemizedlist>
 
-            <listitem><para>Mark Burgess, who wrote the damn
-            thing.</para></listitem>
+            <listitem><para></para></listitem>
 
         </itemizedlist>
     </section>
+    -->
 
 
     <section id="source">

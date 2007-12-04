@@ -5,7 +5,7 @@
             <firstname>Wil</firstname>
             <surname>Cooley</surname>
             <affiliation>
-                <orgname>Naked Ape Consulting</orgname>
+               <!-- <orgname>Naked Ape Consulting</orgname> -->
                 <address><email>wcooley&#64;nakedape.cc</email></address>
             </affiliation>
         </author>

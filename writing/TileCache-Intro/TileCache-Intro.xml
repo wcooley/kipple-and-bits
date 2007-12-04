@@ -5,20 +5,25 @@
 <!ENTITY userprompt "<prompt>$ </prompt>">
 <!ENTITY rootprompt "<prompt># </prompt>">
 <!ENTITY multipage_url "http://nakedape.cc/info/TileCache-Intro/">
+
 <!ENTITY singlepage_url 
     "http://nakedape.cc/info/TileCache-Intro/TileCache-Intro.html">
+
 <!ENTITY svn_url 
     "https://haus.nakedape.cc/svn/public/trunk/writing/TileCache-Intro/">
+
 <!ENTITY appendix-a         SYSTEM "appendix-a.xml">
 <!ENTITY articleinfo        SYSTEM "articleinfo.xml">
 <!ENTITY frontmatter        SYSTEM "frontmatter.xml">
 <!ENTITY intro              SYSTEM "intro.xml">
+<!ENTITY install            SYSTEM "install.xml">
 ]>
 
 <article>
     &articleinfo;
     &frontmatter;
     &intro;
+    &install;
 </article>
 <!-- vim:ft=docbkxml
 -->

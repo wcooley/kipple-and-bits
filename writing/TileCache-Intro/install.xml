@@ -1,0 +1,20 @@
+<section id="install">
+    <title>Installation and Configuration</title>
+    
+    <para>The home website of TileCache is <ulink type="http"
+    url="http://www.tilecache.org">tilecache.org</ulink>, where the source can 
+    be retrieved for installation. At the time of this writing, the current
+    release is version 1.9. Retrieve the tar.gz file from the site and
+    decompress with
+<screen>
+$ zcat tilecache-1.9.tar.gz | tar xf -
+</screen>
+    Or, on a Linux system or other system with GNU tar available:
+<screen>
+$ tar zxf tilecache-1.9.tar.gz
+</screen>
+    </para>
+ 
+    TileCache builds and installs using the standard Python distutils facility.
+    A con
+</section>
