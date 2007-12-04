@@ -21,7 +21,6 @@
 <article>
     &articleinfo;
     &frontmatter;
-    &intro;
     &install;
 </article>
 <!-- vim:ft=docbkxml

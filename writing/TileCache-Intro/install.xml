@@ -15,6 +15,7 @@ $ tar zxf tilecache-1.9.tar.gz
 </screen>
     </para>
  
+    <para>
     TileCache builds and installs using the standard Python distutils facility.
-    A con
+    A con</para>
 </section>
