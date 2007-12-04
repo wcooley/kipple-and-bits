@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"/usr/share/sgml/docbook/xml-dtd-4.2-1.0-22.1/docbookx.dtd" [
+<!ENTITY userprompt "<prompt>$ </prompt>">
+<!ENTITY rootprompt "<prompt># </prompt>">
+<!ENTITY multipage_url "http://nakedape.cc/info/TileCache-Intro/">
+<!ENTITY singlepage_url 
+    "http://nakedape.cc/info/TileCache-Intro/TileCache-Intro.html">
+<!ENTITY svn_url 
+    "https://haus.nakedape.cc/svn/public/trunk/writing/TileCache-Intro/">
+<!ENTITY appendix-a         SYSTEM "appendix-a.xml">
+<!ENTITY articleinfo        SYSTEM "articleinfo.xml">
+<!ENTITY frontmatter        SYSTEM "frontmatter.xml">
+<!ENTITY intro              SYSTEM "intro.xml">
+]>
+
+<article>
+    &articleinfo;
+    &frontmatter;
+    &intro;
+</article>
+<!-- vim:ft=docbkxml
+-->

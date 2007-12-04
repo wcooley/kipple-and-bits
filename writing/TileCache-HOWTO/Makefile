@@ -3,7 +3,7 @@
 # $Id$
 #
 
-DOCNAME		= TileCache-HOWTO
+DOCNAME		= TileCache-Intro
 
 include ../Makefile.DocBook
 
