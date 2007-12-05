@@ -1,0 +1,64 @@
+<section id="openlayers_integration">
+
+    <title>Integration with OpenLayers</title>
+    
+    <para>
+The follow listing is an example OpenLayers script that uses a TileCache WMS provider.
+    </para>
+
+<figure>
+<title>
+Example OpenLayers JavaScript program
+</title>
+
+<programlisting>
+/* example.js */
+
+/* Default parameters */
+var tilecache_url = [
+    'http://<replaceable>servername</replaceable>/~<replaceable>username</replaceable>/tilecache/bin/tilecache.cgi',
+    ];
+var zoom        = 0;
+var resolutions = [
+    0.015800781250000007,
+    0.0039501953125000017,
+    0.0019750976562500008,
+];
+var center      = new OpenLayers.LonLat( -122.594, 45.494 );
+var bounds      = new OpenLayers.Bounds( -130, 38, -110, 47 );
+
+function init(){
+    map = new OpenLayers.Map( 'map', 
+        { 
+            maxExtent:      bounds,
+            maxResolution:  resolutions[0], 
+            controls:       [],
+        } 
+    );
+
+    map.addControl( new OpenLayers.Control.PanZoomBar()     );
+    map.addControl( new OpenLayers.Control.MousePosition()  );
+    map.addControl( new OpenLayers.Control.Scale()    );
+    map.addLayer(   new OpenLayers.Layer.WMS(
+               '<replaceable>Layer Title</replaceable>', 
+                tilecache_url,
+                { 
+                    layers:         '<replaceable>layer_name</replaceable>',
+                    format:         'image/png',
+                    srs:            'EPSG:4326',
+                },
+                {
+                    isBaseLayer:    true,
+                    reproject:      false,
+                    maxExtent:      bounds,
+                    resolutions:    resolutions,
+                }
+            )
+    );
+
+    map.setCenter( center, zoom );
+}
+>
+</programlisting>
+</figure>
+</section>

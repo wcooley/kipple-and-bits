@@ -66,7 +66,7 @@ If that works as expected, then we have the minimal Apache setup required for Ti
     </para>
  
 <para>
-TileCache builds and installs using the standard <application>Python</application> <application>distutils</application> facility. For our purposes, the following command will suffice:
+TileCache builds and installs using the standard <application>Python</application> <ulink type="http" url="http://docs.python.org/lib/module-distutils.html"><application>distutils</application></ulink> facility. For our purposes, the following command will suffice:
 
 <programlisting>
 &userprompt; <command>cd tilecache-1.9</command>
@@ -87,15 +87,16 @@ copying tilecache.cfg -> /etc
 error: /etc/tilecache.cfg: Permission denied</computeroutput></programlisting>
 </para>
 
-<para>In the last couple of lines, TileCache has foolishly attempted to disregard my <parameter>--home</parameter> option and tried to install its configuration file in <filename>/etc</filename>. We will therefore need to modify TileCache to look for <filename>tilecache.cfg</filename> in a different place. Also, to avoid ambiguities of <application>Python</application> module paths, we will expressly configure the path in the TileCache scripts.</para>
+<para>In the last couple of lines, TileCache has foolishly attempted to disregard my <parameter>--home</parameter> option and tried to install its configuration file in <filename>/etc</filename>. We will therefore need to modify TileCache to look for <filename>tilecache.cfg</filename> in a different place. Also, to avoid ambiguities of <application>Python</application> module paths, we will expressly configure the path in the TileCache scripts.
+We also must copy the <filename>tilecache.cfg</filename> to <filename>~/public_html/tilecache/</filename></para>
 
 <para>First, edit <filename>~/public_html/tilecache/lib/python/TileCache/Service.py</filename>. Change line 12 from
 <programlisting>
-    cfgfiles = (os.path.join(workingdir, "tilecache.cfg"), os.path.join(workingdir,"..","tilecache.cfg"))
+cfgfiles = (os.path.join(workingdir, "tilecache.cfg"), os.path.join(workingdir,"..","tilecache.cfg"))
 </programlisting>
 to
 <programlisting>
-   cfgfiles = ("/home/<replaceable>username</replaceable>/public_html/tilecache","tilecache.cfg")
+cfgfiles = ("/home/<replaceable>username</replaceable>/public_html/tilecache/tilecache.cfg","tilecache.cfg")
 </programlisting>
 </para>
 
@@ -106,7 +107,27 @@ sys.path.append('/home/<replaceable>username</replaceable>/public_html/tilecache
 </programlisting>
 
 Add the same two lines to <filename>tilecache_seed.py</filename> at line 7.
-</para>   
-   
+</para>
+
+<para>
+If all has gone well, we should now be able to display TileCache's test layer. Copy either of the following URLs into your browser's location bar and modify the <replaceable>username</replaceable> as necessary.
+
+<programlisting>
+http://localhost/~<replaceable>username</replaceable>/tilecache/bin/tilecache.cgi?LAYERS=basic&amp;SERVICE=WMS&amp;VERSION=1.1.1&amp;REQUEST=GetMap&amp;SRS=EPSG:4326&amp;BBOX=-180,-90,0,90&amp;WIDTH=256&amp;HEIGHT=25
+http://localhost/~<replaceable>username</replaceable>/tilecache/bin/tilecache.cgi/1.0.0/basic/0/0/0.png
+</programlisting>
+</para>
+
+    <figure>
+    <title>
+        TileCache Test Layer
+    </title>
+    <inlinemediaobject>
+        <imageobject>
+            <imagedata fileref="TileCache-test.png" format="PNG" />
+        </imageobject>
+    </inlinemediaobject>   
+</figure>
+    
     </section>
 </section>

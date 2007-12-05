@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "/usr/share/sgml/docbook/xml-dtd-4.2-1.0-22.1/docbookx.dtd" [
@@ -17,13 +17,18 @@
 <!ENTITY frontmatter        SYSTEM "frontmatter.xml">
 <!ENTITY introduction       SYSTEM "introduction.xml">
 <!ENTITY install            SYSTEM "install.xml">
+<!ENTITY mapserver          SYSTEM "mapserver.xml">
+<!ENTITY openlayers         SYSTEM "openlayers.xml">
+<!ENTITY problems           SYSTEM "problems.xml">
 ]>
 
 <article>
     &articleinfo;
-<!--    &frontmatter; -->
     &introduction;
     &install;
+    &mapserver;
+    &openlayers;
+    &problems;
 </article>
 <!-- vim:ft=docbkxml
 -->

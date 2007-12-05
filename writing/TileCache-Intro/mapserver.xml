@@ -1,0 +1,80 @@
+<section id="mapserver_integration">
+
+    <title>Integrating with MapServer</title>
+    
+    <para>
+The following is an example mapfile that to be used with the subsequent TileCache and OpenLayers examples.
+    </para>
+    
+    <figure>
+        <title>
+            Example MapServer mapfile
+        </title>
+        
+        <programlisting>
+MAP
+    NAME    example
+    SIZE    800 600
+
+    WEB
+        IMAGEPATH   '/home/wcooley/public_html/tmp'
+        IMAGEURL    'http://scatha.oit.pdx.edu/~wcooley/tmp'
+        METADATA
+            "wms_title" "Example WMS Service"
+            "wms_srs" "EPSG:4326"
+        END # METADATA
+    END #web
+
+    IMAGECOLOR  166 206 227
+    SHAPEPATH   '/home/<replaceable>username</replaceable>/gis_data'
+
+    LAYER
+        NAME    example
+        TYPE    POLYGON
+        STATUS  ON
+        DATA    "Oregon"
+
+        CLASS
+            NAME "Oregon"
+            COLOR 178 223 138
+            OUTLINECOLOR 182 131 78
+        END #class
+
+        METADATA
+            "wms_title" "oregon"
+        END # METADATA
+
+    END # layer
+END # Map File
+        </programlisting>
+    </figure>
+    
+    <para>
+The following is an example TileCache configuration that uses MapServer as a WMS provider.
+    </para>
+    
+        <figure>
+            <title>
+                Example TileCache Configuration
+            </title>
+            <programlisting>
+[example-wms]
+size    = 256,256
+type    = WMSLayer
+url     = http://<replaceable>servername</replaceable>/cgi-bin/mapserv?map=/home/<replaceable>username</replaceable>/public_html/example.map
+layers  = <replaceable>layer_name</replaceable>
+bbox    = -130,38,-110,47
+srs     = EPSG:4326
+extension = png
+description = Example WMS Map
+extent_type = loose
+maxresolution = 0.015800781250000007
+resolutions =
+    0.015800781250000007,
+    0.0039501953125000017,
+    0.0019750976562500008
+
+            </programlisting>
+        </figure>
+
+</section>

@@ -1,0 +1,21 @@
+<section id="problems">
+    <title>Problems and Further Research</title>
+
+<para>
+The most common problem we ran into was inconsistency between the extents and resolutions configured on the components. We found that the only reliable way to get TileCache and OpenLayers to perform was to match the maxExtent attribute of the OpenLayers layer exactly with the bbox configured with the layer in TileCache. In fact, the entire OpenLayers map may need to be configured for those extents. Mixing layers in OpenLayers with varying extents remains a topic for future work.
+</para>
+
+<para>
+The resolutions between OpenLayers and TileCache also worked most reliably when both were explicitly configured with the same list of values. Unfortunately, determining the acceptable list is not straightforward, because TileCache only accepts a particular list of values. TileCache did, however, present this list when given the wrong list, so we were able to copy this list into our tilecache.cfg and OpenLayers configuration. Finding a more reliable means of sizing these resolutions would be valuable work for the future.
+</para>
+
+<para>
+When MapServer is used as a WMS server, the extent configured in the map file seemed to have no effect on TileCache. We were unable to get TC to work at all using MapServer in native mode.
+</para>
+
+<para>
+The final and greatest problem we ran into with TileCache, though, was its performance. When rendering a map through TileCache, regardless of whether or not the image tile had been cached or needed to be rendered with MapServer first, TileCache put a great CPU load on the our test server, a lowly dual Pentium III 550MHz. It appears that using the TileCache CGI to serve static image files is a bottleneck. Using one of the other modes of TileCache, such as <application>mod_perl</application>, <application>FastCGI</application> or as a standalone <application>web server</application>.
+</para>
+
+
+</section>
