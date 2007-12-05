@@ -7,7 +7,7 @@ be retrieved for installation. At the time of this writing, the current
 release is version 1.9 and options may vary with different releases.</para>
 
 <para>To get started, we are going to assume a vanilla Red Hat-type operating
-system, such as Fedora 8, Red Hat Enterprise Linux 5 or CentOS 5. It is assumed that Apache and Python are installed and that defaults are largely unchanged. Although we will install into your home directory,  it is necessary to make minor
+system, such as Fedora 8, Red Hat Enterprise Linux 5 or CentOS 5. It is assumed that the Apache web server and the Python language environment are installed and that defaults are largely unchanged. Although we will install into your home directory,  it is necessary to make minor
 modifications to system configuration files, so it will be necessary on a
 few occasions to have root access, either through su or sudo.</para>
 
@@ -17,13 +17,38 @@ few occasions to have root access, either through su or sudo.</para>
         
 <para>To get started, we will install into the <filename>public_html/</filename>
 directory in our home directory. If this directory exists and Apache is configured correctly, it's contents are accessible through a web browser. Red Hat, however, ships with this facility disabled, so we must first enable it. As root, edit the file <filename>/etc/httpd/conf/httpd.conf</filename> and change the line
-<screen>
+<programlisting>
     UserDir disable
-</screen>
+</programlisting>
 to
-<screen>
+<programlisting>
     UserDir public_html
-</screen>
+</programlisting>
+
+Also, we need to enable CGI execution within the <filename>public_html</filename> and associate the <filename>.cgi</filename> extension with CGI handler. In <filename>/etc/httpd/conf.d/</filename>, create a file named <filename>tilecache.conf</filename> with the following contents:
+
+<programlisting>
+&lt;Directory <filename>/home/<replaceable>username</replaceable>/public_html/tilecache/bin/&gt;</filename>
+  Options +Indexes
+&lt;/Directory&gt;
+AddHandler cgi-script .cgi
+</programlisting>
+
+Then, reload Apache (as root):
+
+<programlisting>
+&rootprompt; <command>/sbin/service httpd configtest &amp;&amp; /sbin/service httpd graceful</command>
+</programlisting>
+
+Next create the directory, make a test file and try to retrieve it:
+
+<programlisting>
+&userprompt; <command>mkdir ~/public_html</command>
+&userprompt; <command>echo 'Hello world!' > ~/public_html/test.txt</command>
+&userprompt; <command>curl http://localhost/~<replaceable>username</replaceable>/test.txt</command>
+<computeroutput>Hello world!</computeroutput></programlisting>
+
+If that works as expected, then we have the minimal Apache setup required for TileCache to work.
 
 </para>
 
@@ -32,16 +57,56 @@ to
     <section id="source_install">
         <title>Source Installation</title>
 
-<para>Retrieve the tar.gz file from the TileCache web site and decompress and unarchive:
+<para>Retrieve the tar.gz file from the TileCache web site and extract it from the <command>tar</command> archive:
 
-<screen>
-$ curl http://www.tilecache.org/tilecache-1.9.tar.gz | tar zxf -
-</screen>
+<programlisting>
+&userprompt; <command>curl http://www.tilecache.org/tilecache-1.9.tar.gz | tar zxf -</command>
+</programlisting>
+
     </para>
  
 <para>
-TileCache builds and installs using the standard Python distutils facility.
+TileCache builds and installs using the standard <application>Python</application> <application>distutils</application> facility. For our purposes, the following command will suffice:
+
+<programlisting>
+&userprompt; <command>cd tilecache-1.9</command>
+&userprompt; <command>python setup.py install --home ~/public_html</command>
+<computeroutput>running install
+running build
+running build_py
+running build_scripts
+running install_lib
+running install_scripts
+changing mode of /home/<replaceable>username</replaceable>/public_html/tilecache/bin/tilecache_http_server.py to 775
+changing mode of /home/<replaceable>username</replaceable>/public_html/tilecache/bin/tilecache.fcgi to 775
+changing mode of /home/<replaceable>username</replaceable>/public_html/tilecache/bin/tilecache.cgi to 775
+changing mode of /home/<replaceable>username</replaceable>/public_html/tilecache/bin/tilecache_clean.py to 775
+changing mode of /home/<replaceable>username</replaceable>/public_html/tilecache/bin/tilecache_seed.py to 775
+running install_data
+copying tilecache.cfg -> /etc
+error: /etc/tilecache.cfg: Permission denied</computeroutput></programlisting>
 </para>
-    
+
+<para>In the last couple of lines, TileCache has foolishly attempted to disregard my <parameter>--home</parameter> option and tried to install its configuration file in <filename>/etc</filename>. We will therefore need to modify TileCache to look for <filename>tilecache.cfg</filename> in a different place. Also, to avoid ambiguities of <application>Python</application> module paths, we will expressly configure the path in the TileCache scripts.</para>
+
+<para>First, edit <filename>~/public_html/tilecache/lib/python/TileCache/Service.py</filename>. Change line 12 from
+<programlisting>
+    cfgfiles = (os.path.join(workingdir, "tilecache.cfg"), os.path.join(workingdir,"..","tilecache.cfg"))
+</programlisting>
+to
+<programlisting>
+   cfgfiles = ("/home/<replaceable>username</replaceable>/public_html/tilecache","tilecache.cfg")
+</programlisting>
+</para>
+
+<para>Next, edit <filename>~/public_html/tilecache/bin/tilecache.cgi</filename> by inserting the following lines at line 2:
+<programlisting>
+import sys
+sys.path.append('/home/<replaceable>username</replaceable>/public_html/tilecache/lib/python/')
+</programlisting>
+
+Add the same two lines to <filename>tilecache_seed.py</filename> at line 7.
+</para>   
+   
     </section>
 </section>

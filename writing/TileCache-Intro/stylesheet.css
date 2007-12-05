@@ -14,7 +14,7 @@ h1, h2, h3, h4 {
 	/*
 	font-style: italic;
 	*/
-	font-family: luxi sans,sans-serif;
+	font-family: sans-serif;
 }
 h1 {
 	font-size: 1.75em;
@@ -162,7 +162,7 @@ table tr {
 }
 
 /* pre.screen is for DocBook HTML output */
-code.screen, pre.screen {
+code.screen, pre.screen, pre.programlisting {
 	font-family: monospace;
 	font-size: 1em;
 	display: block;

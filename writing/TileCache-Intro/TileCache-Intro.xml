@@ -15,12 +15,14 @@
 <!ENTITY appendix-a         SYSTEM "appendix-a.xml">
 <!ENTITY articleinfo        SYSTEM "articleinfo.xml">
 <!ENTITY frontmatter        SYSTEM "frontmatter.xml">
+<!ENTITY introduction       SYSTEM "introduction.xml">
 <!ENTITY install            SYSTEM "install.xml">
 ]>
 
 <article>
     &articleinfo;
-    &frontmatter;
+<!--    &frontmatter; -->
+    &introduction;
     &install;
 </article>
 <!-- vim:ft=docbkxml

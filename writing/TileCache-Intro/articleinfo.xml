@@ -11,16 +11,19 @@
         </author>
         <authorinitials>WRC</authorinitials>
 
-        <pubdate>2007-12-04</pubdate>
+        <pubdate>2007-12-05</pubdate>
 
         <revhistory>
             <revision>
                 <revnumber>1.0</revnumber>
-                <date>2007-12-04</date>
+                <date>2007-12-05</date>
                 <authorinitials>WRC</authorinitials>
 
-                <revremark><emphasis>DRAFT</emphasis>Initial
-                draft.<emphasis>DRAFT</emphasis></revremark>
+                <revremark>
+                    <emphasis>DRAFT</emphasis>
+                    Initial draft.
+                    <emphasis>DRAFT</emphasis>
+                </revremark>
 
             </revision>
 
@@ -28,8 +31,7 @@
 
         <abstract>
 
-            <para>This document presents an introduction to using
-            TileCache.</para>
+<para>This document presents an introduction to using TileCache to improve performance of web-based GIS applications.</para>
 
         </abstract>
     </articleinfo>
