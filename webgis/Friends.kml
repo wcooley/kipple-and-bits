@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.2">
+<Document>
+	<name>Friends.kml</name>
+	<Style id="sn_blue-pushpin_copy1">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+		</ListStyle>
+	</Style>
+	<Style id="sh_ylw-pushpin_copy0">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+	</Style>
+	<StyleMap id="msn_ylw-pushpin_copy0">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_ylw-pushpin_copy0</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_ylw-pushpin_copy0</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="sn_grn-pushpin">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/grn-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+		</ListStyle>
+	</Style>
+	<Style id="sh_red-pushpin_copy1">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+		</ListStyle>
+	</Style>
+	<StyleMap id="msn_ltblu-pushpin">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_ltblu-pushpin</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_ltblu-pushpin</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="sh_grn-pushpin">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/grn-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+		</ListStyle>
+	</Style>
+	<Style id="sh_blue-pushpin_copy1">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+		</ListStyle>
+	</Style>
+	<StyleMap id="msn_grn-pushpin">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_grn-pushpin</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_grn-pushpin</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="sn_ylw-pushpin_copy0">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+	</Style>
+	<Style id="sh_ltblu-pushpin">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ltblu-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+		</ListStyle>
+	</Style>
+	<Style id="sn_pink-pushpin_copy1">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/pink-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+		</ListStyle>
+	</Style>
+	<StyleMap id="msn_red-pushpin_copy1">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_red-pushpin_copy1</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_red-pushpin_copy1</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="sn_ltblu-pushpin">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ltblu-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+		</ListStyle>
+	</Style>
+	<Style id="sh_pink-pushpin_copy1">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/pink-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+		</ListStyle>
+	</Style>
+	<Style id="sn_red-pushpin_copy1">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+		</ListStyle>
+	</Style>
+	<StyleMap id="msn_blue-pushpin_copy1">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_blue-pushpin_copy1</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_blue-pushpin_copy1</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="msn_pink-pushpin_copy1">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_pink-pushpin_copy1</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_pink-pushpin_copy1</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Folder>
+		<name>Friends</name>
+		<open>1</open>
+		<Placemark>
+			<name>Chris</name>
+			<description><![CDATA[1037 NW 20th Ave<br>
+Portland OR 97209<br>]]></description>
+			<LookAt>
+				<longitude>-122.6076388248857</longitude>
+				<latitude>45.51075520552835</latitude>
+				<altitude>0</altitude>
+				<range>15415.4575315525</range>
+				<tilt>-1.571666079510905e-11</tilt>
+				<heading>4.945957045051347</heading>
+			</LookAt>
+			<styleUrl>#msn_red-pushpin_copy1</styleUrl>
+			<Point>
+				<coordinates>-122.692207,45.53009722222222,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Pat</name>
+			<description><![CDATA[3130 SW 72nd Ave.<br>
+Portland, OR 97225<br>]]></description>
+			<LookAt>
+				<longitude>-122.6076388248857</longitude>
+				<latitude>45.51075520552835</latitude>
+				<altitude>0</altitude>
+				<range>15415.4575315525</range>
+				<tilt>-1.571666079510905e-11</tilt>
+				<heading>4.945957045051347</heading>
+			</LookAt>
+			<styleUrl>#msn_pink-pushpin_copy1</styleUrl>
+			<Point>
+				<coordinates>-122.750508,45.497183,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Gordon &amp; Katie</name>
+			<description><![CDATA[4612 SE Main St<br>
+Portland OR 97215<br>]]></description>
+			<LookAt>
+				<longitude>-122.6076387443546</longitude>
+				<latitude>45.51075436632326</latitude>
+				<altitude>0</altitude>
+				<range>15415.45753155229</range>
+				<tilt>-4.101454494260884e-12</tilt>
+				<heading>4.534405054326295</heading>
+			</LookAt>
+			<styleUrl>#msn_grn-pushpin</styleUrl>
+			<Point>
+				<coordinates>-122.61473,45.51354099999999,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Ryan &amp; Andrea</name>
+			<description><![CDATA[3006 NE 57th Ave<br>
+Portland, OR 97213<br>]]></description>
+			<styleUrl>#msn_ltblu-pushpin</styleUrl>
+			<Point>
+				<coordinates>-122.604561,45.544582,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Mike &amp; Jen</name>
+			<description><![CDATA[2445 SE Pine St<br>
+Portland, OR 97214<br>]]></description>
+			<LookAt>
+				<longitude>-122.5946794440675</longitude>
+				<latitude>45.49649044437241</latitude>
+				<altitude>0</altitude>
+				<range>227.8236456613761</range>
+				<tilt>44.14012738893953</tilt>
+				<heading>41.25135981810664</heading>
+			</LookAt>
+			<styleUrl>#msn_blue-pushpin_copy1</styleUrl>
+			<Point>
+				<coordinates>-122.640982,45.52100833333334,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Erin &amp; Wil</name>
+			<description><![CDATA[3910 SE 67th Ave<br>
+Portland, OR 97206<br>]]></description>
+			<LookAt>
+				<longitude>-122.594001100058</longitude>
+				<latitude>45.49442999344952</latitude>
+				<altitude>0</altitude>
+				<range>112.1794933619449</range>
+				<tilt>2.577954462551739e-10</tilt>
+				<heading>6.57081350809299</heading>
+			</LookAt>
+			<styleUrl>#msn_ylw-pushpin_copy0</styleUrl>
+			<Point>
+				<coordinates>-122.5941437386208,45.49441666666668,0</coordinates>
+			</Point>
+		</Placemark>
+	</Folder>
+</Document>
+</kml>

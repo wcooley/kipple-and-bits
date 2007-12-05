@@ -1,0 +1,96 @@
+MAP
+    NAME    oregon
+    STATUS  ON
+    SIZE    800 600
+
+    WEB
+        IMAGEPATH   '/net/rheingold/home/wcooley/public_html/webgis/tmp'
+        IMAGEURL    'http://haus.nakedape.cc/~wcooley/webgis/tmp'
+        LOG         '/net/rheingold/home/wcooley/public_html/webgis/mapserver.log'
+        METADATA
+            "wms_title" "My Oregon WMS Service"
+            "wms_srs" "EPSC:4326"
+        END # METADATA
+    END #web
+
+    EXTENT      -124.559617 39.909590 -116.470419 48.314173
+    UNITS       dd
+    IMAGECOLOR  166 206 227
+    SHAPEPATH   '/net/rheingold/home/wcooley/public_html/webgis/gis_data'
+    TRANSPARENT ON
+
+    OUTPUTFORMAT
+        NAME png24
+        DRIVER "GD/PNG"
+        MIMETYPE "image/png"
+        IMAGEMODE RGBA
+        EXTENSION "png"
+        TRANSPARENT ON
+    END # OUTPUTFORMAT
+
+    PROJECTION
+        "init=epsg:4326"
+    END # projection
+
+    LAYER
+        NAME    hillshade
+        TYPE    raster
+        STATUS  ON
+        DATA    "OR_Hillshade.tif"
+        EXTENT  -125.3955930  41.4074868 -115.6037075 46.5853105
+
+        METADATA
+            "wms_title" "hillshade"
+        END # METADATA
+
+
+        PROJECTION
+            "init=epsg:4326"
+        END # projection
+
+    END # layer
+
+    LAYER
+        NAME    oregon
+        TYPE    POLYGON
+        STATUS  ON
+        DATA    "Oregon"
+
+        CLASS
+            NAME "Oregon"
+            COLOR 178 223 138
+            OUTLINECOLOR 182 131 78
+        END #class
+
+        PROJECTION
+            "init=epsg:4326"
+        END # projection
+
+        METADATA
+            "wms_title" "oregon"
+        END # METADATA
+
+    END # layer
+
+    LAYER
+        NAME    counties
+        TYPE    POLYGON
+        STATUS  ON
+        DATA    "Counties"
+
+        CLASS
+            NAME "Counties"
+            COLOR 31 120 180
+            OUTLINECOLOR 0 0 0
+        END #class
+
+        PROJECTION
+            "init=epsg:4326"
+        END # projection
+
+        METADATA
+            "wms_title" "counties"
+        END # METADATA
+
+    END #layer
+END # Map File
