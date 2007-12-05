@@ -1,0 +1,33 @@
+<?dbhtml filename="introduction"?>
+<section id="introduction">
+    <title>Background</title>
+
+<para>
+The interactive nature of web applications demands that a fair amount of attention be paid to their performance. GIS often entails large datasets and computationally expensive processing, so performance becomes an issue sooner than many applications. A poorly-performing GIS web application can be too slow to be usable for a single user, much less 100 users.
+</para>
+
+<para>
+Performance of computer applications is often a balance of space (memory, disk) versus time (real time or CPU cycles). Vector data is generally compact but requires more CPU time than raster data. Raster data, conversely, usually requires more storage but is usually simpler to render.
+</para>
+
+<para>
+One way to trade off storage for more speed is to prerendering data for common queries in batch. This can improve response time for interactive use, resulting in an improved experience for the user. Prerendering data works well when there are relatively few valid combinations of parameters. When there are many combinations, however, fully prerendering can be prohibitively expensive and, since often only a small subset of prerendered data will be used, wasteful.
+</para>
+
+<para>
+Another option is to selectively prerender based on assumptions or observations of typical usage patterns. For example, serving static content for the initial web page can help a site survive being linked to from a major news or blog site--the majority of people will follow the link and look no more deeply than the first page.
+</para>
+
+<para>
+A more adaptable method is to cache rendered data on-demand, with the assumption that most users will be requesting the same data. Data is not rendered until a user first requests it, so the initial request may be slow, but the rendered data is stored persistently, so subsequent requests are answered from the rendered cache. This on-demand rendering and caching is the approach that TileCache takes by default. However, it can be used to implement both of the prerendering methods with a little work.
+</para>
+
+<para>
+To accomplish this goal, TileCache acts as Web Map Service (WMS) provider, proxying between a client, such as OpenLayers, and a back-end mapping server, such as MapServer or another WMS provider. When TileCache receives a request, it records the parameters of the request, passes the request to the back-end mapping server, and stores the result. Because it can not only use a local MapServer installation but also remote WMS providers, it can be used to improve both the response time of the application and the increase reliability where remote providers may be unstable.
+</para>
+
+<para>
+TileCache must be configured for each layer it is to provide and then clients must be configured to use it as a WMS server. Its configuration is not difficult but it is non-trivial. The rest of this paper will consider the installation of TileCache, integration with MapServer, WMS and OpenLayers, and finally troubleshooting and problems.
+</para>
+
+</section>
