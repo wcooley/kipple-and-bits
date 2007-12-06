@@ -7,7 +7,8 @@ var tilecache_url = [
     ];
 //var tilecache_url = 'http://a.haus.nakedape.cc/~wcooley/tilecache/bin/tilecache.cgi';
 var mapfile = '/home/wcooley/public_html/webgis/oregon.map';
-var mapserv_url = 'http://b.haus.nakedape.cc/cgi-bin/mapserv';
+//var mapserv_url = 'http://b.haus.nakedape.cc/cgi-bin/mapserv';
+var mapserv_url = 'http://scatha.oit.pdx.edu/cgi-bin/mapserv';
 //var lon     = -120.5;
 //var lat     = 44.0;
 var lon     = -122.594;
@@ -62,25 +63,6 @@ function init(){
     map.addControl( new OpenLayers.Control.KeyboardDefaults()  );
     map.addControl( new OpenLayers.Control.Navigation()    );
 
-    layer_oregon_ms = new OpenLayers.Layer.MapServer(
-                'Oregon via MapServer w/o TileCache', 
-                mapserv_url,
-                {
-                    map:            mapfile,
-                    layers:         'oregon',
-                    format:         'image/png',
-                    srs:            'EPSG:4326',
-                    transparent:    true,
-                },
-                {
-                    isBaseLayer:    false,
-                    visibility:     false,
-                //    opacity:        0.3,
-                    //maxExtent:      hillshade_bounds,
-                    maxExtent:      oregonwms_bounds,
-                }
-            );
-
     layer_base = new OpenLayers.Layer.WMS(
                 'Oregon and MuWaCla counties via TileCache and WMS', 
                 tilecache_url,
@@ -97,6 +79,25 @@ function init(){
                     maxExtent:      oregonwms_bounds,
                     //maxExtent:      hillshade_bounds,
                     resolutions:    resolutions,
+                }
+            );
+
+    layer_oregon_ms = new OpenLayers.Layer.MapServer(
+                'Oregon via MapServer w/o TileCache', 
+                mapserv_url,
+                {
+                    map:            mapfile,
+                    layers:         'oregon',
+                    format:         'image/png',
+                    srs:            'EPSG:4326',
+                    transparent:    true,
+                },
+                {
+                    isBaseLayer:    true,
+                    visibility:     false,
+                //    opacity:        0.3,
+                    //maxExtent:      hillshade_bounds,
+                    maxExtent:      oregonwms_bounds,
                 }
             );
 

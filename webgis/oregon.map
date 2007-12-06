@@ -4,19 +4,24 @@ MAP
     SIZE    800 600
 
     WEB
-        IMAGEPATH   '/net/rheingold/home/wcooley/public_html/webgis/tmp'
-        IMAGEURL    'http://haus.nakedape.cc/~wcooley/webgis/tmp'
-        LOG         '/net/rheingold/home/wcooley/public_html/webgis/mapserver.log'
+#        IMAGEPATH   '/net/rheingold/home/wcooley/public_html/webgis/tmp'
+#        IMAGEURL    'http://haus.nakedape.cc/~wcooley/webgis/tmp'
+#        LOG         '/net/rheingold/home/wcooley/public_html/webgis/mapserver.log'
+        IMAGEPATH   '/home/wcooley/public_html/tmp'
+        IMAGEURL    'http://scatha.oit.pdx.edu/~wcooley/tmp'
+        LOG         '/home/wcooley/mapserver.log'
         METADATA
             "wms_title" "My Oregon WMS Service"
-            "wms_srs" "EPSC:4326"
+            "wms_srs" "EPSG:4326"
         END # METADATA
     END #web
 
     EXTENT      -124.559617 39.909590 -116.470419 48.314173
     UNITS       dd
     IMAGECOLOR  166 206 227
-    SHAPEPATH   '/net/rheingold/home/wcooley/public_html/webgis/gis_data'
+    SHAPEPATH   '/home/wcooley/gis_data'
+    #SHAPEPATH   '/net/rheingold/home/wcooley/public_html/webgis/gis_data'
+    CONFIG      "PROJ_LIB" "/home/wcooley/proj"
     TRANSPARENT ON
 
     OUTPUTFORMAT
@@ -35,7 +40,7 @@ MAP
     LAYER
         NAME    hillshade
         TYPE    raster
-        STATUS  ON
+        STATUS  OFF
         DATA    "OR_Hillshade.tif"
         EXTENT  -125.3955930  41.4074868 -115.6037075 46.5853105
 
