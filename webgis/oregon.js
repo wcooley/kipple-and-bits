@@ -87,7 +87,7 @@ function init(){
                 mapserv_url,
                 {
                     map:            mapfile,
-                    layers:         'oregon',
+                    layers:         'oregon counties',
                     format:         'image/png',
                     srs:            'EPSG:4326',
                     transparent:    true,
@@ -111,7 +111,7 @@ function init(){
                 },
                 {
                     isBaseLayer:    false,
-                    visibility:     true,
+                    visibility:     false,
                     reproject:      false,
                     opacity:        0.3,
                     //maxExtent:      hillshade_bounds,
