@@ -9,7 +9,7 @@ MAP
 #        LOG         '/net/rheingold/home/wcooley/public_html/webgis/mapserver.log'
         IMAGEPATH   '/home/wcooley/public_html/tmp'
         IMAGEURL    'http://scatha.oit.pdx.edu/~wcooley/tmp'
-        LOG         '/home/wcooley/mapserver.log'
+#        LOG         '/home/wcooley/mapserver.log'
         METADATA
             "wms_title" "My Oregon WMS Service"
             "wms_srs" "EPSG:4326"
@@ -22,6 +22,7 @@ MAP
     SHAPEPATH   '/home/wcooley/gis_data'
     #SHAPEPATH   '/net/rheingold/home/wcooley/public_html/webgis/gis_data'
     CONFIG      "PROJ_LIB" "/home/wcooley/proj"
+    FONTSET     "/home/wcooley/public_html/webgis/fonts.txt"
     TRANSPARENT ON
 
     OUTPUTFORMAT
@@ -40,9 +41,15 @@ MAP
     LAYER
         NAME    hillshade
         TYPE    raster
-        STATUS  OFF
+        STATUS  ON
         DATA    "OR_Hillshade.tif"
         EXTENT  -125.3955930  41.4074868 -115.6037075 46.5853105
+
+        CLASS
+            NAME "Oregon Hillshade"
+            COLOR 178 223 138
+            OUTLINECOLOR 182 131 78
+        END # CLASS
 
         METADATA
             "wms_title" "hillshade"
@@ -60,6 +67,8 @@ MAP
         TYPE    POLYGON
         STATUS  ON
         DATA    "Oregon"
+        LABELCACHE on
+
 
         CLASS
             NAME "Oregon"
@@ -82,11 +91,24 @@ MAP
         TYPE    POLYGON
         STATUS  ON
         DATA    "Counties"
+        LABELCACHE on
+        LABELITEM   'NAME'
+        LABELMAXSCALE 2000000
+        DEBUG ON
 
         CLASS
             NAME "Counties"
             COLOR 31 120 180
             OUTLINECOLOR 0 0 0
+
+            LABEL
+                FONT    "dejavu-sans"
+                TYPE    truetype
+                COLOR   0 0 0
+                SIZE    12
+                MINDISTANCE 4000
+                MINFEATURESIZE 10
+            END # LABEL
         END #class
 
         PROJECTION
