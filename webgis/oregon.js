@@ -75,10 +75,32 @@ function init(){
                 {
                     isBaseLayer:    true,
                     reproject:      false,
-                    opacity:        0.3,
+                    opacity:        0.7,
                     maxExtent:      oregonwms_bounds,
                     //maxExtent:      hillshade_bounds,
                     resolutions:    resolutions,
+                }
+            );
+
+    layer_counties_ann = new OpenLayers.Layer.MapServer(
+                'County Labels', 
+                mapserv_url,
+                {
+                    map:            mapfile,
+                    layers:         'counties_ann',
+                    format:         'image/png',
+                    srs:            'EPSG:4326',
+                    transparent:    true,
+                },
+                {
+                    isBaseLayer:    false,
+                    visibility:     true,
+                    transparent:    true,
+                //    opacity:        0.3,
+                    //maxExtent:      hillshade_bounds,
+                    maxExtent:      oregonwms_bounds,
+                    displayInLayerSwitcher: false,
+                    singleTile:     true,
                 }
             );
 
@@ -93,6 +115,7 @@ function init(){
                     transparent:    true,
                 },
                 {
+                    resolutions:    resolutions,
                     isBaseLayer:    true,
                     visibility:     false,
                 //    opacity:        0.3,
@@ -142,6 +165,7 @@ function init(){
     map.addLayers([ 
             layer_hillshade,
             layer_oregon_ms,
+            layer_counties_ann,
             layer_base,
             layer_friends,
         ]);
