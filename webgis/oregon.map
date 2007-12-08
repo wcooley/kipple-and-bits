@@ -91,24 +91,21 @@ MAP
         TYPE    POLYGON
         STATUS  ON
         DATA    "Counties"
-        LABELCACHE on
-        LABELITEM   'NAME'
-        LABELMAXSCALE 2000000
-        DEBUG ON
+        DEBUG on
 
+        CLASSITEM "Name"
         CLASS
-            NAME "Counties"
+            NAME "County"
+            EXPRESSION "Multnomah"
             COLOR 31 120 180
             OUTLINECOLOR 0 0 0
+        END #class
 
-            LABEL
-                FONT    "dejavu-sans"
-                TYPE    truetype
-                COLOR   0 0 0
-                SIZE    12
-                MINDISTANCE 4000
-                MINFEATURESIZE 10
-            END # LABEL
+        CLASS
+            NAME    "County"
+            EXPRESSION  ( '[NAME]' ne "Multnomah" )
+            COLOR 150 187 212
+            OUTLINECOLOR 0 0 0
         END #class
 
         PROJECTION
@@ -120,4 +117,46 @@ MAP
         END # METADATA
 
     END #layer
+
+
+    LAYER
+        NAME "counties_ann"
+        STATUS  ON
+        TYPE    annotation
+        DATA    "Counties"
+        LABELCACHE on
+        LABELITEM   'NAME'
+        LABELMAXSCALE 2000000
+        DEBUG off
+
+        CLASS
+            NAME "Counties"
+            COLOR 31 120 180
+            OUTLINECOLOR 0 0 0
+
+            LABEL
+                FONT    "dejavu-sans"
+                TYPE    truetype
+                COLOR   0 0 0
+                OUTLINECOLOR 214 225 38
+                SIZE    12
+                POSITION   cc
+                ANGLE       0
+                ANTIALIAS   true
+                MINDISTANCE 4000
+                MINFEATURESIZE 10
+                PARTIALS    false
+            END # LABEL
+        END #class
+
+        PROJECTION
+            "init=epsg:4326"
+        END # projection
+
+        METADATA
+            "wms_title" "counties_ann"
+        END # METADATA
+
+    END # LAYER
+
 END # Map File
