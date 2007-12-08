@@ -4,8 +4,7 @@ function init(){
 
     var tilecache_url = [
         'http://a.haus.nakedape.cc/~wcooley/tilecache/bin/tilecache.cgi',
-        'http://c.haus.nakedape.cc/~wcooley/tilecache/bin/tilecache.cgi',
-        'http://d.haus.nakedape.cc/~wcooley/tilecache/bin/tilecache.cgi',
+        'http://b.haus.nakedape.cc/~wcooley/tilecache/bin/tilecache.cgi',
     ];
 
     var mapfile = ( 'haus.nakedape.cc' == location.hostname )
@@ -62,7 +61,7 @@ function init(){
     map.addControl( new OpenLayers.Control.Navigation()    );
 
     var layer_base = new OpenLayers.Layer.WMS(
-                'Oregon and counties via TileCache and WMS', 
+                'Base from TileCache',
                 tilecache_url,
                 { 
                     layers:         'oregon-wms',
@@ -73,15 +72,15 @@ function init(){
                 {
                     isBaseLayer:    true,
                     reproject:      false,
-                    opacity:        0.7,
+                    opacity:        0.9,
                     maxExtent:      oregonwms_bounds,
                     resolutions:    resolutions,
                 }
             );
 
     var layer_base_wms = new OpenLayers.Layer.WMS(
-                'Oregon and counties via MapServer as WMS', 
-                mapserv_url + '?' + mapfile,
+                'Base from MapServer as WMS',
+                mapserv_url + '?' + 'map=' + mapfile,
                 { 
                     layers:         'oregon,counties',
                     format:         'image/png',
@@ -91,9 +90,28 @@ function init(){
                 {
                     isBaseLayer:    true,
                     reproject:      false,
-                    opacity:        0.7,
+                    opacity:        0.9,
                     maxExtent:      oregonwms_bounds,
                     resolutions:    resolutions,
+                }
+            );
+
+    var layer_oregon_ms = new OpenLayers.Layer.MapServer(
+                'Base from native MapServer',
+                mapserv_url,
+                {
+                    map:            mapfile,
+                    layers:         'oregon counties',
+                    format:         'image/png',
+                    srs:            'EPSG:4326',
+                    transparent:    true,
+                },
+                {
+                    resolutions:    resolutions,
+                    isBaseLayer:    true,
+                    opacity:        0.9,
+                    visibility:     false,
+                    maxExtent:      oregonwms_bounds,
                 }
             );
 
@@ -114,24 +132,6 @@ function init(){
                     maxExtent:      oregonwms_bounds,
                     singleTile:     true,
                     displayInLayerSwitcher: false,
-                }
-            );
-
-    var layer_oregon_ms = new OpenLayers.Layer.MapServer(
-                'Oregon via MapServer w/o TileCache', 
-                mapserv_url,
-                {
-                    map:            mapfile,
-                    layers:         'oregon counties',
-                    format:         'image/png',
-                    srs:            'EPSG:4326',
-                    transparent:    true,
-                },
-                {
-                    resolutions:    resolutions,
-                    isBaseLayer:    true,
-                    visibility:     false,
-                    maxExtent:      oregonwms_bounds,
                 }
             );
 
@@ -159,7 +159,7 @@ function init(){
                 "Friends' Homes", 
                 "Friends.kml", 
                 {
-                    format: OpenLayers.Format.KML,
+                    format:     OpenLayers.Format.KML,
                     minScale:   friends_minScale,
                 }
             );
@@ -167,9 +167,9 @@ function init(){
     map.addLayers([ 
             layer_hillshade,
             layer_oregon_ms,
-            layer_counties_ann,
             layer_base,
             layer_base_wms,
+            layer_counties_ann,
             layer_friends,
         ]);
 
