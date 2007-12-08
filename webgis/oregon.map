@@ -1,5 +1,5 @@
 MAP
-    NAME    oregon
+    NAME    oregon_map
     STATUS  ON
     SIZE    800 600
 
@@ -9,10 +9,13 @@ MAP
 #        LOG         '/net/rheingold/home/wcooley/public_html/webgis/mapserver.log'
         IMAGEPATH   '/home/wcooley/public_html/tmp'
         IMAGEURL    'http://scatha.oit.pdx.edu/~wcooley/tmp'
-#        LOG         '/home/wcooley/mapserver.log'
+        LOG         '/home/wcooley/mapserver.log'
         METADATA
             "wms_title" "My Oregon WMS Service"
             "wms_srs" "EPSG:4326"
+            "wms_onlineresource" 
+            "http://scatha.oit.pdx.edu/cgi-bin/mapserv?map=/home/wcooley/public_html/webgis/oregon.map?"
+#            "http://haus.nakedape.cc/cgi-bin/mapserv?map=/home/wcooley/public_html/webgis/oregon.map?"
         END # METADATA
     END #web
 
@@ -20,7 +23,7 @@ MAP
     UNITS       dd
     IMAGECOLOR  166 206 227
     SHAPEPATH   '/home/wcooley/gis_data'
-    #SHAPEPATH   '/net/rheingold/home/wcooley/public_html/webgis/gis_data'
+#    SHAPEPATH   '/net/rheingold/home/wcooley/public_html/webgis/gis_data'
     CONFIG      "PROJ_LIB" "/home/wcooley/proj"
     FONTSET     "/home/wcooley/public_html/webgis/fonts.txt"
     TRANSPARENT ON
