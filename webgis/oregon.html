@@ -1,17 +1,57 @@
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
+<?xml version="1.0"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
     <style type="text/css">
         #map {
             width: 800px;
-            height: 475px;
+            height: 600px;
             border: 1px solid black;
         }
+        text {
+            max-width: 40em;
+        }
     </style>
-    <script src="/~wcooley/webgis/OpenLayers/lib/Firebug/firebug.js" />
-    <script src="/~wcooley/webgis/OpenLayers/OpenLayers.js" />
-    <script src="/~wcooley/webgis/oregon.js" />
-  </head>
-  <body onload="init()">
-    <div id="map"></div>
-  </body>
+    <base href="http://haus.nakedape.cc/~wcooley/webgis/" />
+    <script type="text/javascript" src="OpenLayers/lib/Firebug/firebug.js"></script>
+    <script type="text/javascript" src="OpenLayers/OpenLayers.js"></script>
+    <script type="text/javascript" src="oregon.js"></script>
+    <title>WebGIS Final Project</title>
+</head>
+
+<body onload="init()">
+<div id="map"></div>
+
+<div class="text">
+<p>
+
+Zoom out one and the county labels will disappear. Zoom in twice and the
+&quot;Friend's Homes&quot; will appear. Enable the hillshade layer and zoom in
+once more and the hillshade layer will be disabled. The county labels are an
+untiled annotation layer. Multnomah County is a different color than the other
+three because of a class expression.
+
+</p>
+
+<p>Links to source files:</p>
+
+<ul>
+    <li><a href="oregon.map">oregon.map</a></li>
+    <li><a href="tilecache.cfg">tilecache.cfg</a></li>
+    <li><a href="oregon.js">oregon.js</a></li>
+    <li><a href="Friends.kml">Friends.kml</a></li>
+</ul>
+
+<p>
+    <a href="http://validator.w3.org/check?uri=referer"><img
+        src="http://www.w3.org/Icons/valid-xhtml10-blue"
+        alt="Valid XHTML 1.0 Strict" height="31" width="88" />
+    </a>
+</p>
+</div>
+
+</body>
 </html>
