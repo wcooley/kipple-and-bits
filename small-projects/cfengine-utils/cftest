@@ -1,0 +1,20 @@
+#!/bin/bash
+#
+# cftest - Run a parse-only test on a cfengine input file
+#
+# Written by Wil Cooley <wcooley@nakedape.cc>
+# Began 17 Dec 2007
+#
+# $Id$
+
+usage() {
+    printf "Usage: %s cfconfig.conf\n" $(basename $0)
+    printf "Written by Wil Cooley <wcooley@nakedape.cc>\n"
+}
+
+if [[ "$1" = "-h" || "$1" = "--help" || -z "$1" ]]; then
+    usage
+    exit
+fi
+
+/var/cfengine/bin/cfagent -IKqpf "$1"
