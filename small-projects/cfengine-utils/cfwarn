@@ -2,14 +2,10 @@
 #
 # cfwarn - Insert a disclaimer about being managed by cfengine. 
 #
-# FIXME: This used to be true, but it was really only good for shell scripts
-# and sometimes bad for other files. Make it detect files that start with #!
-# and append, otherwise insert.
+# The line is inserted as the second line if the first line is a shebang,
+# otherwise in the first line.
 #
-# The line is inserted as the second line in case the file is a script and the
-# first line is a shebang.
-#
-# Written by Wil Cooley <cooleyw@odscompanies.com>
+# Written by Wil Cooley <wcooley@nakedape.cc>
 #
 # Began 1 Nov 2007
 #
@@ -24,7 +20,7 @@ usage() {
 Usage: $PROGNAME [ -c <comment> ] <file>...
 
 Description: Inserts a warning disclaimer that a file is managed by cfengine.
-If file is not writable and managed by RCS, file is checked out before and
+If file is not writable and is managed by RCS, file is checked out before and
 committed afterwards.
 
 Options:
