@@ -1,0 +1,10 @@
+#!/bin/sh
+#
+# cfup - Quick wrapper to run a one-shot cfagent update.
+#
+# This script assumes the canonical location of cfagent.
+#
+# Written by Wil Cooley <wcooley@nakedape.cc>
+#
+
+/var/cfengine/bin/cfagent -IKq "$@"
