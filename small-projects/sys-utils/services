@@ -3,8 +3,10 @@
 #
 # Written by Wil Cooley  <wcooley@nakedape.cc>
 #
-# services - Wrapper around /sbin/service to allow multiple services to be
-# controlled in one go or multiple service-related commands.
+# services - Wrapper around /sbin/service and /sbin/chkconfig in Red Hat
+# systems to allow multiple services to be controlled in one go or multiple
+# service-related commands.
+#
 
 prog=$(basename $0)
 ver=1.0
@@ -65,7 +67,7 @@ shift
 
 case "${action}" in
     restart|stop|start|condrestart|status)
-        for s in $@; do /sbin/service ${s} ${action}; done
+        for s in $@; do /sbin/service "${s}" "${action}"; done
         ;;
     init-start)
         for s in $@; do 
@@ -80,7 +82,7 @@ case "${action}" in
         done
         ;;
     init-on|init-off)
-        for s in $@; do /sbin/chkconfig "${s}" ${action#init-}; done
+        for s in $@; do /sbin/chkconfig "${s}" "${action#init-}"; done
         ;;
     *)
         usage
