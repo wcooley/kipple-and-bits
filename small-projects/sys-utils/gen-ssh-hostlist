@@ -1,0 +1,43 @@
+#!/usr/bin/perl -w
+#
+# gen-ssh-hostlist - Generates a list of hosts and aliases appropriate for
+# feeding to ssh-keyscan, including short and fully-qualified names and IP
+# addresses.
+#
+# Written by Wil Cooley <wcooley@nakedape.cc>
+# Began 19 Sept 2008
+#
+# $Id$
+
+use strict;
+use List::MoreUtils qw( uniq );
+use Net::hostent;
+use Socket;
+
+sub gen_ssh_host_list {
+    my ($hosts) = @_;
+
+    die 'gen_ssh_host_list() expects a list ref'
+        unless ('ARRAY' eq ref $hosts);
+
+    my @host_list = ();
+
+    for my $host ( @{ $hosts } ) {
+
+        my $hobj = gethost($host);
+        next unless $hobj;
+
+        my ($short_name) = $host =~ /^([^.]*)/ ;
+
+        my @names = uniq ($host, $hobj->name, $short_name, @{ $hobj->aliases });
+        my @addrs = map { inet_ntoa($_) } @{ $hobj->addr_list };
+
+        my $host_aka = join (',', @names, @addrs);
+
+        push @host_list, $host_aka;
+    }
+
+    return wantarray ? @host_list : \@host_list;
+}
+
+print "$_\n" foreach ( gen_ssh_host_list(\@ARGV) );
