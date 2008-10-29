@@ -17,7 +17,27 @@ if [[ "$1" = "-h" || "$1" = "--help" ]]; then
     exit 1
 fi
 
-CONF="${1:-./update.conf}"
+
+for arg in $@; do
+    if [[ "${arg:0:1}" == "-" ]]; then
+        CFARGS=( ${CFARGS[@]} "$arg" )
+    elif [[ "$arg" == "parse" ]]; then
+        CFARGS=( ${CFARGS[@]} "-gp" )
+        MSG="Testing parsing of"
+    elif [[ "$arg" == "run" ]]; then
+        CFARGS=( ${CFARGS[@]} "-IKq" )
+        MSG="Testing running of"
+    else
+        CONF="$arg"
+    fi
+done
+
+if [[ ${#CFARGS[*]} -eq 0 ]]; then
+    CFARGS=( "-gp" )
+    MSG="Testing parsing of "
+fi
+
+: "${CONF:=./cfagent.conf}"
 
 if [[ ! -e "$CONF" ]]; then
     printf 'Error: %s does not exist!\n' "$CONF"
@@ -30,5 +50,5 @@ export CFINPUTS="$(pwd)"
 CONF=./$(basename "$CONF")
 popd >/dev/null
 
-echo "Parsing $CONF..."
-cfagent -gpf "$CONF"
+echo "$MSG $CONF..."
+cfagent ${CFARGS[*]} -f "$CONF"
