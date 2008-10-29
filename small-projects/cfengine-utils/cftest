@@ -8,13 +8,27 @@
 # $Id$
 
 usage() {
-    printf "Usage: %s cfconfig.conf\n" $(basename $0)
-    printf "Written by Wil Cooley <wcooley@nakedape.cc>\n"
+    printf "Usage: %s cfconfig.conf\n" $(basename $0) 1>&2
+    printf "Written by Wil Cooley <wcooley@nakedape.cc>\n" 1>&2
 }
 
-if [[ "$1" = "-h" || "$1" = "--help" || -z "$1" ]]; then
+if [[ "$1" = "-h" || "$1" = "--help" ]]; then
     usage
-    exit
+    exit 1
 fi
 
-/var/cfengine/bin/cfagent -IKqpf "$1"
+CONF="${1:-./update.conf}"
+
+if [[ ! -e "$CONF" ]]; then
+    printf 'Error: %s does not exist!\n' "$CONF"
+    exit 1
+fi
+
+# CFINPUTS needs to be a fully-qualified path
+pushd $(dirname "$CONF") >/dev/null
+export CFINPUTS="$(pwd)"
+CONF=./$(basename "$CONF")
+popd >/dev/null
+
+echo "Parsing $CONF..."
+cfagent -gpf "$CONF"
