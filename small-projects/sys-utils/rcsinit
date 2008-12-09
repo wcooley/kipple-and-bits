@@ -4,6 +4,8 @@
 #
 # Written by Wil Cooley <wcooley@nakedape.cc>
 #
+# $Id$
+#
 
 prog=${0##*/}
 
