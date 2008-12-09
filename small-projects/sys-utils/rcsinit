@@ -4,8 +4,8 @@
 #
 # Written by Wil Cooley <wcooley@nakedape.cc>
 #
-# $Id: rcsinit 761 2008-12-09 02:09:56Z wcooley $
-# Source: $URL$
+# $Id$
+# Source: $HeadURL$
 #
 
 prog=${0##*/}
