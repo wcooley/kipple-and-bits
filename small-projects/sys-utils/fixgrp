@@ -1,0 +1,56 @@
+#!/bin/bash
+#
+# grpfix -  Script to fix group ownerships and permissions by ensuring all
+# files and directories are owned by the given group and are group-writable
+#           and that directories have the SGID bit set.
+#
+# Written by Wil Cooley <wcooley@nakedape.cc>
+#
+# $Id$
+# $HeadURL$
+#
+
+prog=$(basename $0)
+VERSION='1.0 ($Revision$)'
+
+usage() {
+    cat <<EOF
+Usage: ${prog} <group> <path>
+
+Changes all files and directories in <path> to be owned by group <group>.
+Ensures that all files and directories are group-writable and that directories 
+have the SGID bit set.
+
+EOF
+}
+
+if [[ $# -ne 2 ]]; then
+    usage
+    if [[ "$1" = "-h" ]]; then
+        exit 0
+    else
+        exit 1
+    fi
+fi
+
+group="$1"
+targetpath="$2"
+
+if [[ ! -r "$targetpath" ]]; then
+    printf 'Error! %s is not readable.\n' "$targetpath"
+    exit 1
+fi
+
+chgrp -R "$group" "$targetpath"
+
+chmod -R g+w "$targetpath"
+
+
+# FIXME: It would be nice to always assume GNU find and xargs here, so we can
+# use null-terminated strings (to cleanly handle filenames with spaces) and to
+# not run at all if there are no directories. Add detection/search stuff here
+# to make that work on all platforms.
+
+find "$targetpath" -type d -print |
+    xargs chmod g+s
+
