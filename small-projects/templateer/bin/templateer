@@ -12,6 +12,10 @@
 use 5.008000;
 use strict;
 use warnings;
+
+use FindBin qw($Bin);
+use lib ( "$Bin/../lib", "$Bin/../lib/perl5" );
+
 use diagnostics;
 use Getopt::Long qw/VersionMessage :config default no_ignore_case/;
 use Pod::Usage;
