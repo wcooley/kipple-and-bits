@@ -1,0 +1,143 @@
+#!/usr/local/bin/perl
+#
+# loggrepsum - Search a syslog file and summarize appearance of matching
+# pattern by hour and host.
+#
+# Written by Wil Cooley <wcooley@pdx.edu>
+#
+# TODO: Handle 'last message repeated' entries. Yuck!
+
+
+use strict;
+use warnings;
+use English qw(-no_match_vars);
+use Pod::Usage;
+
+for my $arg (@ARGV) {
+    if ( $arg eq "--help" || $arg eq "-h" || $arg eq "-help") {
+        pod2usage(-exitval => 0);
+    }
+
+    if ( $arg eq "--man" ) {
+        pod2usage(-exitval => 0, -verbose => 2);
+    }
+}
+
+if ( @ARGV != 2 ) {
+    pod2usage(-exitval => 1);
+}
+
+my $pattern     = qr/$ARGV[0]/so;
+my $input_log   = $ARGV[1];
+
+my %summary;
+my %number_of;
+
+
+open my $input_fh, '<', $input_log
+    or die "Error opening '$input_log': $OS_ERROR";
+
+LINE:
+while (my $line = <$input_fh>) {
+    
+    $number_of{'lines'}++;
+
+    next LINE unless $line =~ $pattern;
+
+    $number_of{'matches'}++;
+
+    my ($hour, $host) = get_hour_host($line);
+
+    $summary{$host}{$hour}++;
+
+}
+
+print_summary(\%number_of, \%summary);
+
+sub get_hour_host {
+    my ($line) = @_;
+
+    my $re = qr{
+        \A  ( \w{3} \s [\s\d] \d        # Month Day
+        \s    \d{2} ) : \d{2} :\d{2}    # HH:MM:SS
+        \s  ( [-[:word:]]+ )            # Hostname up to first '.'
+    }xo;
+
+    if ($line =~ $re) {
+
+        my $hour = $1 . ':00';
+        my $host = $2;
+
+        return ($hour, $host);
+    }
+
+}
+
+sub print_summary {
+    my ($number_of, $summary_ref) = @_;
+
+    print "\n";
+    print 'Matches: ', $number_of{'matches'}, '/', $number_of{'lines'}, "\n";
+    print 'Pattern: /', $pattern, "/\n";
+    print "\n";
+
+    # Make another running total and compare to $number_of[matches] just to double check
+    my $chktotal;
+
+    for my $host ( sort keys %{$summary_ref} ) {
+
+        print "Host '$host':\n";
+
+        # Sorting like this won't work across month boundaries
+        for my $hour ( sort keys %{ $summary_ref->{$host} } ) {
+            my $hour_total = $summary_ref->{$host}->{$hour};
+
+            $chktotal += $hour_total;
+
+            printf "  %-8s %s\n", $hour_total, $hour;
+        }
+
+        print "\n";
+    }
+
+    if ( $chktotal != $number_of{'matches'} ) {
+        print "Something's wrong... \$chktotal != total matches!\n"
+    }
+}
+
+__END__
+
+=head1 LOGGREPSUM
+
+loggrepsum - Summarize pattern matches in a log file by host and time.
+
+=head1 SYNOPSIS
+
+loggrepsum <pcre> <log_file>
+
+ Options:
+    --help | -h     Brief help message
+    --man           Full documentation
+
+=head1 DESCRIPTION
+
+B<loggrepsum> will match the Perl-compatible regular expression I<pcre> against
+lines in the syslog-format log file I<log_file> and generate a summary of times
+matching entries occurred, broken down by host and hour.
+
+=head1 EXAMPLE
+
+ $ loggrepsum 'Cannot assign requested address' ~/tmp/syslog-test 
+
+ Matches: 6263/50000
+ Pattern: /(?s-xim:Cannot assign requested address)/
+
+ Host 'beli':
+   3970     Jan  9 09:00
+
+ Host 'thrall':
+   2293     Jan  9 09:00
+
+=head1 AUTHOR
+
+ Wil Cooley <wcooley@pdx.edu>
