@@ -13,6 +13,9 @@
 #  o Copy this file to your ~/.xchat2/ directory and it will be loaded on startup.
 #  o To load without restart, run: /py load detectTicket.py
 #    (If you don't want to put it in your ~/.xchat2, then specify the full path.)
+#
+# If running the '/py' command above results in a message 'py :Unknown command',
+# then you do not have the Python plugin installed.
 
 # TODO:
 #  o Should be able to configure url_sub on a per-channel basis
