@@ -5,6 +5,11 @@
 # away.
 #
 
+# To install:
+#  o Copy this file to your ~/.xchat2/ directory and it will be loaded on startup.
+#  o To load without restart, run: /py load screensaverAutoAway.py
+#    (If you don't want to put it in your ~/.xchat2, then specify the full path.)
+
 # Written by Wil Cooley <wcooley@nakedape.cc>
 # Began 26 Aug 2008
 #
