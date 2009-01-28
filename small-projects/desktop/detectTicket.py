@@ -14,7 +14,7 @@
 #  o Should store configuration outside of script
 
 # Change this for your local bug tracker
-url_sub = 'https://support.oit.pdx.edu/Ticket/Display.html?id=%s'
+url_sub = 'http://your-request-tracker-here/Ticket/Display.html?id=%s'
 
 from pprint import pformat
 import re
