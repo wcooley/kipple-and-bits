@@ -74,10 +74,6 @@ def ticketsub_cb(word, word_eol, userdata):
         ticketno = match.group('ticketno')
         xchat.prnt("Ticket: " + url_sub % ticketno)
         
-    else:
-        if ticketno is None:
-            xchat.prnt("Did not match: " + text)
-
     return xchat.EAT_NONE
 
 
