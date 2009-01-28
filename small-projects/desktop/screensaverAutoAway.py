@@ -12,30 +12,37 @@
 
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
-import xchat
 
-__module_name__ = 'screensaverAutoAway'
-__module_version__ = '0.1'
-__module_description__ = 'Sets user away when the GNOME screensaver is activated'
-__author__ = 'Wil Cooley <wcooley@nakedape.cc>'
+try:
+    import xchat
+except ImportError:
+    # Allow for external tests
+    pass
 
-away_msg = 'Auto-away by ' + __module_name__
+__author__              = 'Wil Cooley <wcooley at nakedape.cc>'
+__module_name__         = 'screensaverAutoAway'
+__module_version__      = '0.2'
+__module_description__  = 'Sets user away when the GNOME screensaver is activated'
+
 
 def screensaver_changed(state):
     ''' Called when screensaver stops or starts 
         state is either:
-         - True: Screensaver activated
+         - True:  Screensaver activated
          - False: Screensaver deactivated
     '''
 
     if state:
-        xchat.prnt("Screensaver activated")
         set_away()
     else:
-        xchat.prnt("Screensaver deactivated")
         set_back()
 
 def set_away():
+    away_msg = '%s (Auto-away by %s, version %s)' % \
+                    (xchat.get_prefs('away_reason'), 
+                            __module_name__ , 
+                            __module_version__)
+                    
     if xchat.get_info('away') is None:
         xchat.command('away ' + away_msg)
 
@@ -49,5 +56,8 @@ def setup_session():
     sesbus.add_signal_receiver(screensaver_changed, 
             'SessionIdleChanged', 'org.gnome.ScreenSaver')
 
-setup_session()
-xchat.prnt(__module_name__ + ' version ' + __module_version__ + ' loaded ')
+if __name__ == '__main__':
+
+    setup_session()
+    xchat.prnt('%s version %s by %s loaded' % \
+                (__module_name__, __module_version__, __author__) )
