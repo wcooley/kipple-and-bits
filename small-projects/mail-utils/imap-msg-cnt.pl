@@ -59,7 +59,7 @@ sub get_options {
     if ($opt_s) {
         $imap{'Server'} = $opt_s ;
     } else {
-        print "IMAP Host (localhost): " ;
+        print STDERR "IMAP Host (localhost): " ;
         chomp ($imap{'Server'} = <STDIN>) ;
         $imap{'Server'} = "localhost" unless ($imap{'Server'}) ;
     }
@@ -68,7 +68,7 @@ sub get_options {
         $imap{'User'} = $opt_u ;
     } else {
         $tmpuser = (getpwuid($<))[0] ; # Default to the current username
-        print "Username ($tmpuser): " ;
+        print STDERR "Username ($tmpuser): " ;
         chomp ($imap{'User'} = <STDIN>) ;
         $imap{'User'} = $tmpuser unless ($imap{'User'}) ;
     }
@@ -77,9 +77,9 @@ sub get_options {
         $imap{'Password'} = $opt_p ;
     } else {
         system "stty -echo" ;
-        print "Password: " ;
+        print STDERR "Password: " ;
         chomp ($imap{'Password'} = <STDIN>) ;
-        print "\n" ;
+        print STDERR "\n" ;
         system "stty echo" ;
     }
 
