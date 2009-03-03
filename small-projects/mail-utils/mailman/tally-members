@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+# Hackish script to count the number of members on mailing listst
+#
+# Wil Cooley <wcooley@nakedape.cc>
+#
+#
+
+(for list in $(./list_lists -b); do
+    cnt=$(./list_members ${list}|wc -l)
+    printf "%d %s\n" ${cnt} ${list}
+done) | sort -n |awk 'BEGIN { mt = 0; lt = 0; } { mt=mt+$1; lt=lt+1; print } 
+    END { print mt " members on " lt " lists" }'
