@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+
+""" Script to list basic information about a mailing list
+"""
+
+__author__  = 'Wil Cooley <wcooley@nakedape.cc>'
+__version__ = '0.1'
+
+import getopt
+import sys
+sys.path.append('/usr/lib/mailman')
+sys.path.append('/var/lib/mailman')
+
+from Mailman import Errors, MailList, Utils
+from Mailman.i18n import _
+
+def usage(exitcode, msg=''):
+    # FIXME
+    print __doc__
+
+    sys.exit(code)
+
+def main():
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'h',
+                                    ['help',] )
+    except getopt.error, msg:
+        usage(1, msg)
+
+    listnames = args
+
+    for opt, arg in opts:
+        if opt in ('-h', '--help'): usage(0)
+
+    for listname in listnames:
+        try:
+            list = MailList.MailList(listname, lock=False)
+
+        except Errors.MMListError, e:
+            print _('No such list: %(listname)s')
+
+        print format_info(list)
+    
+def format_info(list):
+
+    attrs = {}
+
+    attrs['listname']       = list.real_name
+    attrs['subs_count']     = len(list.getMembers())
+    attrs['desc']           = list.description or \
+                                _('[no description available]')
+    attrs['owners']         = ','.join(list.owner)
+    attrs['info']           = list.info
+
+    info = """List: %(listname)s
+Description: %(desc)s    
+Subscribers: %(subs_count)s
+Owners: %(owners)s
+Info:
+%(info)s
+""" % attrs
+
+    return info
+
+if __name__ == '__main__':
+    main()
