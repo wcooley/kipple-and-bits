@@ -1,0 +1,76 @@
+
+Application-Centric Logging System
+
+There is a need for application-centric logging: Applications currently
+building their own logging systems, such as Pan, Azeurus, Evolution (kinda).
+
+KDE supposedly already has part of this (at least the collection API):
+
+    http://thread.gmane.org/gmane.comp.freedesktop.xdg/10907/focus=10910
+
+Most apps just write junk stdout/stderr which goes to ~/.xsession-errors.  No
+idea which application is logging what; lack of prioritization, etc.
+
+Makes automated bug reporting harder -- bug-buddy currently scrapes
+~/.xsession-errors, potentially pulling in lots of irrelevant information and
+causing privacy concerns.
+
+Some desktop processes log to syslog (gconfd, synergy), which is not
+necessarily the best place to log. For one, syslog logs are often not readable
+by non-root (in RHEL & Fedora, for example), so user must become root to debug
+desktop application errors.
+
+Just collecting logs isn't enough--applications want to have their own event
+logs, so applications must also have well-defined way to read their logs.
+
+Aggregation of log information over the network would allow desktop support to
+identify trends, which could be critical when Free desktop systems are targets
+for attack.
+
+Remote access to desktop logs could be useful to helpdesk staff in
+troubleshooting end-user problems. (Could also be helpful to crackers too.)
+
+Proposal:
+
+    o Standardized event/entry structure:
+        o Build on IETF syslog work where reasonable, given different purposes.
+        o Need "facilities" more flexible than syslog--user/app definable
+            o Possibly app can register metadata about itself, such as URL to
+            submit bug reports, template URL linking to help for particular
+            message IDs?
+        o Standardized priority levels
+        o Hostname
+        o Timestamp
+        o Message IDs?
+        o Any other structured data?
+
+    o Communications protocol.
+        o Look into work done standardizing syslog, adding encryptiong, etc.
+
+    o Log collection daemon.
+        o Maybe have user/app-configurable filters, which could throw away
+        entries, cause notification, etc.
+        o Maybe not log in plain-text; instead use format that allows faster
+        application access? 
+
+    o API and library for emiting messages.
+
+    o Log access means.
+        o Maybe another daemon or maybe just a library that knows how to read
+        log format?
+
+    o API and library for reading messages.
+
+    o Command-line wrapper like 'logger' that captures stdout, stderr, which
+    could be hooked into menu-launcher so the wrapper would know the
+    application name; makes it immediately useful to existing installed base
+    with no changes.
+
+        o Possible to prioritize messages based on tag at beginning of
+        line: "WARNING:", "INFO:", "DEBUG:", etc. -- Apps would be able to add
+        partial support without invasive changes.
+
+    o GUI log viewer to give user view of all messages.
+
+    o Library shims or whatever so that existing KDE functions kDebug(),
+    kWarning(), kFatal(), etc go to the right place.
