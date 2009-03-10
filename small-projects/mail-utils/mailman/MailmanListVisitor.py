@@ -18,24 +18,28 @@ import Mailman.MailList
 import Mailman.Utils
 
 
-def visit_lists(visitor, exclude_lists=[], lock=False):
-    for listname in Mailman.Utils.list_names():
-        if listname in exclude_lists:
-            continue
-
-        listobj = Mailman.MailList.MailList(listname, lock)
-
-        visitor.visit(listobj)
-
-
 class MailmanListVisitor(object):
+
+    def __init__(self):
+        self.lock = False
 
     def visit(self, listobj):
         pass
 
+    def needs_lock():
+        return self.lock
+
+    def visit_lists(self, exclude_lists=[]):
+        for listname in Mailman.Utils.list_names():
+            if listname in exclude_lists:
+                continue
+
+            self.visit( Mailman.MailList.MailList(listname, self.lock) )
+
 class VisitorCollectSiteSubscriberList(MailmanListVisitor):
 
     def __init__(self):
+        MailmanListVisitor.__init__(self)
         self.members = set()
 
     def visit(self, list):
@@ -55,6 +59,7 @@ class VisitorPrintListName(MailmanListVisitor):
 class VisitorList(MailmanListVisitor):
 
     def __init__(self, visitors=[]):
+        MailmanListVisitor.__init__(self)
         self.visitors = visitors
 
     def add_visitor(self, visitor):
@@ -66,9 +71,9 @@ class VisitorList(MailmanListVisitor):
 
 if __name__ == '__main__':
 #    v = VisitorPrintName()
-    v = VisitorCollectSubscriberList()
+    v = VisitorCollectSiteSubscriberList()
 
-    visit_lists(v)
+    v.visit_lists()
 
     print "There are %d unique subscribers" % v.get_size()
 
