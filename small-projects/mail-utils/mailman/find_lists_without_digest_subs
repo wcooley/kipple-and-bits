@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+
+""" Script to generate a list of mailing lists with no digest members
+"""
+
+from MailmanListVisitor import MailmanListVisitor
+
+
+class VisitorFindNoDigestSubs(MailmanListVisitor):
+
+    def __init__(self):
+        MailmanListVisitor.__init__(self)
+
+        self.lists = []
+
+    def visit(self, listobj):
+        if (len(listobj.getDigestMemberKeys())) == 0:
+            self.lists.append(listobj.real_name)
+
+
+if __name__ == '__main__':
+    
+    v = VisitorFindNoDigestSubs()
+
+    v.visit_lists()
+
+    print "There are %d lists with no digest members." % \
+        len(v.lists)

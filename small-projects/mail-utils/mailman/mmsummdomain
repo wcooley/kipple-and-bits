@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+#
+# mmsummdomain - Report on domain counts in subscriber base
+#
+
+import re
+
+from MailmanListVisitor import VisitorCollectSiteSubscriberList
+
+
+def count_domains(members):
+    domains = {}
+
+    domre = re.compile(r'''
+                ^   [^@]+               # LHS of '@'
+                    @                   # '@'
+                    (?: .* [.] )?       # Optional subdomain
+                    ([^.]+ [.]+ [^.]+)   # Top 2 levels of domain
+                    [.]*                # Possibly a trailing dot
+                $''', re.VERBOSE)
+
+    for m in members:
+        dommatch = domre.match(m)
+
+        if dommatch is None:
+            print "Failed to match '%s'!" % m
+            continue
+        
+        domain = dommatch.group(1)
+
+        if domains.has_key(domain):
+            domains[domain] += 1
+
+        else:
+            domains[domain] = 1
+
+    return domains
+
+
+if __name__ == '__main__':
+   v = VisitorCollectSiteSubscriberList()
+
+   v.visit_lists()
+
+   subscribers = v.get_members()
+
+   domain_count_dict = count_domains(subscribers)
+
+   domain_count_sorted = sorted( domain_count_dict.items(),
+                            key=lambda x: x[1], reverse=True)
+
+   try:
+       for domcnt in domain_count_sorted:
+           print "%-20s %6d" % (domcnt[0] + ':', domcnt[1])
+   except IOError, (errno):
+       if errno == 32:
+           pass
+   except KeyboardInterrupt: pass
+
