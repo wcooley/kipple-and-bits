@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+#
+# Upstream source: http://haus.nakedape.cc/svn/public/trunk/small-projects/mail-utils/mailman/list_info
+#
 
-""" Script to list basic information about a mailing list
+""" List basic information about a mailing list
 """
 
 __author__  = 'Wil Cooley <wcooley@nakedape.cc>'
@@ -14,11 +17,15 @@ sys.path.append('/var/lib/mailman')
 from Mailman import Errors, MailList, Utils
 from Mailman.i18n import _
 
-def usage(exitcode, msg=''):
+def usage(exitcode, msg=None):
     # FIXME
-    print __doc__
 
-    sys.exit(code)
+    if msg is not None: print msg
+
+    print "Usage: %s <listname>+" % sys.argv[0]
+    print __doc__,
+
+    sys.exit(exitcode)
 
 def main():
     try:
@@ -28,6 +35,9 @@ def main():
         usage(1, msg)
 
     listnames = args
+
+    if len(listnames) < 1:
+        usage(1, "Listname required")
 
     for opt, arg in opts:
         if opt in ('-h', '--help'): usage(0)
