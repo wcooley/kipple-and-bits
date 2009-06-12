@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+#
+# Name: randlines
+# Desc: Extract random lines from a text file
+# 
+# Written by Wil Cooley <wcooley@nakedape.cc>
+#
+
+"""Extract random lines from a text file """
+
+__author__  = 'Wil Cooley <wcooley@nakedape.cc>'
+__version__ = '0.1'
+
+import random
+import sys
+import types
+from optparse import OptionParser
+from pprint import pprint as pp
+
+def parse_args(argv=sys.argv):
+
+    parser = OptionParser()
+
+    parser.add_option('-f', '--file', action='store', 
+                        type='string', dest='input_file', default=sys.stdin)
+
+    parser.add_option('-c', '--count', action='store', 
+                        type='int', dest='rand_count', default=1)
+    
+    (opts, args) = parser.parse_args(argv)
+
+    if type(opts.input_file) == types.FileType:
+        input_file = opts.input_file
+    else:
+        input_file = file(opts.input_file)
+
+    return (input_file, opts.rand_count)
+
+
+def main():
+
+    (input_file, rand_count) = parse_args()
+    
+    lines = input_file.readlines()
+    line_count = len( lines )
+
+    if rand_count > line_count:
+        print >> sys.stderr, """Error: count '%d' is greater than the \
+number of lines in the file; truncating to file length.""" % rand_count
+        rand_count = line_count
+
+    sample_lines = random.sample(lines, rand_count)
+
+    for line in sample_lines: print line,
+    
+
+if __name__ == '__main__':
+    main()
