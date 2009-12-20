@@ -1,8 +1,8 @@
 #!/bin/bash
 #
 # grpfix -  Script to fix group ownerships and permissions by ensuring all
-# files and directories are owned by the given group and are group-writable
-#           and that directories have the SGID bit set.
+#           files and directories are owned by the given group and are
+#           group-writable and that directories have the SGID bit set.
 #
 # Written by Wil Cooley <wcooley@nakedape.cc>
 #
@@ -41,16 +41,19 @@ if [[ ! -r "$targetpath" ]]; then
     exit 1
 fi
 
+# Change the group
 chgrp -R "$group" "$targetpath"
 
+# Set the group-writable bit
+# Note that some applications, like SSH or Sendmail, might not like a
+# group-writable home directory.
 chmod -R g+w "$targetpath"
 
+# FIXME: It would be nice to not assume GNU find and xargs here, which makes
+# handling filnames with spaces easy by using null-terminated lines, but which
+# is not at all portable.
 
-# FIXME: It would be nice to always assume GNU find and xargs here, so we can
-# use null-terminated strings (to cleanly handle filenames with spaces) and to
-# not run at all if there are no directories. Add detection/search stuff here
-# to make that work on all platforms.
-
-find "$targetpath" -type d -print |
-    xargs chmod g+s
+# Set the SGID bit on directories
+find "$targetpath" -type d -print0 |
+    xargs -0 -r chmod g+s
 
