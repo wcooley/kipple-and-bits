@@ -24,5 +24,11 @@ if __name__ == '__main__':
 
     v.visit_lists()
 
-    print "There are %d lists with no digest members." % \
+    print "There are %d lists with no digest members:" % \
         len(v.lists)
+
+    v.lists.sort()
+
+    for list in v.lists:
+        print list
+
