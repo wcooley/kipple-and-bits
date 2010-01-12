@@ -29,7 +29,7 @@ except ImportError:
 
 __author__              = 'Wil Cooley <wcooley at nakedape.cc>'
 __module_name__         = 'screensaverAutoAway'
-__module_version__      = '0.2'
+__module_version__      = '0.3'
 __module_description__  = 'Sets user away when the GNOME screensaver is activated'
 
 
@@ -63,6 +63,9 @@ def setup_session():
     sesbus = dbus.SessionBus()
     sesbus.add_signal_receiver(screensaver_changed, 
             'SessionIdleChanged', 'org.gnome.ScreenSaver')
+
+    sesbus.add_signal_receiver(screensaver_changed, 
+            'ActiveChanged', 'org.gnome.ScreenSaver')
 
 if __name__ == '__main__':
 
