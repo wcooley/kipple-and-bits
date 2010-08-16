@@ -7,8 +7,10 @@
 # Requires simaplib.py from mail-utils
 #
 
-import os, os.path
+import os, os.path, sys
 from tempfile import mktemp
+
+sys.path.append(os.path.join(os.environ['HOME'], 'lib'))
 from simaplib import SimpleIMAP4
 
 # Set these here or in the rc file
@@ -21,9 +23,9 @@ ham_folder      = None
 
 
 if __name__ == '__main__':
-    if sys.argv[1] == '-q':
+    if len(sys.argv) > 1 and sys.argv[1] == '-q':
         quiet = True 
-    else
+    else:
         quiet = False
 
     if os.access(rcfile, os.R_OK):
