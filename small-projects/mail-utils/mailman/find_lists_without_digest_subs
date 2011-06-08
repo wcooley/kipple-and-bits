@@ -3,32 +3,21 @@
 """ Script to generate a list of mailing lists with no digest members
 """
 
-from MailmanListVisitor import MailmanListVisitor
-
-
-class VisitorFindNoDigestSubs(MailmanListVisitor):
-
-    def __init__(self):
-        MailmanListVisitor.__init__(self)
-
-        self.lists = []
-
-    def visit(self, listobj):
-        if (len(listobj.getDigestMemberKeys())) == 0:
-            self.lists.append(listobj.real_name)
-
+from MailmanLists import all_lists
 
 if __name__ == '__main__':
-    
-    v = VisitorFindNoDigestSubs()
 
-    v.visit_lists()
+    useless_digests = []
+    
+    for list in all_lists():
+        if list.digestable != 0 and (len(list.getDigestMemberKeys())) == 0:
+            useless_digests.append(list.real_name)
 
     print "There are %d lists with no digest members:" % \
-        len(v.lists)
+        len(useless_digests)
 
-    v.lists.sort()
+    useless_digests.sort()
 
-    for list in v.lists:
+    for list in useless_digests:
         print list
 
