@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
 #
-# MailmanListVisit
+# MailmanListVisitor
+# Maybe this should be an Iterator instead?
 #
 """ Module implementing a Visitor pattern for walking Mailman mailing lists.
 """
@@ -20,8 +21,8 @@ import Mailman.Utils
 
 class MailmanListVisitor(object):
 
-    def __init__(self):
-        self.lock = False
+    def __init__(self, lock=False):
+        self.lock = lock
 
     def visit(self, listobj):
         pass
@@ -69,12 +70,37 @@ class VisitorList(MailmanListVisitor):
         for v in self.visitors:
             v.visit(listobj)
 
+class VisitorCheckArchiveStatus(MailmanListVisitor):
+
+    def __init__(self):
+        MailmanListVisitor.__init__(self)
+        self.archive = 0
+        self.archive_private = 0
+        self.total_lists = 0
+
+    def visit(self, list):
+        self.total_lists += 1
+        if list.archive == True or list.archive == 1:
+            self.archive += 1
+        if list.archive_private == True or list.archive_private == 1:
+            self.archive_private += 1
+
+    def get_archive_stats(self):
+        return ( self.total_lists,
+                self.archive,
+                self.archive_private,
+                )
+
 if __name__ == '__main__':
 #    v = VisitorPrintName()
-    v = VisitorCollectSiteSubscriberList()
+    v = VisitorCheckArchiveStatus()
 
     v.visit_lists()
 
-    print "There are %d unique subscribers" % v.get_size()
+    stats = v.get_archive_stats()
+
+    print "Of %d lists, %d have archives and %d have private archives" % stats
+
+#    print "There are %d unique subscribers" % v.get_size()
 
 #    for member in v.get_members(): print member
