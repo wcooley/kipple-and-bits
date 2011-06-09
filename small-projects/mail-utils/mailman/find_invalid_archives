@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+import os.path
+from glob import glob
+
+from MailmanLists import all_lists
+from Mailman.i18n import _
+from Mailman import Site
+
+def check_private_archive(list):
+
+    if list.archive and list.archive_private == 1:
+        public_path = Site.get_archpath(list.real_name, public=True)
+
+        if os.path.exists(public_path):
+            #print "Private list '%s' has public archive: '%s'" % (list.real_name, public_path)
+            print public_path
+
+def check_no_archive(list):
+
+    # Abort early if list has archiving enabled
+    if list.archive: return
+
+    private_path = Site.get_archpath(list.real_name, public=False)
+    public_path = Site.get_archpath(list.real_name, public=True)
+
+    private_mbox = private_path + '.mbox'
+    public_mbox = public_path + '.mbox'
+
+
+    if os.path.exists(private_path) and len(glob(os.path.join(private_path, '*.txt'))) > 0:
+        print private_path
+
+    if os.path.exists(private_mbox):
+        print private_mbox
+
+    if os.path.exists(public_path):
+        print public_path
+
+    if os.path.exists(public_mbox):
+        print public_mbox
+
+if __name__ == '__main__':
+
+    for list in all_lists():
+        check_private_archive(list)
+        check_no_archive(list)
