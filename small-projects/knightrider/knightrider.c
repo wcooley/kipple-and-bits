@@ -121,23 +121,56 @@ main (void)
 	ioctl (0, KDGETLED, &saved_led_state);
         ioctl (0, KDGKBLED, &saved_led_state);
 
+#if 0
+#define DEBUG_printf(x) printf(x)
+#else
+#define DEBUG_printf(x)
+#endif
+
 /* This is a safe blink frequency known *not* to cause epileptic seizures
  * or migraine headaches in laboratory geeks or email robots. */
 #define BLINK 120000
 
 	for (;;) {
+                DEBUG_printf("NUM  -   -\n");
 		ioctl (0, KDSETLED, saved_led_state | LED_NUM);
 		usleep (BLINK);
+
+                DEBUG_printf("NUM CAP  -\n");
 		ioctl (0, KDSETLED, saved_led_state | LED_NUM | LED_CAP);
 		usleep (BLINK);
+
+                DEBUG_printf(" -  CAP SCR\n");
 		ioctl (0, KDSETLED, saved_led_state | LED_CAP | LED_SCR);
 		usleep (BLINK);
-		ioctl (0, KDSETLED, saved_led_state & ~LED_NUM);
-		usleep (2 * BLINK);
-		ioctl (0, KDSETLED, saved_led_state & ~LED_CAP);
-		usleep (2 * BLINK);
-		ioctl (0, KDSETLED, saved_led_state & ~LED_SCR);
-		usleep (2 * BLINK);
+
+                DEBUG_printf(" -   -  SCR \n");
+		ioctl (0, KDSETLED, saved_led_state | LED_SCR );
+                usleep(BLINK);
+
+                DEBUG_printf(" -   -   -\n");
+		ioctl (0, KDSETLED, saved_led_state);
+		usleep (4 * BLINK);
+
+                DEBUG_printf(" -   -  SCR \n");
+		ioctl (0, KDSETLED, saved_led_state | LED_SCR );
+                usleep(BLINK);
+
+                DEBUG_printf(" -  CAP SCR\n");
+		ioctl (0, KDSETLED, saved_led_state | LED_CAP | LED_SCR);
+		usleep (BLINK);
+
+                DEBUG_printf("NUM CAP  -\n");
+		ioctl (0, KDSETLED, saved_led_state | LED_NUM | LED_CAP);
+		usleep (BLINK);
+
+                DEBUG_printf("NUM  -   -\n");
+		ioctl (0, KDSETLED, saved_led_state | LED_NUM);
+		usleep (BLINK);
+
+                DEBUG_printf(" -   -   -\n");
+		ioctl (0, KDSETLED, saved_led_state);
+		usleep (4 * BLINK);
 	}
 
 /* 	raise (SIGSALARY); */
