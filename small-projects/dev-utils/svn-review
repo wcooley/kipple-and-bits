@@ -1,0 +1,3 @@
+#!/bin/bash
+
+svn log "$@" |awk '/^r[0-9]+/{gsub("r", "", $1); printf "svn log -c%d; svn diff -c%d;\n", $1, $1}'|sh |less
