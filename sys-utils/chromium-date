@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+#
+# Translate the crazy internal date the Chromium/Google Chrome uses to
+# something human readable. (One might encounter this date with sync'd
+# passwords in gnome-keyring, for example.)
+#
+# Developed from the Chromium source:
+# Time::Now(), line 152 at
+# https://chromium.googlesource.com/chromium/src/base/+/b6117fc/time/time_posix.cc
+#
+
+import sys
+import time
+
+if __name__ == '__main__':
+    chromium_date = int(sys.argv[1])
+
+    win_epoch_secs = 11644473600
+    usec_per_sec = 1000 * 1000
+    win_epoch_usecs = win_epoch_secs * usec_per_sec
+
+    unix_date = float((chromium_date - win_epoch_usecs) / usec_per_sec)
+
+
+    print time.strftime("%a, %d %b %Y %H:%M:%S (UTC)", time.gmtime(unix_date))
+    print time.strftime("%a, %d %b %Y %H:%M:%S (local)", time.localtime(unix_date))
+
+
